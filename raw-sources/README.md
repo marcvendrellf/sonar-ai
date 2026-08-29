@@ -22,3 +22,4 @@ Current captures:
 - [React libraries and technical references](react-technical-references-2026-08-28.md)
 - [User-selected shadcn components](user-selected-ui-components-2026-08-28.md)
 - [Final Agent Fund decision](final-decision-2026-08-28.md)
+- [Naming and monorepo decision](naming-monorepo-decision-2026-08-29.md)

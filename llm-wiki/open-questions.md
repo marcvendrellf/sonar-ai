@@ -18,7 +18,6 @@ Only unresolved implementation and event questions remain. Concept selection is 
 | Does the project use the Base UI `base-nova` preset cleanly with all registries? | Scaffold, run `shadcn info`, and dry-run all selected additions. | No unresolved Base versus Radix API mismatch remains. |
 | Will `@abui/animated-chart` force Motion 12? | Inspect the dry-run dependency diff. | Keep one tested Motion version and record it in the lockfile. |
 | Primary faceless sphere or minimal Live Orb? | Prototype the three required states on the presentation laptop. | Pick the option that stays smooth beside Shader Gradient and React Flow. |
-| What is the final fund name? | Choose a short name after the first visual prototype. | Update onboarding copy and page metadata consistently. |
 
 ## Must close before demo lock
 
@@ -28,6 +27,10 @@ Only unresolved implementation and event questions remain. Concept selection is 
 | What official judging criteria and demo duration apply? | Ask an organizer or check the event Discord. | Record the exact wording and adjust the three-minute script. |
 | Who owns each build area? | Record team members and strengths. | Assign UI, Cala/data, agent logic, risk engine, and pitch owners. |
 | Does the entire demo work without network access? | Run the production build in fixture mode. | Complete onboarding through decision receipt offline. |
+
+## Closed questions
+
+- **What is the final fund name?** Closed 2026-08-29: the product is named Sonar AI (see the [naming and monorepo decision](../raw-sources/naming-monorepo-decision-2026-08-29.md)). Applying the name to onboarding copy and page metadata is part of scaffold work.
 
 ## Current blockers
 

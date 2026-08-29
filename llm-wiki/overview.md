@@ -2,7 +2,7 @@
 
 ## Final decision
 
-Build [Agent Fund](concepts/agent-fund.md), an autonomous paper hedge fund that uses Cala to trace relationships behind an event before changing a simulated portfolio.
+Build [Sonar AI](concepts/sonar-ai.md), an autonomous paper hedge fund that uses Cala to trace relationships behind an event before changing a simulated portfolio. The concept was codenamed "Agent Fund" during selection; the product name is now Sonar AI (see the [naming and monorepo decision](../raw-sources/naming-monorepo-decision-2026-08-29.md)).
 
 > The agent does not trade the headline. It trades the relationships behind it.
 
@@ -32,8 +32,8 @@ Use the [interface plan](interface-plan.md) as the UI contract.
 
 ## Technology decision
 
+- pnpm workspace monorepo in the private GitHub repo `marcvendrellf/sonar-ai`
 - Next.js, React, and TypeScript
-- pnpm only
 - shadcn/ui with the Base UI `base-nova` preset
 - Tailwind CSS
 - Motion for DOM transitions
@@ -69,7 +69,7 @@ Use the [technical reference pack](technical-reference-pack.md) for installation
 
 ## Current implementation state
 
-No application has been scaffolded. The repository currently contains the wiki and the supplied visual asset. There is no `package.json`, pnpm lockfile, or `components.json`.
+The repository exists as a private GitHub monorepo at `github.com/marcvendrellf/sonar-ai` with the wiki, the repository contract, and the supplied visual asset committed. No application has been scaffolded: there is no `package.json`, pnpm workspace file, or `components.json` yet.
 
 The selected third-party registry components were inspected with `shadcn view`. They have not been installed.
 

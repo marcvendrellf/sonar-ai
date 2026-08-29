@@ -9,7 +9,7 @@ Detailed composition: [interface plan](interface-plan.md)
 
 ## Recommended stack
 
-Use one application, Motion for DOM transitions, and one primary 3D sphere. Isolate the selected WebGL shader background to onboarding and waiting states:
+Use one application, Motion for DOM transitions, and one primary 3D sphere. The repository is a pnpm workspace monorepo (see the [naming and monorepo decision](../raw-sources/naming-monorepo-decision-2026-08-29.md)). Isolate the selected WebGL shader background to onboarding and waiting states:
 
 - **Next.js, React, and TypeScript** for the application and server-side Cala adapter.
 - **Tailwind CSS and shadcn/ui with the Base UI preset** for the application shell, onboarding, Saloon, dashboard, and accessible controls.
@@ -233,44 +233,63 @@ Animate only the path currently being explained. All other edges remain still. C
 
 Use `Instrument Sans`, `Geist`, or another available neutral grotesk. Pick one family. Do not combine several display fonts.
 
-## Suggested file layout
+## Repository layout (pnpm workspace)
+
+The repository is a monorepo. One pnpm workspace hosts the Next.js application and the shared packages. Keeping the risk engine and shared contracts in packages enforces their independence from React.
 
 ```text
-app/
-  page.tsx
-  onboarding/page.tsx
-  saloon/page.tsx
-  dashboard/page.tsx
-  decisions/[id]/page.tsx
-  api/analyze-event/route.ts
-components/
-  onboarding/OnboardingFlow.tsx
-  saloon/AgentRoster.tsx
-  saloon/AgentChat.tsx
-  saloon/EvidencePanel.tsx
-  dashboard/PortfolioSummary.tsx
-  dashboard/PriceChart.tsx
-  dashboard/RecentTrades.tsx
-  dashboard/AgentActivityChart.tsx
-  orb/FundOrbCanvas.tsx
-  orb/FundOrb.tsx
-  graph/RelationshipGraph.tsx
-  graph/nodes/
-  receipt/DecisionReceipt.tsx
-lib/
-  cala/client.ts
-  cala/normalize.ts
-  evidence/schema.ts
-  risk/engine.ts
-  demo/fixtures.ts
-  demo/store.ts
+apps/
+  web/                      # Next.js application
+    app/
+      page.tsx
+      onboarding/page.tsx
+      saloon/page.tsx
+      dashboard/page.tsx
+      decisions/[id]/page.tsx
+      api/analyze-event/route.ts
+    components/
+      onboarding/OnboardingFlow.tsx
+      saloon/AgentRoster.tsx
+      saloon/AgentChat.tsx
+      saloon/EvidencePanel.tsx
+      dashboard/PortfolioSummary.tsx
+      dashboard/PriceChart.tsx
+      dashboard/RecentTrades.tsx
+      dashboard/AgentActivityChart.tsx
+      orb/FundOrbCanvas.tsx
+      orb/FundOrb.tsx
+      graph/RelationshipGraph.tsx
+      graph/nodes/
+      receipt/DecisionReceipt.tsx
+    lib/
+      cala/client.ts        # server-only Cala adapter
+      cala/normalize.ts
+      demo/fixtures.ts
+      demo/store.ts
+packages/
+  core/                     # shared types, Zod schemas, evidence contract
+    src/
+      schema.ts
+      evidence.ts
+      phases.ts
+  risk-engine/              # pure deterministic mandate and risk checks
+    src/
+      engine.ts
+      mandate.ts
+pnpm-workspace.yaml
+package.json
 ```
 
-Keep the Cala adapter, normalized schema, risk engine, and fixtures independent from the React components.
+Workspace rules:
+
+- `packages/core` and `packages/risk-engine` never import React or Next.js.
+- The Cala credential and adapter stay inside `apps/web` server code; no package or client component imports them.
+- UI code imports shared types from `packages/core` only.
+- The risk engine consumes plain data from `packages/core` and returns plain results, so it stays unit-testable without a DOM.
 
 ## Build order
 
-1. Scaffold the Base UI shadcn project and inspect every selected registry component with a dry run.
+1. Scaffold the pnpm workspace with `apps/web` and the shared packages, initialize the Base UI shadcn project inside `apps/web`, and inspect every selected registry component with a dry run.
 2. Build the static onboarding, Saloon, and dashboard shells.
 3. Implement the typed demo store and phase controls.
 4. Adapt Activity and Chat to typed agent events.

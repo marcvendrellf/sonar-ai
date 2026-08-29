@@ -1,11 +1,11 @@
-# Agent Fund wiki
+# Sonar AI wiki
 
 This wiki is the durable handoff for the selected {Tech: Europe} x Cala Summer Lock-In project.
 
 ## Reading order
 
 1. [Overview](overview.md) for the final decision and current state.
-2. [Agent Fund](concepts/agent-fund.md) for the product, demo, risk rules, and visual direction.
+2. [Sonar AI](concepts/sonar-ai.md) for the product, demo, risk rules, and visual direction.
 3. [Interface plan](interface-plan.md) for onboarding, the Saloon, dashboard, and selected shadcn components.
 4. [Technical reference pack](technical-reference-pack.md) for architecture, libraries, file layout, and build order.
 5. [Cala for finance](cala-finance.md) for claimed data capabilities and unverified API assumptions.
@@ -17,9 +17,9 @@ This wiki is the durable handoff for the selected {Tech: Europe} x Cala Summer L
 ## Current pages
 
 - [Overview](overview.md): final project decision, scope, implementation state, and next actions.
-- [Agent Fund](concepts/agent-fund.md): selected concept and three-minute demo.
+- [Sonar AI](concepts/sonar-ai.md): selected concept (formerly codenamed Agent Fund) and three-minute demo.
 - [Interface plan](interface-plan.md): screen composition and selected registries.
-- [Technical reference pack](technical-reference-pack.md): Next.js, shadcn, animation, graph, data, and server architecture.
+- [Technical reference pack](technical-reference-pack.md): monorepo layout, Next.js, shadcn, animation, graph, data, and server architecture.
 - [Cala for finance](cala-finance.md): finance sources Cala claims to provide.
 - [Event brief](event-brief.md): confirmed event facts.
 - [Hackathon winner patterns](hackathon-winner-patterns.md): reusable lessons from OpenAI, Anthropic, and Google winners.

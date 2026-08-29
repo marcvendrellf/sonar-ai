@@ -37,3 +37,9 @@ Selected `@23rd/shader-gradient`, optional `@23rd/live-orb`, `@7ovr/activity-1`,
 Recorded the final user decision in the raw layer. Rewrote the repository contract, index, overview, and open questions around Agent Fund only. Removed the superseded fusion backlog, finance idea backlog, Company Lens concept, and Counterparty Brief concept from the curated wiki.
 
 The remaining wiki now provides one reading path: final state, Agent Fund, interface plan, technical reference pack, Cala assumptions, event constraints, winner research, blockers, and history. No application scaffold or registry component has been installed yet.
+
+## [2026-08-29] decision | Product named Sonar AI and the repository became a monorepo
+
+The user named the product Sonar AI, closing the final-fund-name open question. "Agent Fund" remains only as the historical codename in earlier captures and log entries. Renamed the concept page to `concepts/sonar-ai.md`, updated the index, overview, repository contract, and concept page, and captured the decision in `raw-sources/naming-monorepo-decision-2026-08-29.md`.
+
+Initialized the private GitHub repository `marcvendrellf/sonar-ai` and committed the wiki, raw sources, and repository contract. Recorded the repository as a pnpm workspace monorepo (`apps/web`, `packages/core`, `packages/risk-engine`) in the overview, repository contract, and the technical reference pack's repository layout and build order. No application scaffold or registry component has been installed yet.

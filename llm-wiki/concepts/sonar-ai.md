@@ -1,6 +1,8 @@
-# Agent Fund
+# Sonar AI
 
-**Decision.** This is the selected and locked hackathon concept. See [final decision capture](../../raw-sources/final-decision-2026-08-28.md).
+**Decision.** This is the selected and locked hackathon concept. See [final decision capture](../../raw-sources/final-decision-2026-08-28.md) and the [naming and monorepo decision](../../raw-sources/naming-monorepo-decision-2026-08-29.md).
+
+The product name is **Sonar AI**. The concept was codenamed "Agent Fund" during selection; earlier captures, log entries, and the supplied visual asset keep that name.
 
 Implementation guides: [interface plan](../interface-plan.md) and [technical reference pack](../technical-reference-pack.md)
 
@@ -10,7 +12,7 @@ A paper hedge fund that reads an event, traces its second-order company relation
 
 ## Why this could be the WOW concept
 
-Most finance demos stop at "summarize this news." Agent Fund shows a complete loop:
+Most finance demos stop at "summarize this news." Sonar AI shows a complete loop:
 
 1. observe an event;
 2. trace who is connected;

@@ -1,8 +1,8 @@
-# Agent Fund repository contract
+# Sonar AI repository contract
 
 ## Final objective
 
-Build Agent Fund for the {Tech: Europe} x Cala Summer Lock-In. It is an autonomous paper hedge fund that traces source-linked relationships behind events before changing a simulated portfolio.
+Build Sonar AI (codenamed "Agent Fund" during concept selection) for the {Tech: Europe} x Cala Summer Lock-In. It is an autonomous paper hedge fund that traces source-linked relationships behind events before changing a simulated portfolio. The repository lives at `github.com/marcvendrellf/sonar-ai` (private).
 
 The concept decision is final. Do not restart ideation or reintroduce discarded concepts unless the user explicitly asks.
 
@@ -20,7 +20,7 @@ Before planning or implementation, read:
 
 1. `llm-wiki/index.md`
 2. `llm-wiki/overview.md`
-3. `llm-wiki/concepts/agent-fund.md`
+3. `llm-wiki/concepts/sonar-ai.md`
 4. `llm-wiki/interface-plan.md`
 5. `llm-wiki/technical-reference-pack.md`
 6. `llm-wiki/open-questions.md`
@@ -31,7 +31,7 @@ Read `llm-wiki/cala-finance.md` before making Cala assumptions.
 
 - `index.md` is content-oriented navigation and the required first read.
 - `overview.md` records the final decision, scope, state, and next actions.
-- `concepts/agent-fund.md` defines the product, demo, risk boundaries, and visual direction.
+- `concepts/sonar-ai.md` defines the product, demo, risk boundaries, and visual direction.
 - `interface-plan.md` defines onboarding, the Saloon, dashboard, and selected shadcn components.
 - `technical-reference-pack.md` defines the stack, architecture, performance rules, and build order.
 - `cala-finance.md` records Cala's claimed capabilities and unverified assumptions.
@@ -71,6 +71,7 @@ Treat Cala product-page statements as vendor claims until an API fixture confirm
 ## Implementation decisions
 
 - Use pnpm consistently. Do not mix pnpm, npm, yarn, or Bun commands.
+- Keep the repository as a pnpm workspace monorepo: `apps/web` for the Next.js application, `packages/core` for shared contracts, and `packages/risk-engine` for the pure engine. Do not flatten it back to a single-directory app.
 - Use Next.js, React, and TypeScript.
 - Use shadcn/ui with the Base UI `base-nova` preset.
 - Run `pnpm dlx shadcn@latest info` after scaffolding and before component work.
