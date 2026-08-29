@@ -1,0 +1,145 @@
+knowing this phases and the project i want you to review the changes made for the phase 1.
+
+`packages/core` — the contracts (Phase 1)
+Pure Zod + types. Imports neither React nor Next. Single source of truth for every ID and shape.
+
+```
+packages/core/
+  package.json
+  tsconfig.json
+  src/
+    index.ts                  # re-exports every schema + type
+    ids.ts                    # stable-ID helpers (runId, evidenceId, orderId, nodeId…)
+    phases.ts                 # FundPhase union: idle→observing→tracing→proposing→
+                              #   challenging→awaiting_approval→executing→blocked→complete
+    portfolio.ts              # PortfolioSnapshot, Position, Cash, PaperOrder, PaperLedger
+    mandate.ts                # Mandate + the 4 deterministic limits
+    evidence.ts               # Evidence, EvidenceRef, provenance, live|historical|synthetic label
+    events.ts                 # MaterialEvent, StageEvent, ActivityEvent (the typed trace)
+    market-data.ts            # Instrument, PriceHistory, MarketSnapshot
+    agents.ts                 # per-stage OUTPUT schemas + the stage envelope
+                              #   (runId, stage, status, startedAt, completedAt, outputId)
+    analysis.ts               # InvestmentCommitteeState + the top-level Analysis contract
+    receipts.ts               # DecisionReceipt (evidence, risk comparison, approval, report)
+    __fixtures__/
+      golden-state.ts         # ONE complete valid InvestmentCommitteeState (demo scenario)
+    __tests__/
+      schemas.test.ts         # golden fixture parses against every schema
+      evidence-integrity.test.ts  # every referenced evidenceId exists in evidence[]
+```
+
+Why `agents.ts` holds only output schemas: agents are defined by what they must return, and those same schemas become the OpenAI structured-output JSON schemas in Phase 5. No drift.
+`packages/risk-engine` — pure deterministic engine (Phase 2)
+No IO, no imports of `fs`/`net`/React. Consumes plain values from `core`.
+
+```
+packages/risk-engine/
+  package.json
+  tsconfig.json
+  src/
+    index.ts                  # public surface: evaluate(), the metric fns, compare()
+    engine.ts                 # evaluate(proposedActions, portfolio, mandate) → RiskCheck[]
+                              #   (pass | resize | reject, each with reproducible numbers)
+    mandate.ts                # limit definitions + breach codes
+                              #   POSITION_LIMIT_BREACH | RISK_MANDATE_BREACH | DATA_INVALID
+    compare.ts                # compare_portfolio_scenarios(current, proposed)
+    metrics/
+      volatility.ts
+      beta.ts
+      sector-exposure.ts
+      concentration.ts
+      stress-test.ts
+    rules/
+      position-limit.ts       # max 30% gross per position
+      sector-limit.ts         # max 45% per sector
+      cash-floor.ts           # min 10% cash
+      turnover.ts             # max 20% turnover per event
+    __tests__/
+      engine.test.ts          # happy path + one guaranteed hard-block with an explainable number
+      purity.test.ts          # asserts no fs/net imports
+      metrics.test.ts
+```
+
+`apps/web/lib/server` — orchestration, agents, tools, adapters (Phases 3–5)
+This is the heart of your lane. Structured so the stub↔real agent swap is a one-line runner change.
+
+```
+apps/web/lib/server/
+  env.ts                      # Zod-validated env load (SONAR_OFFLINE, keys). Fails loud if invalid.
+
+  analysis/                   # ── the committee runtime ──
+    orchestrator.ts           # AnalysisOrchestrator: phase transitions + the 3 gates.
+                              #   Runs Fundamental+MarketContext in parallel; Risk waits for
+                              #   proposals; Bear/Critic waits for Risk; ReportWriter waits for decision.
+    context.ts                # builds the ISOLATED context pack per stage (never one giant prompt)
+    gates.ts                  # evidence-validation gate · risk gate · human-approval gate
+    trader.ts                 # deterministic paper-ledger mutation (NOT an agent, NOT a broker)
+    runner/
+      types.ts                # AgentRunner interface:  run<T>(def: AgentDef<T>, pack) => Promise<T>
+      stub-runner.ts          # Phase 3 — returns deterministic fixture outputs, no LLM
+      openai-runner.ts        # Phase 5 — real OpenAI structured-output call, bounded retry, fallback
+    agents/                   # each file is a DEFINITION (id, prompt, output schema, context selector),
+                              #   not an SDK call — the runner executes it
+      portfolio-manager.ts    # proposes + revises allocation
+      fundamental-analyst.ts  # isolated company evidence pack
+      market-context.ts       # isolated macro/sector/news pack
+      risk-officer.ts         # deterministic-first: drives risk-engine; model layer optional/last
+      bear-critic.ts          # attacks proposal, no veto
+      report-writer.ts        # post-decision only, cannot mutate allocation
+    __tests__/
+      orchestrator.test.ts    # full fixture run → expected receipt
+      hard-block.test.ts      # Risk Officer rejects an invalid action
+      approval-gate.test.ts   # no userDecision ⇒ paper ledger unchanged
+
+  llm/                        # ── OpenAI wrapper (Phase 5) ──
+    openai-client.ts          # thin client: model, base URL, org/project, token+retry bounds
+    structured-output.ts      # Zod → JSON schema · call · parse · validate
+
+  cala/                       # ── evidence graph, server-only (Phase 4) ──
+    client.ts                 # X-API-KEY, MCP endpoint, timeout → fixture fallback
+    normalize.ts              # raw Cala → core nodes/edges/evidence
+    evidence-validator.ts     # every material claim resolves to a known evidence ID
+    __tests__/normalize.test.ts
+
+  etoro/                      # ── READ-ONLY market data (Phase 4) ──
+    client.ts                 # read-only fetch; timeout → fixture fallback
+    normalize.ts              # raw eToro → core MarketSnapshot/PriceHistory
+    no-write.guard.test.ts    # ARCHITECTURAL TEST: module exposes no order/deposit/
+                              #   withdrawal/account method
+
+  tools/                      # ── the 10 typed tools agents may call (Phase 4) ──
+    index.ts                  # typed registry; nothing outside this list is callable
+    get-portfolio-snapshot.ts
+    get-price-history.ts            # → etoro
+    get-company-fundamentals.ts
+    search-company-information.ts   # → cala (relationship tracing lives here)
+    calculate-portfolio-metrics.ts  # → risk-engine
+    calculate-asset-exposure.ts     # → risk-engine
+    run-stress-test.ts              # → risk-engine
+    compare-portfolio-scenarios.ts  # → risk-engine
+    get-existing-thesis.ts
+    save-recommendation.ts          # writes internal state ONLY
+```
+
+`apps/web/fixtures` — the offline demo path (Phases 1, 4, 7)
+
+```
+apps/web/fixtures/
+  scenario.json               # demo inputs: €1,000 all-cash portfolio, mandate, 5-asset universe, event
+  cala/
+    <entity>-graph.json       # sanitized Cala response(s) + normalized field map
+  etoro/
+    prices.json               # sanitized read-only market snapshot
+  committee/
+    golden-run.json           # a full recorded InvestmentCommitteeState (drives stub-runner + tests)
+```
+
+`apps/web/app/api` — thin routes (Phase 6)
+
+```
+apps/web/app/api/
+  analyze-event/route.ts      # invokes ONE committee run; streams typed stage events; no secrets out
+  market-data/route.ts        # read-only eToro/ fixture
+  __tests__/
+    no-leak.test.ts           # browser payload contains no prompts/credentials/uncited prose
+```
