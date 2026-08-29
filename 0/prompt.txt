@@ -1,0 +1,17 @@
+so it's everything involving agents done?
+
+---
+
+okay do it then The highest-value thing I can do next in our lane is #1 — verify each agent's draft schema converts to an OpenAI-valid strict JSON schema
+
+---
+
+already pushed. Okay for me to understand what's the technology behind the five agents? is it openai?
+
+---
+
+okay so what I want you to do now is to prepare for an actual run. So my pier Josep is working on the tools, and we have to prepare the env meaning we do have to store the conversetions and what does each agent, because when we do the demo it has to last 2 mins, and we cannot run all the flow because probably will be more than 2 mins, so we will show previous runs
+
+---
+
+push

@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.10.3",
+  "checkpoint_id": "01M16VWQ4HWCJ94XGY6YWV50PZ",
+  "strategy": "manual-commit",
+  "branch": "feat/core-contracts",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".env.example",
+    "apps/web/lib/server/README.md",
+    "apps/web/lib/server/analysis/orchestrator.ts",
+    "apps/web/lib/server/analysis/runner/types.ts",
+    "apps/web/lib/server/cala/README.md",
+    "apps/web/lib/server/env.ts",
+    "apps/web/lib/server/tools/README.md",
+    "apps/web/lib/server/tools/types.ts",
+    "llm-wiki/log.md",
+    "llm-wiki/technical-reference-pack.md",
+    "packages/risk-engine/src/__tests__/orchestrator.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 500,
+    "cache_creation_tokens": 2561929,
+    "cache_read_tokens": 77056966,
+    "output_tokens": 367856,
+    "api_call_count": 250
+  }
+}
