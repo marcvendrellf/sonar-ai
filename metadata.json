@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.10.3",
+  "checkpoint_id": "01M1740S424JCCHAJ0WPQJMATS",
+  "strategy": "manual-commit",
+  "branch": "feat/core-contracts",
+  "checkpoints_count": 18,
+  "files_touched": [
+    "apps/web/lib/server/alpaca/client.test.ts",
+    "apps/web/lib/server/alpaca/client.ts",
+    "apps/web/lib/server/analysis/agents/fundamental-analyst.ts",
+    "apps/web/lib/server/analysis/agents/market-context.test.ts",
+    "apps/web/lib/server/analysis/agents/market-context.ts",
+    "apps/web/lib/server/analysis/context.ts",
+    "apps/web/lib/server/analysis/orchestrator.ts",
+    "apps/web/lib/server/analysis/runner/openai-runner.ts",
+    "apps/web/lib/server/analysis/universe.test.ts",
+    "apps/web/lib/server/analysis/universe.ts",
+    "apps/web/lib/server/cala/client.ts",
+    "apps/web/lib/server/env.ts",
+    "apps/web/lib/server/llm/structured-output.ts",
+    "apps/web/lib/server/tools/alpaca-tools.ts",
+    "apps/web/lib/server/tools/cala-tools.ts",
+    "apps/web/lib/server/tools/tool-schema.test.ts",
+    "apps/web/package.json",
+    "apps/web/scripts/record-run.ts",
+    "packages/core/src/__fixtures__/golden-state.ts",
+    "packages/core/src/agents.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 994,
+    "cache_creation_tokens": 4010043,
+    "cache_read_tokens": 147872476,
+    "output_tokens": 645991,
+    "api_call_count": 497
+  }
+}
