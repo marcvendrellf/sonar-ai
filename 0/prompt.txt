@@ -57,3 +57,7 @@ commit the two agents and do Portfolio Manager next
 ---
 
 commit it and do Bear/Critic next
+
+---
+
+commit it and do Report Writer next
