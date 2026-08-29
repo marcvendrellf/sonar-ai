@@ -6,7 +6,6 @@ Only unresolved implementation and event questions remain. Concept selection is 
 
 | Question | Next action | Closure condition |
 | --- | --- | --- |
-| Which model/runtime and structured-output method will the five decision agents use? | Check existing project credentials and choose smallest supported model path. | All five decision-agent schemas validate in fixture mode with bounded token and retry limits. |
 | Which deterministic portfolio metrics are required for first demo? | Implement volatility, beta, sector exposure, concentration, stress test, and current-versus-proposed comparison against one fixture. | Risk Officer can explain one hard block with reproducible numbers. |
 
 ## Must close before Cala integration
@@ -48,6 +47,7 @@ Only unresolved implementation and event questions remain. Concept selection is 
 - **Is trading real or simulated?** Closed 2026-08-29: paper money only. Alpaca is restricted to its Paper endpoint. Sonar never submits real-money orders.
 - **What are the primary team lanes?** Closed 2026-08-29: Marc owns frontend work; Josep and Axel focus mainly on agents and data.
 - **What is MVP agent topology?** Closed 2026-08-29 from the supplied architecture recommendation: one code-owned orchestrator, five decision agents (Portfolio Manager, Fundamental Analyst, Market Context Analyst, Risk Officer, Bear/Critic), human approval, then post-decision Communications/Report Writer. Cala relationship tracing is a research capability; Trader is deterministic paper-ledger code.
+- **Which model runtime and structured-output method do agents use?** Closed 2026-08-29: official OpenAI TypeScript SDK with Responses API `responses.parse()` and Zod-derived structured formats. `SONAR_AGENT_MODEL` selects the deployed model. Timeout, token cap, and exact runner-owned retry count are bounded; SDK retries, model tools, and model-controlled routing are disabled.
 - **Does Base UI `base-nova` work with the selected registries?** Closed 2026-08-29: the scaffold, application-shell block, selected third-party registry items, and required primitives compile with the Base UI preset.
 - **Will `@abui/animated-chart` force an incompatible Motion version?** Closed 2026-08-29: the workspace has one Motion 12 dependency, the adapted chart supports reduced motion and stable agent IDs, and the production build passes.
 

@@ -98,7 +98,7 @@ function buildInput(ctx: MarketContextContext): string {
 
 /** Assign deterministic IDs, turning the model draft into a core report. */
 function finalize(draft: MarketContextReportDraft): MarketContextReport {
-  return {
+  return MarketContextReportSchema.parse({
     id: "mrp_main",
     summary: draft.summary,
     drivers: draft.drivers,
@@ -108,7 +108,7 @@ function finalize(draft: MarketContextReportDraft): MarketContextReport {
       id: `clm_mrp_${index}`,
       ...claim,
     })),
-  };
+  });
 }
 
 export const marketContextAnalyst: Agent<

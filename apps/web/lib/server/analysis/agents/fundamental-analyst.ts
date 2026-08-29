@@ -84,7 +84,7 @@ function finalize(
   draft: FundamentalReportDraft,
   ctx: FundamentalContext,
 ): FundamentalReport {
-  return {
+  return FundamentalReportSchema.parse({
     id: `frp_${ctx.instrument.id}`,
     instrumentId: ctx.instrument.id,
     quality: draft.quality,
@@ -96,7 +96,7 @@ function finalize(
       id: `clm_${ctx.instrument.id}_${index}`,
       ...claim,
     })),
-  };
+  });
 }
 
 export const fundamentalAnalyst: Agent<

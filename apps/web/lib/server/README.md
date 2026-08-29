@@ -31,18 +31,18 @@ portfolio + mandate + scenario
 | Path | Responsibility | Status |
 | --- | --- | --- |
 | `env.ts` | Validated, server-only environment (`getServerEnv`, `isOffline`). | ✅ ready |
-| `analysis/orchestrator.ts` | Runs the committee, owns phase transitions + the three gates. | ☐ Phase 3 |
-| `analysis/context.ts` | Builds the **isolated** context pack per stage. | ☐ Phase 3 |
-| `analysis/gates.ts` | Evidence-validation gate · risk gate · human-approval gate. | ☐ Phase 3 |
-| `analysis/trader.ts` | Deterministic paper-ledger mutation (not an agent, not a broker). | ☐ Phase 3 |
+| `analysis/orchestrator.ts` | Runs the committee, owns phase transitions + the three gates. | ✅ Phase 3 |
+| `analysis/context.ts` | Builds the **isolated** context pack per stage. | ✅ Phase 3 |
+| `analysis/gates.ts` | Evidence-validation gate · risk gate · human-approval gate. | ✅ Phase 3 |
+| `analysis/trader.ts` | Deterministic paper-ledger mutation (not an agent, not a broker). | ✅ Phase 3 |
 | `analysis/runner/types.ts` | `AgentRunner` / `AgentDef` — the stub↔OpenAI seam. | ✅ ready |
 | `analysis/runner/stub-runner.ts` | Deterministic runner returning canned fixture outputs. | ✅ ready |
-| `analysis/runner/openai-runner.ts` | Real OpenAI structured-output runner. | ☐ Phase 5 |
-| `analysis/agents/*.ts` | One `AgentDef` per committee stage. | ☐ Phase 3/5 |
+| `analysis/runner/openai-runner.ts` | OpenAI Responses structured-output runner with exact bounded retries. | ✅ ready |
+| `analysis/agents/*.ts` | One `AgentDef` per committee stage. | ✅ Phase 3 |
 | `tools/types.ts` | The closed `ToolName` set + `Tool` / `ToolRegistry`. | ✅ ready |
 | `tools/*.ts` | One file per tool; resolves to risk-engine / Cala / Alpaca / fixture. | ☐ Phase 4 |
-| `llm/openai-client.ts` | Thin OpenAI wrapper (bounded tokens + retries). | ☐ Phase 5 |
-| `llm/structured-output.ts` | Zod → JSON schema · call · parse · validate. | ☐ Phase 5 |
+| `llm/openai-client.ts` | Server-only official OpenAI SDK client; timeout and SDK retries fixed. | ✅ ready |
+| `llm/structured-output.ts` | Zod structured format · Responses call · parse · validate. | ✅ ready |
 | `cala/*.ts` | The only Cala client; normalize + evidence-validate; fixture fallback. | ☐ Phase 4 |
 | `alpaca/*.ts` | The only Alpaca client — **Paper-only**; normalize; fixture fallback. | ✅ portfolio slice |
 
@@ -53,16 +53,19 @@ Fixtures live in [`apps/web/fixtures`](../../fixtures). Route handlers live in
 
 1. **Agents are data, runners are behavior.** An agent is an `AgentDef`
    (stage + instructions + output schema + `buildInput`). The orchestrator
-   constructs one `AgentRunner` — `StubAgentRunner` in Phase 3,
-   `OpenAIAgentRunner` in Phase 5. Nothing else changes when we go live.
+   constructs one `AgentRunner` — `StubAgentRunner` offline or
+   `OpenAIAgentRunner` live. Nothing else changes when switching modes.
 2. **The tool list is closed.** Only the names in `tools/types.ts` are callable.
    No tool submits an order or touches an account. No agent calls another agent —
-   the orchestrator is the only sequencer.
+   the orchestrator is the only sequencer. The current model runner exposes no
+   tools, so model output cannot alter workflow control flow.
 3. **Isolated context.** Each agent receives only its slice of state
    (`analysis/context.ts`), never one giant prompt and never another agent's raw output.
 4. **Every output is validated.** A model output is invalid until its Zod schema
    passes AND every material claim resolves to a known evidence id
-   (`findDanglingEvidenceIds` from `@sonar-ai/core`). Invalid → one bounded retry → fixture fallback.
+   (`findDanglingEvidenceIds` from `@sonar-ai/core`). Model failures use the
+   exact configured retry budget; offline runs select the fixture runner before
+   orchestration starts.
 5. **The three gates, enforced in code (not prompts):**
    evidence gate → risk gate (`evaluateProposal`) → human-approval gate.
    `userDecision` must be `approved` before the trader mutates the ledger.
@@ -92,6 +95,6 @@ Fixtures live in [`apps/web/fixtures`](../../fixtures). Route handlers live in
 
 ## Build order (this lane)
 
-Phase 3 orchestrator + stub agents → Phase 4 tools + adapters → Phase 5 real
-OpenAI agents (one at a time) → Phase 6 API routes. See the repository plan and
+Phase 3 orchestrator + stub agents ✅ → OpenAI Responses runner ✅ → Phase 4
+typed tools + adapters → Phase 6 API routes. See the repository plan and
 `llm-wiki/team-workflow.md` for ownership and branch rules.

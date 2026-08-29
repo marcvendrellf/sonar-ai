@@ -1,20 +1,25 @@
-# `llm` — OpenAI client (Phase 5)
+# `llm` — OpenAI Responses client
 
-The thin wrapper the `OpenAIAgentRunner` uses. All agents run on OpenAI with
-structured outputs + function calling.
+Thin wrapper used by `OpenAIAgentRunner`. Live agents use official `openai`
+TypeScript SDK and Responses API structured outputs.
 
-Planned files:
+Implemented files:
 
 - `openai-client.ts` — constructs the client from `env.ts`
   (`OPENAI_API_KEY`, optional `OPENAI_BASE_URL` / `OPENAI_ORG_ID` /
-  `OPENAI_PROJECT_ID`), applies `SONAR_AGENT_MODEL`, `SONAR_AGENT_MAX_TOKENS`,
-  and `SONAR_AGENT_MAX_RETRIES`.
-- `structured-output.ts` — Zod → JSON schema (via `z.toJSONSchema`), call the
-  model with the schema, parse and validate the result. Invalid → one bounded
-  retry → the orchestrator falls back to the fixture.
+  `OPENAI_PROJECT_ID`). SDK automatic retries are disabled and timeout is
+  bounded by `SONAR_AGENT_TIMEOUT_MS`.
+- `structured-output.ts` — sends one `responses.parse()` request using
+  `zodTextFormat`, disables response storage, and validates parsed output again
+  at the application boundary.
+- `../analysis/runner/openai-runner.ts` — applies model, token, and exact retry
+  settings. It returns only typed output and token usage.
 
 Rules:
 
 - Never expose prompts, credentials, or raw model reasoning past this layer —
   only the validated typed output crosses into the orchestrator.
-- Keep calls bounded and deterministic enough to replay for the demo.
+- No tools or model-selected routing. Code owns stage order, gates, retries, and
+  paper-ledger mutation.
+- `SONAR_OFFLINE=true` rejects live-client construction. Offline runs use
+  `StubAgentRunner`; live model failure does not silently change control flow.

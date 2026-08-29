@@ -79,20 +79,18 @@ The repository is a pnpm workspace monorepo at `github.com/marcvendrellf/sonar-a
 
 shadcn is initialized with the Base UI `base-nova` preset. The application-shell block, selected third-party registry components, and required shadcn primitives are installed. The first fixture-driven dashboard uses the `application-shell1` collapsible sidebar and includes paper-fund metrics, a NAV chart, sourced relationship path, positions table, adapted agent activity feed, agent-work chart, risk outcome, and inspectable decision receipt. `pnpm typecheck`, `pnpm lint`, and `pnpm build` pass.
 
-The dashboard data is presentational fixture data, not a reviewed shared contract or Cala/Alpaca fixture. The MVP runtime remains a plain server-side typed orchestrator with five decision agents plus a post-decision Report Writer; exact prompts and schemas remain implementation work. The Saloon and onboarding remain separate implementation epics. Team direction is recorded: Marc leads the frontend, while Josep and Axel focus mainly on agents and data. Alpaca Paper account and position reads are wired behind a server-only adapter; approved order submission remains gated work.
+The dashboard data is presentational fixture data, not a reviewed Cala/Alpaca fixture. The MVP runtime now has a plain server-side typed orchestrator with isolated stage contexts, deterministic evidence/risk/human gates, a deterministic internal paper ledger, five decision-agent definitions, and a post-decision Report Writer seam. Fixture execution is serial and replayable from fixed timestamps; no model call is required. Live execution uses the official OpenAI TypeScript SDK, Responses API, and Zod structured outputs behind the same `AgentRunner` seam. SDK retries are disabled; code owns the exact bounded retry count, timeout, token cap, stage order, and gates. The runner exposes no tools or model-controlled routing. The Saloon and onboarding remain separate implementation epics. Team direction is recorded: Marc leads the frontend, while Josep and Axel focus mainly on agents and data. Alpaca Paper account and position reads are wired behind a server-only adapter; approved order submission remains outside this orchestration slice.
 
 ## Immediate next actions
 
 1. Agree on the branch policy and assign the remaining ownership areas in the [team workflow](team-workflow.md).
-2. Define and fixture-test the shared contracts in `packages/core`.
+2. Define and fixture-test remaining shared contracts in `packages/core`.
 3. Replace the dashboard's presentational data with a reviewed validated fixture.
 4. Build the fixture-driven Saloon shell and execution trace.
 5. Build onboarding as its own frontend epic.
-6. Implement the typed orchestrator/state store and deterministic portfolio analytics/risk engine.
-7. Build one fixed portfolio decision with sourced relationships and a human approval step.
-8. Test Cala and save a sanitized response fixture.
-9. Add Alpaca-supported U.S. candidate instruments and save sanitized account, position, and order fixtures.
-10. Add Report Writer output only after final decision; connect live Cala and Alpaca only after the full fixture-driven demo works.
+6. Add typed fixture tools and Cala normalization behind existing isolated contexts.
+7. Add Alpaca-supported U.S. candidate instruments and save sanitized account, position, and order fixtures.
+8. Connect the orchestrator to a thin API route only after the offline path remains intact.
 
 ## Success condition
 
