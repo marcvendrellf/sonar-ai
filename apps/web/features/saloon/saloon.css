@@ -32,6 +32,16 @@
   --check-reject: #8a4030;
 }
 
+/* Overview labels identify the selectable agents without exposing state text. */
+.saloon-orb-name {
+  color: #f3e7d6;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 5px rgb(0 0 0 / 85%);
+  white-space: nowrap;
+}
+
 /* Asset failures remain readable over the 3D floor. */
 .saloon-canvas-note {
   color: #f7efe4;

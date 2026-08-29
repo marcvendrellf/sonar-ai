@@ -15,13 +15,34 @@ from mathutils import Vector
 
 # Accepted lighting and bake constants. Keep these values in sync with the
 # committed GLB and EXR by rebuilding through `pnpm --filter web build:saloon-shell`.
-LIGHT_TEMPERATURE_K = 3400
-LIGHT_POSITION = (-2.8, 10.0, 1.0)
-LIGHT_TARGET = (0.0, 0.8, 0.0)
-LIGHT_SIZE_METRES = 6.0
-LIGHT_ENERGY_WATTS = 800.0
-WORLD_COLOR = (0.72, 0.66, 0.58, 1.0)
-WORLD_STRENGTH = 0.22
+OVERHEAD_LAMPS = (
+    {
+        "name": "SaloonLampKey",
+        "temperature": 2850,
+        "position": (-2.4, 8.5, 2.4),
+        "target": (0.0, 0.6, 0.0),
+        "size": 3.6,
+        "energy": 500.0,
+    },
+    {
+        "name": "SaloonLampEast",
+        "temperature": 2600,
+        "position": (4.4, 6.7, -1.8),
+        "target": (0.0, 0.6, 0.0),
+        "size": 2.6,
+        "energy": 170.0,
+    },
+    {
+        "name": "SaloonLampWest",
+        "temperature": 3000,
+        "position": (-4.3, 5.8, -2.6),
+        "target": (0.0, 0.6, 0.0),
+        "size": 2.4,
+        "energy": 120.0,
+    },
+)
+WORLD_COLOR = (0.05, 0.04, 0.06, 1.0)
+WORLD_STRENGTH = 0.04
 CYCLES_SAMPLES = 512
 DIFFUSE_BOUNCES = 4
 ATLAS_SIZE = 2048
@@ -347,17 +368,18 @@ def create_light_rig(scene: bpy.types.Scene) -> None:
     background.inputs["Strength"].default_value = WORLD_STRENGTH
     scene.world = world
 
-    light_data = bpy.data.lights.new(name="SaloonAreaKey", type="AREA")
-    light_data.energy = LIGHT_ENERGY_WATTS
-    light_data.shape = "DISK"
-    light_data.size = LIGHT_SIZE_METRES
-    light_data.color = blackbody_rgb(LIGHT_TEMPERATURE_K)
-    light_object = bpy.data.objects.new(name="SaloonAreaKey", object_data=light_data)
-    scene.collection.objects.link(light_object)
-    light_object.location = LIGHT_POSITION
-    light_object.rotation_euler = (
-        Vector(LIGHT_TARGET) - Vector(LIGHT_POSITION)
-    ).to_track_quat("-Z", "Y").to_euler()
+    for lamp in OVERHEAD_LAMPS:
+        light_data = bpy.data.lights.new(name=lamp["name"], type="AREA")
+        light_data.energy = lamp["energy"]
+        light_data.shape = "DISK"
+        light_data.size = lamp["size"]
+        light_data.color = blackbody_rgb(lamp["temperature"])
+        light_object = bpy.data.objects.new(name=lamp["name"], object_data=light_data)
+        scene.collection.objects.link(light_object)
+        light_object.location = lamp["position"]
+        light_object.rotation_euler = (
+            Vector(lamp["target"]) - Vector(lamp["position"])
+        ).to_track_quat("-Z", "Y").to_euler()
 
 
 def prepare_bake_materials(
@@ -519,11 +541,11 @@ def main() -> None:
     print(f"Triangles: {triangles}")
     print(f"UV layers: {uv_report}")
     print(f"Atlas: {ATLAS_SIZE}x{ATLAS_SIZE}, half-float OpenEXR, margin {BAKE_MARGIN_PX}px")
-    print(
-        "Light: "
-        f"{LIGHT_TEMPERATURE_K}K, position {LIGHT_POSITION}, size {LIGHT_SIZE_METRES}m, "
-        f"energy {LIGHT_ENERGY_WATTS}W, world {WORLD_STRENGTH}"
+    lamp_report = "; ".join(
+        f"{lamp['temperature']}K at {lamp['position']}, {lamp['size']}m, {lamp['energy']}W"
+        for lamp in OVERHEAD_LAMPS
     )
+    print(f"Lamps: {lamp_report}; world {WORLD_STRENGTH}")
     print(f"Cycles: {CYCLES_SAMPLES} samples, {DIFFUSE_BOUNCES} diffuse bounces")
     print(f"GLB: {FINAL_GLB} ({FINAL_GLB.stat().st_size} bytes)")
     print(f"EXR: {FINAL_EXR} ({FINAL_EXR.stat().st_size} bytes)")

@@ -3,8 +3,8 @@
  * for the Cycles bake. Run the complete pipeline with
  * `pnpm --filter web build:saloon-shell`.
  *
- * The accepted scene is an open clay floor with no room shell: one broad
- * creamy ground, a darker cream table, and six matching seat plinths.
+ * The accepted scene is a dark open floor with no room shell: one broad ground,
+ * a dark clay table, and six U-shaped chairs facing it.
  *
  * This step owns geometry only. Blender creates the base and lightmap UV sets,
  * bakes the static illumination, and exports the shipped GLB and EXR. Preview
@@ -48,17 +48,19 @@ const ROOM = {
   baseDepth: 0.18,
 }
 
-const SEAT_RADIUS = 2.55
+const CHAIR_RADIUS = 3.15
 const SEATS = 6
 
-/** Table slab, and the height the orbs rest at. */
+/** Table slab and the shared height of every U-shaped chair rail. */
 const TABLE_TOP = 0.98
 const TABLE_BOTTOM = 0.38
-const SEAT_BOTTOM = 0.6
+const CHAIR_BOTTOM = 0.08
+const CHAIR_TOP = 0.88
 
 const parts = []
 
-function add(material, geometry, { x = 0, y = 0, z = 0 } = {}) {
+function add(material, geometry, { x = 0, y = 0, z = 0, rotationY = 0 } = {}) {
+  geometry.applyMatrix4(new Matrix4().makeRotationY(rotationY))
   geometry.applyMatrix4(new Matrix4().makeTranslation(x, y, z))
   // Blender authors both UV sets after import. Dropping source UVs keeps every
   // merged geometry attribute-compatible. Rounded boxes come back non-indexed
@@ -68,7 +70,7 @@ function add(material, geometry, { x = 0, y = 0, z = 0 } = {}) {
   parts.push({ material, geometry: geometry.index ? geometry.toNonIndexed() : geometry })
 }
 
-/** A rounded box, the diorama's only wall and floor primitive. */
+/** A rounded box for the floor, chair rails, and compact geometry. */
 const slab = (w, h, d, radius = 0.35) => new RoundedBoxGeometry(w, h, d, 2, radius)
 
 /**
@@ -112,20 +114,38 @@ add("Plinth", puck(1.45, 0, TABLE_BOTTOM + 0.02, 0.08, 48))
 
 for (let seat = 0; seat < SEATS; seat += 1) {
   const angle = (seat / SEATS) * Math.PI * 2 - Math.PI / 2
-  const x = Math.cos(angle) * SEAT_RADIUS
-  const z = Math.sin(angle) * SEAT_RADIUS
-  add("Table", puck(0.62, SEAT_BOTTOM, TABLE_TOP, 0.1, 36), { x, z })
-  add("Plinth", puck(0.5, 0, SEAT_BOTTOM + 0.02, 0.07, 28), { x, z })
+  const x = Math.cos(angle) * CHAIR_RADIUS
+  const z = Math.sin(angle) * CHAIR_RADIUS
+  const rotationY = Math.PI / 2 - angle
+  const height = CHAIR_TOP - CHAIR_BOTTOM
+  const y = CHAIR_BOTTOM + height / 2
+
+  // One open U per agent: equal-height back and arms, with the opening facing
+  // the table. There is no pedestal or circular seat, so the silhouette cannot
+  // read as a mushroom from the overview camera.
+  add("Plinth", slab(1.5, height, 0.28, 0.1), { x, y, z, rotationY })
+  for (const side of [-1, 1]) {
+    const localX = side * 0.61
+    const localZ = -0.52
+    const worldX = x + Math.cos(rotationY) * localX + Math.sin(rotationY) * localZ
+    const worldZ = z - Math.sin(rotationY) * localX + Math.cos(rotationY) * localZ
+    add("Plinth", slab(0.28, height, 0.78, 0.1), {
+      x: worldX,
+      y,
+      z: worldZ,
+      rotationY,
+    })
+  }
 }
 
 // ------------------------------------------------------------------ merge/write
 
 /** Preview colours only. `saloon-shell.tsx` owns the shipped material values. */
 const colours = {
-  Sand: 0xc4bdb2,
-  Floor: 0xd8d2c8,
-  Table: 0x6c6257,
-  Plinth: 0x514a43,
+  Sand: 0x0d0f12,
+  Floor: 0x17191d,
+  Table: 0x403832,
+  Plinth: 0x2d2928,
 }
 
 const scene = new Scene()
