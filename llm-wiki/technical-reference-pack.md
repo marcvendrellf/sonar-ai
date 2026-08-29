@@ -50,7 +50,88 @@ A force graph looks energetic but may move labels, hide the important path, or p
 
 ### Zustand instead of a large workflow framework
 
-The MVP has seven named phases but one linear demo. A small Zustand store with a typed `FundPhase` is enough. Add XState only if retries, branching, cancellation, and parallel operations become hard to reason about.
+The MVP has one linear committee review. A small Zustand store with a typed `FundPhase` is enough. Add XState only if retries, branching, cancellation, and parallel operations become hard to reason about.
+
+## MVP agent architecture
+
+Source basis: [MVP agent-structure direction](../raw-sources/agent-structure-mvp-direction-2026-08-29.md) and [cash-only MVP direction](../raw-sources/cash-only-mvp-direction-2026-08-29.md). Use five decision agents plus one post-decision writer under one code-owned orchestrator. This is an investment committee, not a swarm.
+
+```text
+portfolio + mandate + scenario
+              |
+       AnalysisOrchestrator
+        /        |        \
+Fundamental  Market      Risk
+ Analyst     Context     Officer
+        \        |        /
+        Portfolio Manager proposal
+                  |
+            Bear / Critic
+                  |
+        Portfolio Manager revision
+                  |
+          human approve/reject
+             /            \
+       paper ledger    Report Writer
+```
+
+Implementation split:
+
+- `Portfolio Manager` owns capital allocation and revision. It receives summaries and portfolio state; it does not browse broadly, calculate risk math, or invent ratios.
+- `Fundamental Analyst` evaluates business, financial strength, valuation, catalysts, and risks from an isolated company evidence pack.
+- `Market Context Analyst` evaluates news, sector, macro, competitors, regulation, earnings calendar, and material events from an isolated context pack.
+- `Risk Officer` calls deterministic analytics and can hard-block `POSITION_LIMIT_BREACH`, `RISK_MANDATE_BREACH`, or `DATA_INVALID`. It cannot be overridden by Portfolio Manager.
+- `Bear/Critic` receives proposal, evidence, research summaries, context, and risk report. It flags uncertainty and failure scenarios but cannot veto.
+- `Communications/Report Writer` runs only after human decision. It formats decision record, internal report, and permitted eToro-facing copy. It cannot mutate allocation.
+
+Cala relationship tracing is a sourced tool/data capability used by research stages, not a separate agent. eToro remains read-only. Trader is deterministic paper-ledger code, not an agent and not a broker client.
+
+For MVP, use plain TypeScript orchestration rather than LangGraph, AutoGen, a queue, distributed services, or autonomous background loops. Persist one `InvestmentCommitteeState` per run. Permit fixture replay and one bounded retry at external/model stages. Keep stage boundaries replaceable for future workers without changing UI contracts.
+
+The orchestrator may run Fundamental Analyst and Market Context Analyst in parallel after asset selection. Risk waits for proposed actions; Bear/Critic waits for risk output; Report Writer waits for human decision.
+
+The browser receives stage events and final records, never prompts, credentials, hidden chain-of-thought, or uncited prose. Agent messages are rendered summaries derived from typed outputs.
+
+### Isolated agent context
+
+Do not give every agent one giant prompt:
+
+- Fundamental: mandate, company data, filings, previous thesis, research tools.
+- Market Context: portfolio holdings, selected assets, current events, sector and macro evidence.
+- Risk: portfolio state, proposed changes, mandate, deterministic analytics tools.
+- Bear/Critic: recommendation, supporting/opposing evidence, fundamental report, context report, risk report.
+- Portfolio Manager: structured summaries from all stages plus portfolio and mandate.
+- Report Writer: final decision record, approval, evidence, and portfolio comparison only.
+
+### Authority model and MVP tools
+
+Do not use vote counting. Each role owns a domain:
+
+| Role | Authority | Cannot do |
+| --- | --- | --- |
+| Portfolio Manager | Propose and revise allocation | Override Risk Officer or approve its own exception |
+| Fundamental Analyst | Evaluate asset quality and valuation | Set portfolio sizing |
+| Market Context Analyst | Explain material external context | Turn one macro fact into an automatic trade |
+| Risk Officer | Hard-block invalid data or mandate breaches | Approve a breach |
+| Bear/Critic | Flag weak assumptions and failure scenarios | Veto recommendation |
+| Report Writer | Explain approved decision | Influence allocation |
+
+Expose small typed tools only:
+
+```text
+get_portfolio_snapshot()
+get_price_history(instrument)
+get_company_fundamentals(instrument)
+search_company_information(query)
+calculate_portfolio_metrics(portfolio)
+calculate_asset_exposure(portfolio, instrument)
+run_stress_test(portfolio, scenario)
+compare_portfolio_scenarios(current, proposed)
+get_existing_thesis(instrument)
+save_recommendation(recommendation)
+```
+
+`search_company_information` and relationship tracing use Cala or sanitized fixtures. Price data uses read-only eToro adapter or fixture. `save_recommendation` writes internal state only. No tool submits orders, changes brokerage accounts, or lets one agent call another directly.
 
 ## Core packages
 
@@ -99,10 +180,16 @@ Browser
 
 Server
   /api/analyze-event
+    AnalysisOrchestrator
+      FundamentalAnalyst
+      MarketContextAnalyst
+      RiskOfficer
+      BearCritic
+      PortfolioManager
+      ReportWriter
     CalaClient
     ResponseNormalizer
     EvidenceValidator
-    HypothesisGenerator
     RiskEngine
     FixtureFallback
   /api/market-data
@@ -119,7 +206,19 @@ Define one normalized response before building UI:
 
 ```text
 Analysis
-  event
+  run
+  portfolioSnapshot
+  mandate
+  materialEvents[]
+  fundamentalReports[]
+  marketContext
+  riskReport
+  proposedActions[]
+  bearCase
+  finalRecommendation
+  userDecision
+  report
+  activities[]
   nodes[]
   edges[]
   evidence[]
@@ -134,6 +233,12 @@ Analysis
 
 Each edge and thesis claim carries one or more `evidenceIds`. Every timestamp includes its source and whether the event is live, historical, or synthetic.
 
+Each stage output carries `runId`, `stage`, `status`, `startedAt`, `completedAt`, and a stable output ID. Failed or skipped stages remain visible in the receipt. A model output is invalid until its Zod schema passes and all material claims resolve to known evidence IDs. `userDecision` is required before paper-ledger mutation.
+
+Use one `InvestmentCommitteeState` object enriched by each stage, not prose passed from prompt to prompt. Keep deterministic analytics outputs separate from model interpretation.
+
+MVP starts with `portfolioSnapshot.cash = €1,000` and zero invested positions. Candidate instruments are a separate five-asset research universe. Current-versus-proposed comparison therefore compares all-cash baseline against proposed allocation and retained cash.
+
 ## Fund state model
 
 Use this explicit union:
@@ -142,7 +247,9 @@ Use this explicit union:
 idle
 observing
 tracing
+proposing
 challenging
+awaiting_approval
 executing
 blocked
 complete
@@ -260,14 +367,14 @@ Workspace rules:
 1. Scaffold the pnpm workspace, initialize shadcn with `base-nova`, inspect each registry component, and define validated shared contracts plus one fixture.
 2. Build the four-scene onboarding flow as its own Marc-owned feature.
 3. Build static Saloon and dashboard shells against reviewed fixture contracts.
-4. Implement typed agent events, sourced evidence, competing theses, and explicit phase transitions.
+4. Implement typed `AnalysisOrchestrator`, `InvestmentCommitteeState`, isolated agent outputs, sourced evidence, and explicit phase transitions.
 5. Make the sphere respond to idle, tracing, and complete.
 6. Render one fixed relationship graph from a fixture and animate the active path.
-7. Implement the pure risk engine and internal paper-portfolio rebalance.
-8. Connect the Saloon trace, recent-trades table, and decision receipt to typed records.
+7. Implement deterministic portfolio metrics, Risk Officer hard blocks, and human approval gate.
+8. Connect the Saloon trace, recommendation comparison, approval control, and decision receipt to typed records.
 9. Add server-side Cala and read-only eToro adapters behind fixture fallbacks.
 10. Add Shader Gradient, the active-agent chart, and final polish only after the full three-minute sequence works.
 
 ## Cut list if time runs short
 
-Cut postprocessing first, then the full seven-state sphere, then the live orb, then the active-agent chart, then interactive graph dragging. Keep a static price chart if needed. Never cut source inspection, the deterministic risk rejection, the fixture fallback, the Saloon disagreement, or the decision receipt.
+Cut autonomous loops, framework integration, postprocessing, then full sphere state set, then live orb, then active-agent chart, then interactive graph dragging. Keep a static price chart if needed. Never cut source inspection, deterministic risk rejection, fixture fallback, Bear/Critic challenge, human approval, or decision receipt.

@@ -66,7 +66,7 @@ Use `@23rd/shader-gradient` behind a nearly empty full-screen composition.
 
 Copy:
 
-- Eyebrow: `An autonomous paper fund`
+- Eyebrow: `An agentic paper fund`
 - Headline: `It does not trade the headline.`
 - Reveal: `It trades the relationships behind it.`
 - Primary action: `Initialize the fund`
@@ -78,6 +78,7 @@ Use `@abui/text-gradient` for one short status such as `Establishing mandate...`
 Use shadcn Cards and radio or toggle controls for demonstration policies:
 
 - initial paper NAV;
+- starting allocation: €1,000 cash and 0% invested exposure;
 - maximum position exposure;
 - maximum sector exposure;
 - minimum cash;
@@ -87,22 +88,22 @@ Provide one recommended demo preset. Avoid consumer labels such as conservative,
 
 ### Scene 3: Meet the agents
 
-Introduce six agents:
+Introduce five decision agents and one post-decision writer. Roster status comes from typed orchestrator events, not simulated background workers:
 
 | Agent | Responsibility | Output |
 | --- | --- | --- |
-| Scout | Reads the prepared event and relevant news | Event brief |
-| Cartographer | Uses Cala to trace entities and relationships | Sourced graph |
-| Analyst | Builds the bull thesis | Evidence-linked case |
-| Skeptic | Builds the bear thesis and attacks assumptions | Counter-case |
-| Marshal | Enforces deterministic risk limits | Pass, resize, or reject |
-| Trader | Applies approved paper orders | Decision receipt |
+| Portfolio Manager | Weighs research, portfolio, and risk; revises after critique | Allocation proposal |
+| Fundamental Analyst | Reviews business, financial strength, valuation, and catalysts | Fundamental report |
+| Market Context Analyst | Reviews news, sector, macro, competitors, and regulation | Context report |
+| Risk Officer | Runs deterministic analytics and hard-blocks breaches | Risk report |
+| Bear/Critic | Attacks recommendation and identifies failure scenarios | Counter-case |
+| Report Writer | Formats approved decision after human review | Internal report |
 
 Adapt `@7ovr/activity-1` into an agent roster. Each row shows name, role, status, and current task. Use local abstract avatars rather than stock-person photos.
 
 ### Scene 4: Enter the Saloon
 
-Show the agents online, the mandate locked, and the initial paper portfolio ready. The action is `Enter the Saloon`.
+Show committee online, mandate locked, and initial paper portfolio ready. The action is `Start portfolio review`.
 
 ### Motion acceptance
 
@@ -118,7 +119,7 @@ Show the agents online, the mandate locked, and the initial paper portfolio read
 
 ### Purpose
 
-The Saloon makes multi-agent work legible. It answers:
+The Saloon makes staged analysis legible. It answers:
 
 - Who is working?
 - What are they doing?
@@ -142,7 +143,7 @@ The Saloon makes multi-agent work legible. It answers:
 
 ### Chat behavior
 
-The Saloon chat is an execution trace with human-readable messages. It is not six agents generating filler.
+The Saloon chat is an execution trace with human-readable messages. It is not autonomous agents generating filler. One orchestrator emits messages only when a stage produces an observable typed result.
 
 Only add a message when an observable event occurs:
 
@@ -150,8 +151,10 @@ Only add a message when an observable event occurs:
 - a relationship was added;
 - a thesis claim was created;
 - a contradiction was found;
-- a risk check changed an order;
-- a paper trade executed.
+- a risk check blocked or resized an action;
+- Bear/Critic identified a failure scenario;
+- human approval was recorded;
+- a paper allocation was applied.
 
 Every material message has a source badge or a system badge. Clicking a source badge opens a Sheet with publisher, URL, observation time, and the graph edge it supports.
 
@@ -166,6 +169,7 @@ Use semantic Badge variants backed by CSS variables:
 - tracing;
 - debating;
 - checking risk;
+- awaiting approval;
 - executing;
 - blocked;
 - complete.
@@ -203,17 +207,17 @@ Recent-trade columns:
 - risk result;
 - decision receipt.
 
-Use a Sheet for trade details. The receipt contains source evidence and the rejected or resized alternative order.
+Use a Sheet for recommendation details. The receipt contains source evidence, current-versus-proposed metrics, approval state, and rejected or resized alternative actions.
 
 ### Most active agents
 
 Use `@abui/animated-chart` for work completed by agent:
 
-- sources read;
+- assets researched;
 - relationships traced;
-- claims challenged;
-- risk checks run;
-- paper orders handled.
+- risks surfaced;
+- proposals challenged;
+- decisions approved.
 
 Do not use the animated column chart for prices. It is categorical, not a time series.
 
@@ -224,6 +228,19 @@ Place the adapted activity feed beside recent decisions. A click opens the relev
 ### Relationship view
 
 Keep React Flow for the sourced event-to-position path. Do not replace it with the activity chart. Animate only the path currently selected.
+
+### Recommendation review
+
+Make human approval visible and explicit. Show:
+
+- current versus proposed allocation;
+- volatility, beta, sector exposure, concentration, and stress-test deltas;
+- evidence IDs behind each material action;
+- Risk Officer hard blocks and resize explanation;
+- Bear/Critic severity, strongest counterargument, and failure scenarios;
+- `Review reasoning`, `Approve paper action`, and `Reject recommendation` controls.
+
+Disable approval when required evidence or risk output is invalid. Report Writer appears only after approval or rejection and receives final decision state, never live proposal state.
 
 ## Background and orb choices
 
@@ -315,10 +332,11 @@ Do not expose a long sidebar in the first version. The three-panel composition a
 A first-time viewer should understand this sequence without explanation:
 
 1. the fund has a mandate;
-2. several agents are working;
-3. Cala supplies the relationship evidence;
-4. agents disagree before acting;
-5. risk rules can block an order;
-6. every paper trade has a receipt.
+2. specialized committee agents work in separate domains;
+3. Cala supplies relationship evidence;
+4. Portfolio Manager weighs research and risk;
+5. Bear/Critic challenges recommendation;
+6. human approval precedes paper action;
+7. every decision has a receipt and report.
 
 If the screen communicates only "many agents are typing," the Saloon has failed.

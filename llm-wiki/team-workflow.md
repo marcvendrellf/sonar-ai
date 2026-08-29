@@ -23,10 +23,13 @@ Ownership still needed: `packages/core`, `packages/risk-engine`, Cala integratio
 
 ### Josep and Axel
 
-- Agent outputs are typed events, evidence-linked claims, proposed orders, and decision receipts. They are not free-form chat transcripts.
+- MVP agent runtime is one code-owned server-side `AnalysisOrchestrator` with five decision agents: Portfolio Manager, Fundamental Analyst, Market Context Analyst, Risk Officer, and Bear/Critic. Communications/Report Writer runs only after human decision. This is not six always-running services.
+- Agent outputs are typed reports, evidence-linked claims, portfolio actions, approval records, and decision receipts. They are not free-form chat transcripts.
+- Fundamental and Market Context agents receive isolated evidence packs. Risk Officer calls deterministic analytics and can hard-block. Bear/Critic flags uncertainty but cannot veto. Report Writer cannot influence allocation.
+- Portfolio Manager proposes and revises sizing; it does not calculate risk manually. Cala relationship tracing is a research capability, not a separate agent. Trader is deterministic paper-ledger code.
 - Every material graph edge and thesis claim includes evidence IDs.
-- Analyst and Skeptic can disagree while citing the same evidence.
-- Marshal calls the pure deterministic risk engine. A model cannot approve its own exception.
+- Fundamental/Market Context reports can support different conclusions while citing the same evidence; Bear/Critic challenges proposal without veto power.
+- Risk Officer calls the pure deterministic risk engine. A model cannot approve its own exception.
 - Cala and eToro credentials remain on the server.
 - eToro is read-only unless an official paper-trading interface is verified.
 - Sonar simulates orders internally and never submits real-money orders.
@@ -65,7 +68,7 @@ Done means the flow works with keyboard and pointer input, supports replay and r
 
 Primary lane: Josep and Axel. Assign one owner per issue.
 
-Deliver the fixture-first event flow, Cala normalization, evidence graph, competing theses, typed activity events, and explicit phase transitions.
+Deliver the fixture-first portfolio-review flow, typed `AnalysisOrchestrator`, isolated agent contexts, Cala normalization, evidence graph, deterministic portfolio comparison, adversarial critique, typed activity events, human approval, and explicit phase transitions. Do not add a workflow framework or autonomous loop for MVP.
 
 ### Epic 3: Saloon integration
 
@@ -75,11 +78,11 @@ Marc owns the interface. Josep and Axel own the events and evidence records it c
 
 The data lane owns the read-only eToro adapter and price fixtures. The risk-engine owner owns deterministic pass, resize, and reject results. Marc owns portfolio and receipt presentation.
 
-Done means one paper order is accepted and another is resized or rejected. No path can submit a live order.
+Done means one recommendation is approved by a human, one action is accepted, and another is resized or rejected by deterministic checks. No path can submit a live order.
 
 ### Epic 5: demo integration and lock
 
-Freeze the event, five paper positions, Cala fixture, eToro price fixture, three-minute script, and offline mode. Run the production build on the presentation laptop.
+Freeze the €1,000 all-cash baseline, five-asset candidate universe, Cala fixture, eToro price fixture, three-minute script, and offline mode. Run the production build on the presentation laptop.
 
 ## Branch proposal
 
@@ -120,7 +123,7 @@ apps/
       saloon/page.tsx
       dashboard/page.tsx
       decisions/[id]/page.tsx
-      api/analyze-event/route.ts
+      api/analyze-event/route.ts       # invokes one typed committee run
       api/market-data/route.ts
     features/
       onboarding/
@@ -136,7 +139,14 @@ apps/
       client/
       server/
         analysis/
+          orchestrator.ts
           agents/
+            portfolio-manager.ts
+            fundamental-analyst.ts
+            market-context.ts
+            risk-officer.ts
+            bear-critic.ts
+            report-writer.ts
         cala/
         etoro/               # read-only adapter
       demo/
@@ -167,6 +177,7 @@ Folder rules:
 - `packages/risk-engine` stays pure and consumes plain values from `packages/core`.
 - `lib/server/cala` is the only Cala client location.
 - `lib/server/etoro` is the only eToro integration location and exposes read-only normalized data.
+- `lib/server/analysis` owns orchestrator and agent stage boundaries. Agent contexts stay isolated and outputs use Zod schemas.
 - Route handlers stay thin.
 - Keep unit tests beside the module they test. Reserve `tests/e2e` for complete flows.
 
@@ -186,5 +197,6 @@ Before review:
 - list contract and fixture changes;
 - show reduced-motion and keyboard checks for UI work;
 - show evidence-link and deterministic-risk tests for agent work;
+- show human-approval gate and post-decision Report Writer ordering;
 - prove eToro code cannot submit orders;
 - update the wiki when architecture, scope, ownership, or demo behavior changes.

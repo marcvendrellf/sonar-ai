@@ -2,7 +2,7 @@
 
 ## Final objective
 
-Build Sonar AI (codenamed "Agent Fund" during concept selection) for the {Tech: Europe} x Cala Summer Lock-In. It is an autonomous paper hedge fund that traces source-linked relationships behind events before changing a simulated portfolio. The repository lives at `github.com/marcvendrellf/sonar-ai` (private).
+Build Sonar AI (codenamed "Agent Fund" during concept selection) for the {Tech: Europe} x Cala Summer Lock-In. It is an agentic paper hedge fund that traces source-linked relationships behind events, proposes allocation changes, and waits for human approval before changing a simulated portfolio. The repository lives at `github.com/marcvendrellf/sonar-ai` (private).
 
 The concept decision is final. The brief permits teams to build whatever they want, and the user reconfirmed Sonar AI after a temporary pivot. Do not restart ideation or reintroduce discarded concepts unless the user explicitly asks.
 
@@ -86,6 +86,9 @@ Treat Cala product-page statements as vendor claims until an API fixture confirm
 - Keep eToro behind a read-only adapter. Sonar simulates orders internally unless an official paper-trading interface is verified.
 - Validate server responses and fixtures with Zod.
 - Keep the risk engine pure and independent from React.
+- For hackathon MVP, use one code-owned server-side `AnalysisOrchestrator` with five decision agents: Portfolio Manager, Fundamental Analyst, Market Context Analyst, Risk Officer, and Bear/Critic. Add Communications/Report Writer only after human decision. Do not add autonomous loops, agent-to-agent free-form chat, or a workflow framework before the fixture-driven demo works.
+- Portfolio Manager owns allocation and revision, not research or manual risk math. Fundamental and Market Context agents receive isolated evidence packs. Risk Officer calls deterministic analytics and can hard-block mandate, data, or concentration breaches. Bear/Critic flags uncertainty but cannot veto. Report Writer cannot influence allocation.
+- Cala relationship tracing is a sourced research capability, not a separate agent. eToro remains read-only; simulated orders require explicit human approval and internal paper-ledger application.
 
 Selected registries:
 

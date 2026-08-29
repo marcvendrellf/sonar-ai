@@ -55,3 +55,19 @@ Made onboarding a standalone epic. Proposed one issue or coherent feature per br
 The user reconfirmed the Sonar AI hedge-fund direction. The maintained wiki now gives new clones one active product path.
 
 Added eToro as a read-only market or reference-data integration, subject to official capability verification. Paper money remains mandatory. Sonar simulates orders internally and cannot submit real-money orders, deposits, withdrawals, or brokerage-account instructions. Recorded the event's broad message: `Build whatever you want, you might just leave with the MVP from your next startup and some cool prizes!`
+
+## [2026-08-29] architecture | MVP agent structure provisionalized
+
+The user asked for the intended agent structure to drive wiki and implementation decisions while respecting hackathon MVP limits. No diagram, role list, or topology details were included in the message, so the exact structure remains open.
+
+Until that structure is supplied, the docs use the existing Scout, Cartographer, Analyst, Skeptic, Marshal, and Trader cast as six typed stages inside one server-side `AnalysisOrchestrator`. Analyst and Skeptic use bounded model calls over one evidence pack; Cartographer, Marshal, and Trader remain adapter-backed or deterministic. Autonomous loops, agent-to-agent filler chat, queues, and workflow frameworks are cut from MVP scope.
+
+## [2026-08-29] architecture | Supplied committee structure adopted
+
+The user supplied a concrete hackathon architecture recommendation: one code-owned orchestrator, five decision agents (Portfolio Manager, Fundamental Analyst, Market Context Analyst, Risk Officer, and Bear/Critic), human approval, then a Communications/Report Writer. The prior Scout/Cartographer/Marshal/Trader stage model is superseded.
+
+Sonar adapts this structure to its existing boundaries. Cala relationship tracing is a sourced research capability, Risk Officer owns deterministic hard blocks, Trader is internal paper-ledger code, and eToro remains read-only. MVP cuts swarms, autonomous loops, distributed services, price forecasting, reinforcement learning, multiple MCP servers, and automatic execution.
+
+## [2026-08-29] demo | Cash-only starting state
+
+The user changed the demo setup: start with €1,000 cash and ask Sonar AI to allocate it, instead of showing an already-invested portfolio with €1,000 spare cash. The MVP now uses zero invested exposure, a separate five-asset candidate universe, current-versus-proposed comparison, human approval, and internal paper actions.

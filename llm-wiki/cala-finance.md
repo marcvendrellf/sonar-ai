@@ -40,6 +40,8 @@ Cala should provide the evidence graph, not a single decorative metric. The user
 
 Start with MCP if it exposes the required fields quickly. Switch to the API when the UI needs stable typed responses or deterministic caching. Save sanitized response fixtures for the demo fallback.
 
+For MVP, Cala is a research capability used by Fundamental Analyst and Market Context Analyst through typed tools. It is not a standalone conversational agent and does not decide allocation. Normalize its source-linked relationships into the shared `InvestmentCommitteeState`; never pass uncited Cala prose into Portfolio Manager.
+
 ## Unverified points
 
 Cala's public page does not confirm:

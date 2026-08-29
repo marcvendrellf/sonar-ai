@@ -12,3 +12,5 @@ out/
 # Misc
 .DS_Store
 *.log
+
+graphify-out
