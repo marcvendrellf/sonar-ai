@@ -8,7 +8,7 @@ import {
   type RiskReport,
 } from "@sonar-ai/core";
 import { z } from "zod";
-import { ClaimDraftSchema, untrustedBlock, type Agent } from "./types";
+import { ClaimDraftSchema, HEDGE_FUND_PROTOCOL, untrustedBlock, type Agent } from "./types";
 
 /**
  * Bear/Critic — attacks the Portfolio Manager's proposal and names what could
@@ -42,7 +42,9 @@ export type BearCaseDraft = z.infer<typeof BearCaseDraftSchema>;
 
 // ── First-draft prompt (Axel owns the final wording) ─────────────────────────
 
-const INSTRUCTIONS = `You are the Bear/Critic on an investment committee — the designated red team. Your
+const INSTRUCTIONS = `${HEDGE_FUND_PROTOCOL}
+
+You are the Bear/Critic on an investment committee — the designated red team. Your
 job is to attack the Portfolio Manager's proposal so its weaknesses surface here,
 cheaply, instead of later in the P&L. You have NO veto: you cannot block, resize,
 or change the allocation. Your only power is being right.
@@ -95,7 +97,7 @@ function buildInput(ctx: BearCriticContext): string {
 
   const fundamentals =
     ctx.fundamentalReports
-      .map((r) => `- ${r.instrumentId}: ${r.valuation}`)
+      .map((r) => `- ${r.instrumentId}: quality ${r.quality}; valuation ${r.valuation}; financial strength ${r.financialStrength}; risks ${r.risks.join("; ") || "none"}`)
       .join("\n") || "(none)";
 
   const risk = ctx.riskReport
@@ -112,7 +114,7 @@ function buildInput(ctx: BearCriticContext): string {
     `Recommendation under review (revision ${ctx.recommendation.revision}, confidence ${ctx.recommendation.confidence}):\n${actions}`,
     `Portfolio Manager's case:\n${pmCase}`,
     `Fundamental valuation notes:\n${fundamentals}`,
-    `Market context:\n${ctx.marketContext ? ctx.marketContext.summary : "(none)"}`,
+    `Market context:\n${ctx.marketContext ? [ctx.marketContext.summary, `drivers: ${ctx.marketContext.drivers.join("; ")}`, `sector: ${ctx.marketContext.sectorView}`, `macro: ${ctx.marketContext.macroView}`].join("\n") : "(none)"}`,
     `Risk Officer report:\n${risk}`,
     `Evidence you may cite:\n${untrustedBlock("EVIDENCE", evidenceList)}`,
     `Produce the bear case as JSON matching the required schema. Every claim.evidenceIds entry MUST come from the evidence list above.`,

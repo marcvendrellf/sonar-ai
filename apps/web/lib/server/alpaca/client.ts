@@ -1,7 +1,11 @@
 import "server-only";
+import { z } from "zod";
 
 import {
   AlpacaAccountResponseSchema,
+  AlpacaAssetsResponseSchema,
+  AlpacaBarSchema,
+  AlpacaQuoteSchema,
   AlpacaOrderResponseSchema,
   AlpacaPaperOrderRequestSchema,
   AlpacaPositionsResponseSchema,
@@ -9,6 +13,8 @@ import {
   type AlpacaOrderResponse,
   type AlpacaPaperOrderRequest,
   type AlpacaPaperPortfolioSnapshot,
+  type AlpacaBar,
+  type AlpacaQuote,
 } from "@sonar-ai/core/alpaca";
 
 import type { AlpacaPaperConfig } from "./config";
@@ -33,6 +39,24 @@ export class AlpacaPaperClient {
     ]);
 
     return normalizeAlpacaPaperPortfolio(account, positions, { source: "live" });
+  }
+
+  async listTradableAssets() {
+    const assets = await this.request("/assets?status=active&tradable=true", AlpacaAssetsResponseSchema);
+    return assets.filter((asset) => asset.tradable);
+  }
+
+  async getLatestQuotes(symbols: readonly string[]): Promise<AlpacaQuote[]> {
+    if (symbols.length === 0) return [];
+    const payload = await this.request(`/stocks/quotes/latest?symbols=${encodeURIComponent(symbols.join(","))}`, z.record(z.string(), z.object({ bp: z.number().nonnegative(), ap: z.number().nonnegative(), t: z.string().datetime({ offset: true }) })));
+    return Object.entries(payload).map(([symbol, quote]) => AlpacaQuoteSchema.parse({ symbol, bidPrice: quote.bp, askPrice: quote.ap, timestamp: quote.t }));
+  }
+
+  async getPriceHistory(symbol: string, start: string, end?: string, limit = 100): Promise<AlpacaBar[]> {
+    const params = new URLSearchParams({ timeframe: "1Day", start, limit: String(limit), adjustment: "all" });
+    if (end) params.set("end", end);
+    const payload = await this.request(`/stocks/${encodeURIComponent(symbol)}/bars?${params.toString()}`, z.object({ bars: z.array(z.object({ t: z.string().datetime({ offset: true }), c: z.number().nonnegative() })) }));
+    return payload.bars.map((bar) => AlpacaBarSchema.parse({ timestamp: bar.t, close: bar.c }));
   }
 
   /** Caller must enforce evidence, risk, and human approval gates first. */

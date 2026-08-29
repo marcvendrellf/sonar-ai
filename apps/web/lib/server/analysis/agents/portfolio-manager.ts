@@ -13,7 +13,7 @@ import {
   type RiskReport,
 } from "@sonar-ai/core";
 import { z } from "zod";
-import { ClaimDraftSchema, untrustedBlock, type Agent } from "./types";
+import { ClaimDraftSchema, HEDGE_FUND_PROTOCOL, untrustedBlock, type Agent } from "./types";
 
 /**
  * Portfolio Manager — owns capital allocation. It proposes target weights from
@@ -75,7 +75,9 @@ const round2 = (n: number): number => Math.round(n * 100) / 100;
 
 // ── First-draft prompt (Axel owns the final wording) ─────────────────────────
 
-const INSTRUCTIONS = `You are the Portfolio Manager on an investment committee. You alone own capital
+const INSTRUCTIONS = `${HEDGE_FUND_PROTOCOL}
+
+You are the Portfolio Manager on an investment committee. You alone own capital
 allocation. The analysts give you views; you turn them into positions and own
 every trade-off. Your job is the best risk-adjusted use of the fund's capital
 within the mandate — not the most exciting story.
@@ -129,10 +131,9 @@ function summarizeFundamentals(reports: FundamentalReport[]): string {
   return reports
     .map(
       (r) =>
-        `- ${r.instrumentId}: quality — ${r.quality} | valuation — ${r.valuation}` +
-        (r.claims.length
-          ? ` | evidence: ${r.claims.flatMap((c) => c.evidenceIds).join(", ")}`
-          : ""),
+        `- ${r.instrumentId}: quality — ${r.quality} | valuation — ${r.valuation} | financial strength — ${r.financialStrength}` +
+        ` | catalysts — ${r.catalysts.join("; ") || "none"} | risks — ${r.risks.join("; ") || "none"}` +
+        (r.claims.length ? ` | claims: ${r.claims.map((c) => `${c.stance}: ${c.statement}`).join("; ")} | evidence: ${r.claims.flatMap((c) => c.evidenceIds).join(", ")}` : ""),
     )
     .join("\n");
 }
@@ -170,7 +171,7 @@ function buildInput(ctx: PortfolioManagerContext): string {
     `Mandate limits: position ≤ ${limits.maxGrossExposurePerPosition}, sector ≤ ${limits.maxSectorExposure}, cash ≥ ${limits.minCashRatio}, turnover ≤ ${limits.maxTurnoverPerEvent}.`,
     `Candidate universe:\n${universe}`,
     `Fundamental research:\n${summarizeFundamentals(ctx.fundamentalReports)}`,
-    `Market context:\n${ctx.marketContext ? ctx.marketContext.summary : "(none)"}`,
+    `Market context:\n${ctx.marketContext ? [ctx.marketContext.summary, `drivers: ${ctx.marketContext.drivers.join("; ")}`, `sector: ${ctx.marketContext.sectorView}`, `macro: ${ctx.marketContext.macroView}`, `candidate scorecards: ${ctx.marketContext.candidateOpportunities.map((c) => `${c.symbol}: quality ${c.qualityScore}/100, valuation ${c.valuationScore}/100, catalyst ${c.catalystScore}/100, downside-risk ${c.downsideRiskScore}/100; horizon ${c.timeHorizon}; rationale ${c.rationale}; bull ${c.bullCase}; base ${c.baseCase}; bear ${c.bearCase}`).join("\n")}`].join("\n") : "(none)"}`,
     `Evidence you may cite:\n${untrustedBlock("EVIDENCE", evidenceList)}`,
   ];
 

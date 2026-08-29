@@ -8,7 +8,7 @@ import {
   type Position,
 } from "@sonar-ai/core";
 import { z } from "zod";
-import { ClaimDraftSchema, untrustedBlock, type Agent } from "./types";
+import { ClaimDraftSchema, HEDGE_FUND_PROTOCOL, untrustedBlock, type Agent } from "./types";
 
 /**
  * Market Context Analyst — evaluates the external world around the fund's
@@ -46,7 +46,9 @@ export type MarketContextReportDraft = z.infer<
 
 // ── First-draft prompt (Axel owns the final wording) ─────────────────────────
 
-const INSTRUCTIONS = `You are the Market Context Analyst on an investment committee. You cover the
+const INSTRUCTIONS = `${HEDGE_FUND_PROTOCOL}
+
+You are the Market Context Analyst on an investment committee. You cover the
 EXTERNAL world around the fund's assets — the forces no single company's filings
 capture: demand cycles, policy, supply chains, competition, and second-order
 effects that travel between companies (a supplier's problem is its customer's
@@ -65,7 +67,9 @@ METHOD — reason before you write:
 OUTPUT:
 - candidateOpportunities: shortlist symbols present in Assets in scope. Use Cala
   evidence to explain why each deserves Fundamental Analyst review. Do not
-  output weights or trades.
+  output weights or trades. Score each candidate 0-100 for quality, valuation,
+  catalyst, and downside risk (higher downside score means more risk). Include
+  bull/base/bear cases, time horizon, and falsifiable invalidation conditions.
 - summary: the one or two forces that actually matter for these assets now — a
   thesis, not a news digest. Lead with the non-obvious.
 - drivers: the concrete external drivers (demand, policy, supply, cycle), each
@@ -74,11 +78,19 @@ OUTPUT:
   next move is more likely to break.
 - macroView: the macro and regulatory backdrop that frames the above.
 
+MANDATORY MARKET CHECKS: identify regime, transmission mechanism, timing,
+second-order beneficiaries and losers, crowding/pricing, policy sensitivity,
+cross-candidate correlation, and the observable indicator that would invalidate
+the context thesis. Candidate selection requires a clear Cala-backed rationale,
+not merely a familiar ticker.
+
 RESEARCH TOOLS — use Cala search/query for missing external context. Use entity
 introspection and bounded relationship traversal to verify second-order paths.
 Profile/traversal results include source evidence; relationships remain evidence-linked
 hypotheses, never unqualified proof of causation. Search/query guide discovery;
 verify material claims through source-linked profile or traversal evidence.
+Use Alpaca asset and quote tools to confirm symbols are tradable and to compare
+spread/liquidity context. Price data is an observation, not a prediction.
 
 CLAIMS — each MUST cite one or more evidenceIds drawn from the supplied pack or
 returned tool evidence. Never invent an ID or a fact. Set stance to "bull",
@@ -161,6 +173,9 @@ export const marketContextAnalyst: Agent<
     instructions: INSTRUCTIONS,
     outputSchema: MarketContextReportDraftSchema,
     toolNames: [
+      "list_tradable_assets",
+      "get_latest_quotes",
+      "get_price_history",
       "find_cala_entities",
       "inspect_cala_entity",
       "get_cala_entity_profile",

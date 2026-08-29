@@ -44,7 +44,7 @@ portfolio + mandate + scenario
 | `llm/openai-client.ts` | Server-only official OpenAI SDK client; timeout and SDK retries fixed. | ✅ ready |
 | `llm/structured-output.ts` | Zod output + bounded Responses function-call loop + evidence/graph capture. | ✅ ready |
 | `cala/*.ts` | Fixed REST client, wire schemas, bounded traversal, synthetic fixture provider. | ✅ Cala slice |
-| `alpaca/*.ts` | The only Alpaca client — **Paper-only**; normalize; fixture fallback. | ✅ portfolio slice |
+| `alpaca/*.ts` | The only Alpaca client — **Paper-only**; normalize; market-data and order fixtures. | ✅ portfolio + market-data slice |
 
 Fixtures live in [`apps/web/fixtures`](../../fixtures). Route handlers live in
 `apps/web/app/api/*` and stay thin — they invoke one committee run and nothing more.
@@ -96,5 +96,5 @@ Fixtures live in [`apps/web/fixtures`](../../fixtures). Route handlers live in
 ## Build order (this lane)
 
 Phase 3 orchestrator + stub agents ✅ → OpenAI Responses runner ✅ → Cala typed
-research tools + traversal ✅ → remaining risk/Alpaca tools → Phase 6 API routes. See the repository plan and
+research tools + traversal ✅ → Alpaca market-data tools ✅ → API routes + dashboard workflow ✅. See the repository plan and
 `llm-wiki/team-workflow.md` for ownership and branch rules.

@@ -8,6 +8,8 @@ import type { ZodType } from "zod";
 export const TOOL_NAMES = [
   "get_portfolio_snapshot",
   "get_price_history",
+  "get_latest_quotes",
+  "list_tradable_assets",
   "get_company_fundamentals",
   "search_company_information",
   "query_financial_knowledge",

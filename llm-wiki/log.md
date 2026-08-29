@@ -110,3 +110,19 @@ Extended OpenAI runner with code-owned per-stage tool allowlists, strict argumen
 ## [2026-08-29] correction | Risk preferences drive agent discovery
 
 The MVP input is now risk preferences only. Market Context Analyst runs first, uses Cala research and relationship traversal to shortlist symbols from the system-supplied Alpaca tradable universe, Fundamental Analyst evaluates that shortlist, and Portfolio Manager allocates. Removed user-selected company IDs from orchestration and recording contracts. Approved live-mode actions now route through injected Alpaca Paper order submission; offline mode retains deterministic internal ledger fallback. Decision source: [risk-preferences-only MVP direction](../raw-sources/risk-preferences-only-mvp-2026-08-29.md).
+
+Added sanitized Alpaca Paper fixtures for USD account/positions, tradable asset discovery, accepted orders, and non-tradable rejection. Added provider tests and client asset-list method. Capture: [Alpaca Paper fixture capture](../raw-sources/alpaca-paper-fixtures-2026-08-29.md).
+
+Added Alpaca latest-quote and daily-history schemas/client methods, fixture provider support, closed-registry read tools, and agent allowlists. Research agents can now verify tradability, spread, price history, drawdown, and execution context without order access.
+
+Added MVP analysis API routes: `POST /api/analysis/run` accepts mandate only, `GET /api/analysis/run/:runId` retrieves state, and `POST /api/analysis/run/:runId` applies approval/rejection. Run state initially used an in-memory store; subsequent entry records its file-backed replacement. Company-selection fields are rejected.
+
+Connected dashboard workflow controls to run/fetch/approval routes with fixture fallback. Added live safety validation requiring explicit USD mandate before a run can reach Alpaca Paper execution.
+
+Replaced in-memory-only run storage with schema-validated, atomic file persistence at `data/analysis-runs.json` (override with `SONAR_RUN_STORE_PATH`). The local paper-run store is gitignored and contains no credentials.
+
+Dashboard account metrics and positions now hydrate from `/api/alpaca/portfolio`, while the fixture path remains the fallback. Narrative/static NAV panels remain intentionally demo presentation data pending historical portfolio endpoint support.
+
+Added `/api/analysis/history`; NAV chart now consumes persisted run NAV points when available and retains deterministic fixture series before the first run.
+
+Upgraded research prompts with shared professional investment-committee protocol, private deliberate reasoning, explicit evidence/fact/inference separation, falsification, scenarios, catalysts, valuation, liquidity, correlation, and confidence checks. PM and Bear/Critic now receive fuller research summaries instead of only quality/valuation snippets. Hidden chain-of-thought is not persisted; outputs remain structured and auditable.

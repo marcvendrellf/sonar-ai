@@ -75,6 +75,15 @@ export const CandidateOpportunitySchema = z.object({
   name: z.string().min(1),
   rationale: z.string().min(1),
   evidenceIds: z.array(IdSchema).min(1),
+  qualityScore: z.number().min(0).max(100).optional().default(0),
+  valuationScore: z.number().min(0).max(100).optional().default(0),
+  catalystScore: z.number().min(0).max(100).optional().default(0),
+  downsideRiskScore: z.number().min(0).max(100).optional().default(0),
+  timeHorizon: z.string().min(1).optional().default("unspecified"),
+  bullCase: z.string().min(1).optional().default("not provided"),
+  baseCase: z.string().min(1).optional().default("not provided"),
+  bearCase: z.string().min(1).optional().default("not provided"),
+  invalidationConditions: z.array(z.string()).optional().default([]),
 });
 export type CandidateOpportunity = z.infer<typeof CandidateOpportunitySchema>;
 

@@ -39,6 +39,38 @@ export type AlpacaPositionResponse = z.infer<typeof AlpacaPositionResponseSchema
 
 export const AlpacaPositionsResponseSchema = z.array(AlpacaPositionResponseSchema);
 
+export const AlpacaAssetResponseSchema = z
+  .object({
+    id: z.string().min(1),
+    class: z.string().min(1),
+    exchange: z.string().min(1),
+    symbol: z.string().min(1),
+    name: z.string().min(1),
+    status: z.string().min(1),
+    tradable: z.boolean(),
+    marginable: z.boolean().optional(),
+    shortable: z.boolean().optional(),
+    easy_to_borrow: z.boolean().optional(),
+    fractionable: z.boolean().optional(),
+  })
+  .passthrough();
+export const AlpacaAssetsResponseSchema = z.array(AlpacaAssetResponseSchema);
+export type AlpacaAssetResponse = z.infer<typeof AlpacaAssetResponseSchema>;
+
+export const AlpacaQuoteSchema = z.object({
+  symbol: z.string().min(1),
+  bidPrice: z.number().nonnegative(),
+  askPrice: z.number().nonnegative(),
+  timestamp: z.string().datetime({ offset: true }),
+});
+export type AlpacaQuote = z.infer<typeof AlpacaQuoteSchema>;
+
+export const AlpacaBarSchema = z.object({
+  timestamp: z.string().datetime({ offset: true }),
+  close: z.number().nonnegative(),
+});
+export type AlpacaBar = z.infer<typeof AlpacaBarSchema>;
+
 export const AlpacaPaperOrderRequestSchema = z
   .object({
     symbol: z.string().min(1),

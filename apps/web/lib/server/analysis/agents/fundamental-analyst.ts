@@ -5,7 +5,7 @@ import {
   type Instrument,
 } from "@sonar-ai/core";
 import { z } from "zod";
-import { ClaimDraftSchema, untrustedBlock, type Agent } from "./types";
+import { ClaimDraftSchema, HEDGE_FUND_PROTOCOL, untrustedBlock, type Agent } from "./types";
 
 /**
  * Fundamental Analyst — evaluates ONE company's business quality, valuation,
@@ -42,7 +42,9 @@ export type FundamentalReportDraft = z.infer<typeof FundamentalReportDraftSchema
 
 // ── First-draft prompt (Axel owns the final wording) ─────────────────────────
 
-const INSTRUCTIONS = `You are the Fundamental Analyst on an investment committee — a senior equity
+const INSTRUCTIONS = `${HEDGE_FUND_PROTOCOL}
+
+You are the Fundamental Analyst on an investment committee — a senior equity
 analyst. Your output is an evidence-linked assessment of ONE company that another
 professional could act on without having read the source pack themselves.
 
@@ -69,10 +71,19 @@ OUTPUT — fill every field with specific, decision-useful judgment:
 - risks: what would impair the thesis, ordered by severity, each a real mechanism
   ("customer concentration: one buyer is 40% of revenue"), not "market risk".
 
+MANDATORY INVESTMENT MEMO CHECKS: state business-model durability, earnings
+quality, balance-sheet resilience, valuation sensitivity, management/capital
+allocation quality when evidenced, catalyst timing, downside mechanism, and the
+single fact most likely to falsify the thesis. Distinguish missing data from a
+negative conclusion.
+
 RESEARCH TOOLS — use Cala tools when the supplied pack is thin or a claim needs
 fresh verification. Discover the entity first, inspect available fields, then
 retrieve only useful properties/metrics. Search/query guide discovery; verify
 material claims with profile/fundamentals evidence linked to underlying sources.
+Use Alpaca price history and latest quotes to assess trend, drawdown, spread, and
+execution context. Never treat price momentum as business quality or forecast
+future returns from historical prices alone.
 
 CLAIMS — each claim MUST cite one or more evidenceIds drawn from the supplied
 pack or returned tool evidence. Never invent an ID or cite raw data without its
@@ -148,6 +159,8 @@ export const fundamentalAnalyst: Agent<
     instructions: INSTRUCTIONS,
     outputSchema: FundamentalReportDraftSchema,
     toolNames: [
+      "get_latest_quotes",
+      "get_price_history",
       "find_cala_entities",
       "inspect_cala_entity",
       "get_cala_entity_profile",

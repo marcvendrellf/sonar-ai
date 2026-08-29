@@ -1,5 +1,7 @@
 "use client"
 
+import { useEffect, useState } from "react"
+
 import {
   ArrowDownRight,
   ArrowRight,
@@ -108,6 +110,29 @@ const positions = [
   { id: "sap", asset: "SAP.DE", sector: "Software", weight: "12.1%", value: "€123,230", paperPnl: "-0.8%" },
   { id: "airbus", asset: "AIR.PA", sector: "Aerospace", weight: "10.5%", value: "€106,950", paperPnl: "+1.1%" },
 ] as const
+
+type AlpacaPortfolio = {
+  cashUsd: number
+  equityUsd: number
+  buyingPowerUsd: number
+  positions: { symbol: string; marketValueUsd: number; unrealizedPnlPct: number }[]
+}
+
+function formatUsd(value: number): string {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value)
+}
+
+function portfolioMetrics(portfolio: AlpacaPortfolio | null) {
+  if (!portfolio) return metrics
+  const cashRatio = portfolio.equityUsd === 0 ? 0 : portfolio.cashUsd / portfolio.equityUsd
+  return [
+    { id: "nav", label: "Paper NAV", value: formatUsd(portfolio.equityUsd), detail: "Alpaca Paper equity", icon: Landmark },
+    { id: "pnl", label: "Unrealized paper P&L", value: "Tracked", detail: `${portfolio.positions.length} open positions`, icon: ArrowUpRight },
+    { id: "exposure", label: "Gross exposure", value: `${Math.round((1 - cashRatio) * 1000) / 10}%`, detail: "From Alpaca account snapshot", icon: CircleDollarSign },
+    { id: "cash", label: "Available cash", value: formatUsd(portfolio.cashUsd), detail: `${Math.round(cashRatio * 1000) / 10}% of equity`, icon: WalletCards },
+    { id: "risk", label: "Buying power", value: formatUsd(portfolio.buyingPowerUsd), detail: "Paper account", icon: TriangleAlert },
+  ] as const
+}
 
 const agentWork = [
   { id: "scout", title: "Scout", value: 18, className: "bg-[var(--agent-scout-soft)]", topBorderClassName: "border-[var(--agent-scout)]" },
@@ -238,7 +263,111 @@ function RelationshipPath() {
   )
 }
 
+type AnalysisState = {
+  run: { id: string }
+  phase: string
+  marketContext: { candidateOpportunities: { symbol: string; name: string; rationale: string }[] } | null
+  finalRecommendation: { actions: { instrumentId: string; side: string; targetWeight: number }[] } | null
+  userDecision: { decision: string } | null
+  error?: string
+}
+
+function AnalysisWorkflow() {
+  const [state, setState] = useState<AnalysisState | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const load = async () => {
+    const response = await fetch("/api/analysis/run", { cache: "no-store" })
+    if (response.ok) setState(await response.json() as AnalysisState)
+  }
+
+  // Initial API hydration is intentional: dashboard synchronizes with server run state.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { void load() }, [])
+
+  const runAnalysis = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      const response = await fetch("/api/analysis/run", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.error ?? "Analysis failed")
+      setState(payload)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Analysis failed")
+    } finally { setBusy(false) }
+  }
+
+  const decide = async (decision: "approved" | "rejected") => {
+    if (!state) return
+    setBusy(true)
+    setError(null)
+    try {
+      const response = await fetch(`/api/analysis/run/${state.run.id}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ decision: { decision, decidedAt: new Date().toISOString(), note: `Dashboard ${decision}` } }) })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.error ?? "Decision failed")
+      setState(payload)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Decision failed")
+    } finally { setBusy(false) }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Agent decision workflow</CardTitle>
+        <CardDescription>{state ? `Run ${state.run.id} · ${state.phase}` : "No run loaded"}</CardDescription>
+        <CardAction><Button size="sm" onClick={() => void runAnalysis()} disabled={busy}>{busy ? "Working…" : "Run analysis"}</Button></CardAction>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {error && <p className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</p>}
+        {state?.marketContext?.candidateOpportunities?.length ? (
+          <div>
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Cala-discovered candidates</p>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {state.marketContext.candidateOpportunities.map((candidate) => <div key={candidate.symbol} className="rounded-lg border p-3"><p className="font-medium">{candidate.symbol}</p><p className="text-xs text-muted-foreground">{candidate.name}</p><p className="mt-2 text-xs">{candidate.rationale}</p></div>)}
+            </div>
+          </div>
+        ) : <p className="text-sm text-muted-foreground">Run agents to discover investments from risk preferences.</p>}
+        {state?.phase === "awaiting_approval" && <div className="flex gap-2"><Button onClick={() => void decide("approved")} disabled={busy}>Approve Paper Allocation</Button><Button variant="outline" onClick={() => void decide("rejected")} disabled={busy}>Reject</Button></div>}
+        {state?.userDecision && <p className="text-sm text-muted-foreground">Human decision: {state.userDecision.decision}. Receipt stored.</p>}
+      </CardContent>
+    </Card>
+  )
+}
+
 export function Dashboard() {
+  const [portfolio, setPortfolio] = useState<AlpacaPortfolio | null>(null)
+  const [portfolioLoaded, setPortfolioLoaded] = useState(false)
+  const [navHistory, setNavHistory] = useState<{ time: string; nav: number }[] | null>(null)
+
+  // Initial portfolio hydration is intentional: this synchronizes the visual
+  // dashboard with the server-side Alpaca Paper snapshot.
+  useEffect(() => {
+    void fetch("/api/alpaca/portfolio", { cache: "no-store" })
+      .then(async (response) => response.ok ? await response.json() as AlpacaPortfolio : null)
+      .then((snapshot) => { if (snapshot) setPortfolio(snapshot); setPortfolioLoaded(true) })
+      .catch(() => setPortfolioLoaded(true))
+  }, [])
+  useEffect(() => {
+    void fetch("/api/analysis/history", { cache: "no-store" })
+      .then(async (response) => response.ok ? await response.json() as { time: string; nav: number }[] : null)
+      .then((history) => { if (history?.length) setNavHistory(history) })
+      .catch(() => undefined)
+  }, [])
+
+  const displayedPositions = portfolioLoaded
+    ? portfolio?.positions.map((position) => ({
+        id: position.symbol,
+        asset: position.symbol,
+        sector: "Alpaca Paper",
+        weight: portfolio.equityUsd === 0 ? "0%" : `${Math.round(position.marketValueUsd / portfolio.equityUsd * 1000) / 10}%`,
+        value: formatUsd(position.marketValueUsd),
+        paperPnl: `${Math.round(position.unrealizedPnlPct * 1000) / 10}%`,
+      })) ?? []
+    : positions
+
   return (
     <main id="dashboard" className="mx-auto max-w-[1600px] space-y-5 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -257,7 +386,7 @@ export function Dashboard() {
       </div>
 
       <section aria-label="Portfolio summary" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {metrics.map((metric) => {
+        {portfolioMetrics(portfolio).map((metric) => {
           const Icon = metric.icon
           return (
             <Card key={metric.id} size="sm">
@@ -283,7 +412,7 @@ export function Dashboard() {
           </CardHeader>
           <CardContent className="h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={navSeries} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} accessibilityLayer>
+              <LineChart data={navHistory ?? navSeries} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} accessibilityLayer>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
                 <YAxis hide domain={[995000, 1025000]} />
@@ -295,6 +424,8 @@ export function Dashboard() {
       </section>
 
       <RelationshipPath />
+
+      <AnalysisWorkflow />
 
       <section className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
         <Card>
@@ -314,7 +445,7 @@ export function Dashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {positions.map((position) => (
+                {displayedPositions.map((position) => (
                   <TableRow key={position.id}>
                     <TableCell className="font-medium">{position.asset}</TableCell>
                     <TableCell className="text-muted-foreground">{position.sector}</TableCell>

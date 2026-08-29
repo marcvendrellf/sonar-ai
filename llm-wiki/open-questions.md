@@ -22,7 +22,7 @@ Only unresolved implementation and event questions remain. Concept selection is 
 | Question | Next action | Closure condition |
 | --- | --- | --- |
 | Which Alpaca Trading API interface should Sonar use? | Use the regular Trading API with a Paper Only account. | Server adapter uses separate paper credentials and fixed `paper-api.alpaca.markets` endpoint. ✅ |
-| Which instruments fit Alpaca's supported universe? | Select U.S.-listed equities or supported crypto and validate with the assets endpoint. | Five candidates have stable symbols, currency, timestamps, and fixture prices. |
+| Which instruments fit Alpaca's supported universe? | Select U.S.-listed equities or supported crypto and validate with the assets endpoint. | Initial fixture has three tradable symbols with stable wire shapes; expand to final demo universe after live Paper validation. |
 | How should paper-account resets work during trials? | Reset by creating/deleting paper accounts in the Alpaca dashboard; add a local Sonar reset separately. | No reset action can reach a live account or silently delete broker state. |
 | Can any code path reach live trading? | Add an architectural test around the fixed Paper client and environment guard. | No live endpoint, live credential, deposit, withdrawal, or account-control path exists. |
 
@@ -58,6 +58,6 @@ Only unresolved implementation and event questions remain. Concept selection is 
 - No verified live event-to-company graph exists; current second-order path is synthetic.
 - No final event or asset universe is recorded.
 - No final Alpaca-supported five-asset universe or sanitized order fixture is recorded.
-- Alpaca Paper execution requires USD portfolio currency; FX mapping from existing EUR demo fixture remains open.
+- Alpaca Paper execution requires USD portfolio currency; live route now rejects missing/non-USD mandates. Account/position-to-core mapping remains open.
 - The Josep and Axel issue split and owners for Cala, Alpaca, contracts, risk, fixtures, deployment, and pitch are not recorded.
 - No organizer-provided judging rubric is recorded.

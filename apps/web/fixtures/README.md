@@ -8,7 +8,7 @@ Planned contents:
 - `scenario.json` — the frozen demo inputs: the €1,000 all-cash portfolio, the
   mandate, the five-asset candidate universe, and the material event.
 - `cala/*.json` — sanitized Cala response(s) + the normalized field map.
-- `alpaca-paper-account.json` — sanitized Alpaca Paper account and positions snapshot.
+- `alpaca-paper-account.json` — sanitized Alpaca Paper account, positions, tradable assets, quotes, daily history, and accepted/rejected order shapes.
 - `committee/golden-run.json` — a full recorded `InvestmentCommitteeState` that
   drives `StubAgentRunner` and integration tests.
 
