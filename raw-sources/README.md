@@ -36,3 +36,4 @@ Current captures:
 - [UI consolidation and parallel branch decision](ui-consolidation-branch-decision-2026-08-29.md)
 - [Saloon 3D asset provenance](saloon-asset-provenance-2026-08-29.md)
 - [Saloon 2D backup decision](saloon-2d-backup-decision-2026-08-29.md)
+- [Saloon 2D simplification decision](saloon-2d-simplification-decision-2026-08-29.md)

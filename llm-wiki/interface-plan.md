@@ -142,9 +142,11 @@ It answers:
 
 ### 2D backup branch
 
-The [2D backup decision](../raw-sources/saloon-2d-backup-decision-2026-08-29.md) adds `feat/saloon-2d-backup` as a parallel fallback if the 3D room misses its reliability or presentation target. The branch keeps `/saloon` and the same fixture runtime, agent selection, evidence path, source and receipt Sheets, playback controls, URL state, and material-findings bell. It replaces only the WebGL room with a responsive shadcn committee board.
+The [2D backup decision](../raw-sources/saloon-2d-backup-decision-2026-08-29.md) adds `feat/saloon-2d-backup` as a parallel fallback if the 3D room misses its reliability or presentation target. The later [simplification decision](../raw-sources/saloon-2d-simplification-decision-2026-08-29.md) makes the six agents the entire default composition.
 
-Use shadcn/Base UI primitives for every interactive control and panel in the 2D version. The composition uses Card, Button, Avatar, Badge, Progress, Tabs, Tooltip, Scroll Area, Separator, and Sheet. Its activity panel adapts the installed `@7ovr/activity-1` pattern, and its findings panel follows the inspected `@7ovr/notifications-1` pattern. Do not copy the custom sprite canvas from the earlier Cala project because it breaks the shadcn-only fallback constraint and adds another rendering path.
+Show six large shadcn Card and Avatar identities in a two-by-three grid. Each agent shows only name, short role, and written state. Remove the event card, evidence path, visible activity feed, progress bar, timeline scrubber, and persistent inspector from the default view. Selecting an agent opens its current task and latest material work in a Sheet. Keep source inspection, decision receipt, bounded findings, URL selection, keyboard access, and deterministic fixture playback as secondary controls.
+
+The visible cast must match the reviewed committee: Market Context, Fundamental Analyst, Portfolio Manager, Bear / Critic, Risk Officer, and Report Writer. Use shadcn/Base UI primitives for every interactive control and panel. Do not copy the custom sprite canvas from the earlier Cala project because it breaks the shadcn-only fallback constraint and adds another rendering path.
 
 The 2D branch is a backup, not a replacement decision. Keep the 3D Saloon as the primary direction until the team judges both versions on the presentation laptop.
 

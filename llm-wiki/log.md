@@ -182,3 +182,9 @@ Created `feat/saloon-2d-backup` from the consolidated `main` checkpoint in an is
 The 2D version keeps `/saloon`, fixture playback and scrubbing, URL-backed agent selection, responsive details, source inspection, deterministic risk results, decision receipt, and the bottom-right material-findings bell. It replaces the WebGL room with a responsive committee board built from installed shadcn/Base UI primitives. The activity feed adapts `@7ovr/activity-1`; the findings panel follows the dry-run-inspected `@7ovr/notifications-1` pattern without adding a package or block file.
 
 Registry research also inspected 7ovr timelines, kanban boards, application shells, and a shadcn-compatible React Flow canvas. The earlier Cala hackathon's sprite canvas and coupled React Flow workspace were not copied because the user required the simpler fallback to stay shadcn-based. `pnpm --filter web typecheck`, `lint`, and `build` pass. Presentation-laptop comparison remains the final branch check.
+
+## [2026-08-29] design | 2D Saloon reduced to the agent grid
+
+The user rejected the first 2D backup as too dense. Removed the central event and evidence card, visible activity inspector, run progress, timeline scrubber, explanatory copy, and persistent details column. The default view now gives nearly the entire viewport to six large selectable agent cards. Each card shows only identity, short role, and state; task and material-event detail opens in a Sheet.
+
+Because the agents now carry the whole composition, the visible fixture cast was updated to the reviewed committee: Market Context, Fundamental Analyst, Portfolio Manager, Bear / Critic, Risk Officer, and Report Writer. The deterministic trace IDs remain stable. Source, findings, receipt, URL-selection, and fixture-playback behavior remain available without competing with the agents.
