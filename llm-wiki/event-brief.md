@@ -1,6 +1,9 @@
 # Event brief
 
-Source: [Luma event capture](../raw-sources/event-luma-2026-08-28.md)
+Sources:
+
+- [Luma event capture](../raw-sources/event-luma-2026-08-28.md)
+- [Sonar AI, eToro, and paper-trading decision](../raw-sources/sonar-etoro-paper-decision-2026-08-29.md)
 
 ## Facts
 
@@ -18,6 +21,14 @@ Key times:
 | 20:45 | Awards |
 
 Cala is the co-host. Technology partners are OpenAI, Pioneer by Fastino Labs, Fal, Entire, and Aikido. The event page says partner credits will be available.
+
+## Build freedom
+
+The user supplied this event message:
+
+> Build whatever you want, you might just leave with the MVP from your next startup and some cool prizes!
+
+**Decision.** The team will use that freedom to build Sonar AI.
 
 ## Scope implications
 

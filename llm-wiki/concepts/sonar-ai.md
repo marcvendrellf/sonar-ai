@@ -27,15 +27,16 @@ The memorable reveal is not the trade. It is watching one headline expand into a
 
 - A hedge fund supplies the mandate, positions, and risk budget.
 - Cala supplies source-linked news, companies, ownership, filings, ratings, and relationships where available.
+- A read-only eToro adapter supplies market or reference data where an official interface permits it.
 - An agent supplies hypothesis generation and portfolio proposals.
 - A deterministic risk engine enforces exposure, concentration, turnover, and cash limits.
 - The interface behaves like a living object rather than a Bloomberg-style grid.
 
 ## Safe product boundary
 
-The hackathon version uses paper money only. It does not connect to a broker, accept customer funds, promise returns, or give personalized investment advice.
+The hackathon version uses paper money only. It does not submit orders to a broker, accept customer funds, promise returns, or give personalized investment advice.
 
-The agent may control the simulated portfolio, but it cannot override the written mandate. Every simulated order must pass deterministic checks and cite the evidence path behind the thesis.
+The agent may control the simulated portfolio, but it cannot override the written mandate. Every simulated order must pass deterministic checks and cite the evidence path behind the thesis. eToro must never receive a real-money order, deposit, withdrawal, or account-control instruction.
 
 ## The memorable reveal
 
@@ -121,7 +122,8 @@ Build only:
 - one written mandate with four deterministic limits;
 - one prepared news event;
 - one live Cala query if the required relationship data exists;
-- one cached relationship graph as fallback;
+- one read-only eToro market-data query if an official interface exists;
+- cached Cala graph and eToro price fixtures as fallbacks;
 - one agent decision with bull and bear cases;
 - two simulated orders;
 - one rejected or resized order;
@@ -138,8 +140,9 @@ Do not build brokerage integration, real-time P&L infrastructure, continuous aut
 4. Ask the model for bull and bear hypotheses using only those evidence IDs.
 5. Convert the chosen hypothesis into target exposure changes.
 6. Run the proposed orders through deterministic risk rules.
-7. Update the paper portfolio and produce a decision receipt.
-8. Drive the sphere and graph animations from real state transitions.
+7. Read the latest permitted eToro market or reference data through the server adapter, or use the sanitized fixture.
+8. Update the internal paper portfolio and produce a decision receipt.
+9. Drive the sphere and graph animations from real state transitions.
 
 ## Risk mandate for the demo
 
@@ -164,6 +167,7 @@ These are demonstration parameters, not investment recommendations.
 ## Guardrails
 
 - Use paper trading only.
+- Keep eToro read-only and simulate every order internally.
 - Label historical, synthetic, and live information clearly.
 - Describe relationships as evidence, not proof of causation.
 - Require sources for every graph edge and thesis claim.

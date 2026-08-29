@@ -4,7 +4,7 @@
 
 Build Sonar AI (codenamed "Agent Fund" during concept selection) for the {Tech: Europe} x Cala Summer Lock-In. It is an autonomous paper hedge fund that traces source-linked relationships behind events before changing a simulated portfolio. The repository lives at `github.com/marcvendrellf/sonar-ai` (private).
 
-The concept decision is final. Do not restart ideation or reintroduce discarded concepts unless the user explicitly asks.
+The concept decision is final. The brief permits teams to build whatever they want, and the user reconfirmed Sonar AI after a temporary pivot. Do not restart ideation or reintroduce discarded concepts unless the user explicitly asks.
 
 ## Three layers
 
@@ -23,9 +23,10 @@ Before planning or implementation, read:
 3. `llm-wiki/concepts/sonar-ai.md`
 4. `llm-wiki/interface-plan.md`
 5. `llm-wiki/technical-reference-pack.md`
-6. `llm-wiki/open-questions.md`
+6. `llm-wiki/team-workflow.md`
+7. `llm-wiki/open-questions.md`
 
-Read `llm-wiki/cala-finance.md` before making Cala assumptions.
+Read `llm-wiki/cala-finance.md` before making Cala assumptions. Treat eToro capabilities as unverified until official documentation or a sanitized fixture confirms them.
 
 ## Current page types
 
@@ -34,6 +35,7 @@ Read `llm-wiki/cala-finance.md` before making Cala assumptions.
 - `concepts/sonar-ai.md` defines the product, demo, risk boundaries, and visual direction.
 - `interface-plan.md` defines onboarding, the Saloon, dashboard, and selected shadcn components.
 - `technical-reference-pack.md` defines the stack, architecture, performance rules, and build order.
+- `team-workflow.md` records team ownership, delivery epics, branch policy, folder boundaries, and coding-agent handoffs.
 - `cala-finance.md` records Cala's claimed capabilities and unverified assumptions.
 - `event-brief.md` records confirmed event constraints.
 - `hackathon-winner-patterns.md` preserves relevant external product lessons.
@@ -57,7 +59,8 @@ Treat Cala product-page statements as vendor claims until an API fixture confirm
 ## Product boundaries
 
 - Paper trading only
-- No broker or exchange integration
+- eToro may provide read-only market or reference data after its interface is verified
+- No real-money order submission, deposits, withdrawals, or brokerage-account control
 - No customer funds
 - No promised returns
 - No personalized investment advice
@@ -79,7 +82,8 @@ Treat Cala product-page statements as vendor claims until an API fixture confirm
 - Never use `--overwrite` without reviewing the diff.
 - Use semantic shadcn tokens and component variants instead of raw status colors.
 - Preserve required shadcn composition and accessibility structure.
-- Keep Cala credentials and calls on the server.
+- Keep Cala and eToro credentials and calls on the server.
+- Keep eToro behind a read-only adapter. Sonar simulates orders internally unless an official paper-trading interface is verified.
 - Validate server responses and fixtures with Zod.
 - Keep the risk engine pure and independent from React.
 
@@ -96,7 +100,7 @@ Selected registries:
 
 - Link wiki facts to files in `raw-sources/` when a local capture exists.
 - Include original URL and retrieval date in each web capture.
-- For Cala experiments, save sanitized request shape, response shape, date, and result in a new raw source.
+- For Cala and eToro experiments, save sanitized request shape, response shape, date, and result in a new raw source.
 - Never save API keys, private attendee details, customer data, or personal financial data.
 - Separate source facts from agent analysis in data structures and UI.
 

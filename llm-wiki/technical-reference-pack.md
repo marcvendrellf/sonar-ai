@@ -4,6 +4,7 @@ Sources:
 
 - [React technical references](../raw-sources/react-technical-references-2026-08-28.md)
 - [User-selected shadcn components](../raw-sources/user-selected-ui-components-2026-08-28.md)
+- [Sonar AI, eToro, and paper-trading decision](../raw-sources/sonar-etoro-paper-decision-2026-08-29.md)
 
 Detailed composition: [interface plan](interface-plan.md)
 
@@ -21,7 +22,7 @@ Use one application, Motion for DOM transitions, and one primary 3D sphere. The 
 - **React Flow and ELK.js** for a deterministic relationship graph.
 - **Zustand** for demo state and portfolio state.
 - **Zod** at every server boundary and fixture load.
-- **TanStack Query** for Cala requests, retries, caching, and the fixture fallback.
+- **TanStack Query** for Cala and read-only eToro requests, retries, caching, and fixture fallbacks.
 - **Recharts** only for one small portfolio or exposure chart.
 - **Lucide React** for interface icons.
 
@@ -104,9 +105,13 @@ Server
     HypothesisGenerator
     RiskEngine
     FixtureFallback
+  /api/market-data
+    EtoroReadOnlyClient
+    MarketDataNormalizer
+    MarketDataFixtureFallback
 ```
 
-The browser never receives the Cala credential. The model never receives uncited graph prose as fact. The risk engine remains a pure deterministic module.
+The browser never receives Cala or eToro credentials. The eToro adapter is read-only and cannot submit orders. The model never receives uncited graph prose as fact. The risk engine remains a pure deterministic module.
 
 ## Shared data contract
 
@@ -123,6 +128,7 @@ Analysis
   proposedOrders[]
   riskChecks[]
   acceptedOrders[]
+  marketSnapshot
   phase
 ```
 
@@ -235,70 +241,32 @@ Use `Instrument Sans`, `Geist`, or another available neutral grotesk. Pick one f
 
 ## Repository layout (pnpm workspace)
 
-The repository is a monorepo. One pnpm workspace hosts the Next.js application and the shared packages. Keeping the risk engine and shared contracts in packages enforces their independence from React.
+The repository is a monorepo. Use feature folders inside `apps/web`, keep shadcn-managed primitives in `components/ui`, and keep external integrations under `lib/server`.
 
-```text
-apps/
-  web/                      # Next.js application
-    app/
-      page.tsx
-      onboarding/page.tsx
-      saloon/page.tsx
-      dashboard/page.tsx
-      decisions/[id]/page.tsx
-      api/analyze-event/route.ts
-    components/
-      onboarding/OnboardingFlow.tsx
-      saloon/AgentRoster.tsx
-      saloon/AgentChat.tsx
-      saloon/EvidencePanel.tsx
-      dashboard/PortfolioSummary.tsx
-      dashboard/PriceChart.tsx
-      dashboard/RecentTrades.tsx
-      dashboard/AgentActivityChart.tsx
-      orb/FundOrbCanvas.tsx
-      orb/FundOrb.tsx
-      graph/RelationshipGraph.tsx
-      graph/nodes/
-      receipt/DecisionReceipt.tsx
-    lib/
-      cala/client.ts        # server-only Cala adapter
-      cala/normalize.ts
-      demo/fixtures.ts
-      demo/store.ts
-packages/
-  core/                     # shared types, Zod schemas, evidence contract
-    src/
-      schema.ts
-      evidence.ts
-      phases.ts
-  risk-engine/              # pure deterministic mandate and risk checks
-    src/
-      engine.ts
-      mandate.ts
-pnpm-workspace.yaml
-package.json
-```
+The full proposed tree and ownership rules live in the [team workflow](team-workflow.md).
 
 Workspace rules:
 
 - `packages/core` and `packages/risk-engine` never import React or Next.js.
-- The Cala credential and adapter stay inside `apps/web` server code; no package or client component imports them.
-- UI code imports shared types from `packages/core` only.
-- The risk engine consumes plain data from `packages/core` and returns plain results, so it stays unit-testable without a DOM.
+- `packages/core` owns cross-lane Zod schemas and stable IDs for events, evidence, graph records, theses, market snapshots, orders, risk results, and receipts.
+- Cala stays in `apps/web/lib/server/cala`.
+- eToro stays in `apps/web/lib/server/etoro` and exposes read-only normalized data only.
+- UI code imports shared types from `packages/core` and never infers agent or risk state by parsing prose.
+- The risk engine consumes plain data from `packages/core` and returns plain results.
+- A contract change updates its schema, fixture, parser, and consuming test in the same pull request.
 
 ## Build order
 
-1. Scaffold the pnpm workspace with `apps/web` and the shared packages, initialize the Base UI shadcn project inside `apps/web`, and inspect every selected registry component with a dry run.
-2. Build the static onboarding, Saloon, and dashboard shells.
-3. Implement the typed demo store and phase controls.
-4. Adapt Activity and Chat to typed agent events.
-5. Make the sphere respond to three phases: idle, tracing, and complete.
+1. Scaffold the pnpm workspace, initialize shadcn with `base-nova`, inspect each registry component, and define validated shared contracts plus one fixture.
+2. Build the four-scene onboarding flow as its own Marc-owned feature.
+3. Build static Saloon and dashboard shells against reviewed fixture contracts.
+4. Implement typed agent events, sourced evidence, competing theses, and explicit phase transitions.
+5. Make the sphere respond to idle, tracing, and complete.
 6. Render one fixed relationship graph from a fixture and animate the active path.
-7. Implement the pure risk engine and portfolio rebalance.
-8. Connect the recent-trades table and decision receipt.
-9. Add the server-side Cala adapter with the fixture fallback.
-10. Add Shader Gradient, the active-agent chart, and final polish after the full three-minute sequence works.
+7. Implement the pure risk engine and internal paper-portfolio rebalance.
+8. Connect the Saloon trace, recent-trades table, and decision receipt to typed records.
+9. Add server-side Cala and read-only eToro adapters behind fixture fallbacks.
+10. Add Shader Gradient, the active-agent chart, and final polish only after the full three-minute sequence works.
 
 ## Cut list if time runs short
 

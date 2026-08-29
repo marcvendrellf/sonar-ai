@@ -43,3 +43,15 @@ The remaining wiki now provides one reading path: final state, Agent Fund, inter
 The user named the product Sonar AI, closing the final-fund-name open question. "Agent Fund" remains only as the historical codename in earlier captures and log entries. Renamed the concept page to `concepts/sonar-ai.md`, updated the index, overview, repository contract, and concept page, and captured the decision in `raw-sources/naming-monorepo-decision-2026-08-29.md`.
 
 Initialized the private GitHub repository `marcvendrellf/sonar-ai` and committed the wiki, raw sources, and repository contract. Recorded the repository as a pnpm workspace monorepo (`apps/web`, `packages/core`, `packages/risk-engine`) in the overview, repository contract, and the technical reference pack's repository layout and build order. No application scaffold or registry component has been installed yet.
+
+## [2026-08-29] planning | Team lanes, onboarding epic, and branch proposal
+
+Recorded Marc as the frontend owner and Josep and Axel as the shared agent and data lane. Added a team workflow page so coding agents can see their evidence, contract, paper-trading, motion, and integration concerns before opening a branch.
+
+Made onboarding a standalone epic. Proposed one issue or coherent feature per branch, cross-lane review for shared contract changes, and a feature-oriented `apps/web` layout. The branch naming policy and individual split between Josep and Axel remain open.
+
+## [2026-08-29] decision | Sonar reconfirmed with read-only eToro data
+
+The user reconfirmed the Sonar AI hedge-fund direction. The maintained wiki now gives new clones one active product path.
+
+Added eToro as a read-only market or reference-data integration, subject to official capability verification. Paper money remains mandatory. Sonar simulates orders internally and cannot submit real-money orders, deposits, withdrawals, or brokerage-account instructions. Recorded the event's broad message: `Build whatever you want, you might just leave with the MVP from your next startup and some cool prizes!`

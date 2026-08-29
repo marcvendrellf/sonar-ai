@@ -1,6 +1,9 @@
 # Interface plan
 
-Source: [user-selected UI components](../raw-sources/user-selected-ui-components-2026-08-28.md)
+Sources:
+
+- [User-selected UI components](../raw-sources/user-selected-ui-components-2026-08-28.md)
+- [Sonar AI, eToro, and paper-trading decision](../raw-sources/sonar-etoro-paper-decision-2026-08-29.md)
 
 ## Product structure
 
@@ -51,6 +54,8 @@ Do not use `--overwrite` without reviewing a diff.
 
 ## 1. Onboarding
 
+Onboarding is a dedicated delivery epic owned by Marc. It must be estimated, implemented, and reviewed separately from the dashboard. See the [team workflow](team-workflow.md) for acceptance criteria and branch boundaries.
+
 ### Goal
 
 Explain the fund in less than one minute, establish the agent cast, and let the user launch a paper mandate.
@@ -98,6 +103,16 @@ Adapt `@7ovr/activity-1` into an agent roster. Each row shows name, role, status
 ### Scene 4: Enter the Saloon
 
 Show the agents online, the mandate locked, and the initial paper portfolio ready. The action is `Enter the Saloon`.
+
+### Motion acceptance
+
+- Keep ordinary scene transitions between 180 and 350 milliseconds.
+- Reserve 700 to 1,200 milliseconds for the main fund wake-up or relationship reveal.
+- Drive coordinated changes from explicit onboarding or fund state. Do not stack unrelated timers.
+- Preserve all copy and actions when `prefers-reduced-motion` is enabled.
+- Provide a static CSS fallback if WebGL fails.
+- Test the complete flow on the presentation laptop.
+- Let the team replay onboarding without clearing application data.
 
 ## 2. The Saloon
 
@@ -164,6 +179,7 @@ Do not use raw Tailwind green or red classes in components.
 Use shadcn Cards for:
 
 - paper NAV;
+- eToro market-data status, clearly labeled live or fixture;
 - daily paper P&L;
 - gross exposure;
 - available cash;

@@ -8,18 +8,20 @@ This wiki is the durable handoff for the selected {Tech: Europe} x Cala Summer L
 2. [Sonar AI](concepts/sonar-ai.md) for the product, demo, risk rules, and visual direction.
 3. [Interface plan](interface-plan.md) for onboarding, the Saloon, dashboard, and selected shadcn components.
 4. [Technical reference pack](technical-reference-pack.md) for architecture, libraries, file layout, and build order.
-5. [Cala for finance](cala-finance.md) for claimed data capabilities and unverified API assumptions.
-6. [Event brief](event-brief.md) for the schedule and event constraints.
-7. [Hackathon winner patterns](hackathon-winner-patterns.md) for the research behind the demo principles.
-8. [Open questions](open-questions.md) for the remaining tests and decisions.
-9. [Log](log.md) for chronological history.
+5. [Team workflow](team-workflow.md) for ownership, epics, branches, folder boundaries, and handoff rules.
+6. [Cala for finance](cala-finance.md) for claimed data capabilities and unverified API assumptions.
+7. [Event brief](event-brief.md) for the schedule and event constraints.
+8. [Hackathon winner patterns](hackathon-winner-patterns.md) for the research behind the demo principles.
+9. [Open questions](open-questions.md) for the remaining tests and decisions.
+10. [Log](log.md) for chronological history.
 
 ## Current pages
 
 - [Overview](overview.md): final project decision, scope, implementation state, and next actions.
 - [Sonar AI](concepts/sonar-ai.md): selected concept (formerly codenamed Agent Fund) and three-minute demo.
 - [Interface plan](interface-plan.md): screen composition and selected registries.
-- [Technical reference pack](technical-reference-pack.md): monorepo layout, Next.js, shadcn, animation, graph, data, and server architecture.
+- [Technical reference pack](technical-reference-pack.md): monorepo layout, Next.js, shadcn, animation, graph, Cala, eToro, and server architecture.
+- [Team workflow](team-workflow.md): Marc's frontend lane, Josep and Axel's agent and data lane, delivery epics, branch proposal, and cross-lane contracts.
 - [Cala for finance](cala-finance.md): finance sources Cala claims to provide.
 - [Event brief](event-brief.md): confirmed event facts.
 - [Hackathon winner patterns](hackathon-winner-patterns.md): reusable lessons from OpenAI, Anthropic, and Google winners.
