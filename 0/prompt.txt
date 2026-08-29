@@ -1,0 +1,9 @@
+okay now, we are in charge of making the architecture for the agents. now i want you to make a plan for execution, we don't want to do everything at once, we want to be thoughtful, and go step by step, so be precise.
+
+---
+
+what would be the file architecture
+
+---
+
+check out the new pull, let's start with phase 1 aswell

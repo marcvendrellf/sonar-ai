@@ -1,0 +1,89 @@
+{
+  "cli_version": "0.10.3",
+  "checkpoint_id": "01M16HXSBET60EXVTPPVDH22WB",
+  "session_id": "7df9b9a8-0e39-45ee-993e-97b4e13104c7",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-29T10:44:26.573409Z",
+  "branch": "feat/core-contracts",
+  "checkpoints_count": 3,
+  "save_step_count": 2,
+  "files_touched": [
+    "packages/core/package.json",
+    "packages/core/src/__fixtures__/golden-state.ts",
+    "packages/core/src/__tests__/evidence-integrity.test.ts",
+    "packages/core/src/__tests__/schemas.test.ts",
+    "packages/core/src/agents.ts",
+    "packages/core/src/analysis.ts",
+    "packages/core/src/events.ts",
+    "packages/core/src/evidence.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/index.ts",
+    "packages/core/src/integrity.ts",
+    "packages/core/src/mandate.ts",
+    "packages/core/src/market-data.ts",
+    "packages/core/src/phases.ts",
+    "packages/core/src/portfolio.ts",
+    "packages/core/src/primitives.ts",
+    "packages/core/src/receipts.ts",
+    "packages/core/tsconfig.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8",
+  "turn_id": "b87c3ab52d89",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 150,
+    "cache_creation_tokens": 697864,
+    "cache_read_tokens": 10570826,
+    "output_tokens": 104213,
+    "api_call_count": 75
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-29T10:44:26.522205Z",
+    "agent_lines": 8616,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 8616,
+    "total_lines_changed": 8616,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 184,
+      "user_lines_removed": 1,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.json": 95,
+        ".codex/hooks.json": 88,
+        ".env.example": 1
+      },
+      "user_removed_per_file": {
+        ".env.example": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 2142,
+      "agent_lines_removed": 2
+    }
+  ]
+}

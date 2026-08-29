@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.10.3",
+  "checkpoint_id": "01M16HXSBET60EXVTPPVDH22WB",
+  "strategy": "manual-commit",
+  "branch": "feat/core-contracts",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "packages/core/package.json",
+    "packages/core/src/__fixtures__/golden-state.ts",
+    "packages/core/src/__tests__/evidence-integrity.test.ts",
+    "packages/core/src/__tests__/schemas.test.ts",
+    "packages/core/src/agents.ts",
+    "packages/core/src/analysis.ts",
+    "packages/core/src/events.ts",
+    "packages/core/src/evidence.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/index.ts",
+    "packages/core/src/integrity.ts",
+    "packages/core/src/mandate.ts",
+    "packages/core/src/market-data.ts",
+    "packages/core/src/phases.ts",
+    "packages/core/src/portfolio.ts",
+    "packages/core/src/primitives.ts",
+    "packages/core/src/receipts.ts",
+    "packages/core/tsconfig.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 150,
+    "cache_creation_tokens": 697864,
+    "cache_read_tokens": 10570826,
+    "output_tokens": 104213,
+    "api_call_count": 75
+  }
+}
