@@ -35,3 +35,4 @@ Current captures:
 - [User-supplied Saloon clay-style reference](assets/saloon-clay-style-reference-2026-08-29.png)
 - [UI consolidation and parallel branch decision](ui-consolidation-branch-decision-2026-08-29.md)
 - [Saloon 3D asset provenance](saloon-asset-provenance-2026-08-29.md)
+- [Saloon 2D backup decision](saloon-2d-backup-decision-2026-08-29.md)

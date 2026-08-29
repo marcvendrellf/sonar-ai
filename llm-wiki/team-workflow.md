@@ -90,12 +90,13 @@ Freeze the €1,000 all-cash baseline, five-asset U.S. candidate universe, Cala 
 
 ## Branch policy
 
-The consolidated UI checkpoint is the common baseline on `main`. Three frontend agents may now work in parallel from that exact commit:
+The consolidated UI checkpoint is the common baseline on `main`. Four frontend branches may now work in parallel from that exact commit:
 
 ```text
 feat/onboarding-polish
 feat/dashboard-polish
 feat/saloon-polish
+feat/saloon-2d-backup
 ```
 
 Ownership boundaries:
@@ -104,7 +105,8 @@ Ownership boundaries:
 | --- | --- |
 | `feat/onboarding-polish` | `apps/web/app/page.tsx`, `apps/web/app/onboarding/`, `apps/web/features/onboarding/` |
 | `feat/dashboard-polish` | `apps/web/app/dashboard/`, `apps/web/features/dashboard/` |
-| `feat/saloon-polish` | `apps/web/app/saloon/`, `apps/web/features/saloon/`, Saloon assets and `apps/web/scripts/build-saloon-shell.mjs` |
+| `feat/saloon-polish` | Primary 3D Saloon in `apps/web/app/saloon/`, `apps/web/features/saloon/`, Saloon assets and `apps/web/scripts/build-saloon-shell.mjs` |
+| `feat/saloon-2d-backup` | Backup shadcn-only `/saloon` composition and branch-local Saloon documentation. It must not edit 3D assets or the active 3D worktree. |
 
 Shared files require coordination before editing:
 
@@ -125,6 +127,7 @@ Rules:
 6. Require cross-lane review for `packages/core`, API shapes, phase names, visual mappings, and fixtures.
 7. Rebase or merge current `main` before final validation when another UI branch lands first.
 8. Delete merged branches and start follow-up work from current `main`.
+9. Treat `feat/saloon-polish` and `feat/saloon-2d-backup` as alternative implementations. Judge both on the presentation laptop and merge one Saloon composition, not both feature trees.
 
 ## Proposed repository structure
 

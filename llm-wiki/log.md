@@ -174,3 +174,11 @@ Removed an unused registry demo, its unused alert primitive, the temporary regis
 The checkpoint also integrates the newer €1,000 cash-only, Alpaca Paper, and investment-committee direction already on `main`. The current onboarding budget range and Scout/Cartographer UI fixtures predate that decision and remain explicit polish-branch migration work rather than reviewed contracts.
 
 The next UI pass splits from this baseline into `feat/onboarding-polish`, `feat/dashboard-polish`, and `feat/saloon-polish`. Each branch has one writer; changes to global CSS, layout, application shell, dependencies, shared contracts, fixtures, or wiki pages require coordination.
+
+## [2026-08-29] implementation | Parallel 2D Saloon backup built
+
+Created `feat/saloon-2d-backup` from the consolidated `main` checkpoint in an isolated worktree. The branch exists as a fallback if the primary 3D Saloon fails reliability or presentation-laptop review.
+
+The 2D version keeps `/saloon`, fixture playback and scrubbing, URL-backed agent selection, responsive details, source inspection, deterministic risk results, decision receipt, and the bottom-right material-findings bell. It replaces the WebGL room with a responsive committee board built from installed shadcn/Base UI primitives. The activity feed adapts `@7ovr/activity-1`; the findings panel follows the dry-run-inspected `@7ovr/notifications-1` pattern without adding a package or block file.
+
+Registry research also inspected 7ovr timelines, kanban boards, application shells, and a shadcn-compatible React Flow canvas. The earlier Cala hackathon's sprite canvas and coupled React Flow workspace were not copied because the user required the simpler fallback to stay shadcn-based. `pnpm --filter web typecheck`, `lint`, and `build` pass. Presentation-laptop comparison remains the final branch check.

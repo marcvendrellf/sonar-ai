@@ -140,6 +140,14 @@ It answers:
 - What evidence or decision is attached to that work?
 - What have the agents found since the user last checked?
 
+### 2D backup branch
+
+The [2D backup decision](../raw-sources/saloon-2d-backup-decision-2026-08-29.md) adds `feat/saloon-2d-backup` as a parallel fallback if the 3D room misses its reliability or presentation target. The branch keeps `/saloon` and the same fixture runtime, agent selection, evidence path, source and receipt Sheets, playback controls, URL state, and material-findings bell. It replaces only the WebGL room with a responsive shadcn committee board.
+
+Use shadcn/Base UI primitives for every interactive control and panel in the 2D version. The composition uses Card, Button, Avatar, Badge, Progress, Tabs, Tooltip, Scroll Area, Separator, and Sheet. Its activity panel adapts the installed `@7ovr/activity-1` pattern, and its findings panel follows the inspected `@7ovr/notifications-1` pattern. Do not copy the custom sprite canvas from the earlier Cala project because it breaks the shadcn-only fallback constraint and adds another rendering path.
+
+The 2D branch is a backup, not a replacement decision. Keep the 3D Saloon as the primary direction until the team judges both versions on the presentation laptop.
+
 ### Default scene
 
 Use one physical meeting table in a warm, restrained 3D room. The six agent orbs sit around the table. Keep the room sparse. The table, seating, light, and orb state carry the composition.

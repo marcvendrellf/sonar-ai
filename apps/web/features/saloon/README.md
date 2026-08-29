@@ -1,59 +1,48 @@
 # Saloon
 
-The standalone Saloon feature is served at `/saloon`. The dashboard shell links
-into it, while the 3D scene stays independent from the dashboard composition.
+This branch serves the shadcn-only 2D Saloon backup at `/saloon`. It started from the same consolidated checkpoint as the primary `feat/saloon-polish` branch and exists in case the 3D room misses its reliability or presentation target.
 
-Written against `llm-wiki/interface-plan.md` §2 (single-table 3D Saloon) and
-`llm-wiki/technical-reference-pack.md` §"Saloon 3D scene". The room follows the
-clay-diorama direction in
-`raw-sources/saloon-clay-style-decision-2026-08-29.md`; assets and licences are
-recorded in `raw-sources/saloon-asset-provenance-2026-08-29.md`.
+The branch follows the [2D backup decision](../../../../raw-sources/saloon-2d-backup-decision-2026-08-29.md) and the fallback section in [the interface plan](../../../../llm-wiki/interface-plan.md). The 3D files and local assets remain in the tree for comparison, but `/saloon` does not import or initialize WebGL on this branch.
 
 ## What it does
 
-One prepared event (EV-104, an export-control replay) runs from 09:42:04 to
-09:43:12. Six agent orbs sit at one meeting table inside a cutaway clay room.
-The default camera looks down into the diorama and keeps the whole gathering in
-frame; selecting an orb moves the camera in over the rim to a frontal interview
-view and opens that agent's details in DOM on the right.
+One prepared event, EV-104, runs from 09:42:04 to 09:43:12. Six selectable agent seats surround a central committee card. The card reveals the event-to-position evidence path, latest material event, run progress, and receipt gate. A persistent desktop inspector or responsive Sheet shows agent work and evidence-linked activity.
+
+The bottom-right findings Sheet lists only material records. Source reads, relationship changes, claims, contradictions, deterministic risk results, and paper actions may create findings. Stable trace IDs track read state.
 
 ## Files
 
 | File | Owns |
 | --- | --- |
-| `run-fixture.ts` | The run: 20 typed trace entries, 3 sources, 4 deterministic checks, receipt SR-042, and the receipt-bound answers |
-| `use-saloon-run.ts` | Playback. `cursor` is the number of events that have happened; every panel is a fold over that prefix |
-| `saloon-scene.tsx` | The single React Three Fiber canvas: light rig, camera rig, evidence path, shell and orb composition |
-| `saloon-shell.tsx` | `useGLTF` loader, the four clay materials bound by name, the loading and failure placeholder, and the asset error boundary |
-| `../../scripts/build-saloon-shell.mjs` | Authors `public/models/saloon/saloon-shell.glb`. Run with `pnpm --filter web build:saloon-shell` |
-| `agent-orb.tsx` | One orb: state-driven motion, ring shape, and DOM label |
-| `saloon.tsx` | Composition, selection state, run controls, timeline scrubber |
-| `agent-roster.tsx` | Keyboard-accessible roster that selects the same agents as the orbs |
-| `agent-interview-panel.tsx` | Selected-agent details, grouped so source facts, model claims, and deterministic results stay distinct |
-| `evidence-panel.tsx` | Relationship path, sources read, deterministic checks, receipt |
+| `run-fixture.ts` | The 20-entry fixture run, sources, checks, receipt, and receipt-bound answers |
+| `use-saloon-run.ts` | Playback and the deterministic fold over the visible trace prefix |
+| `saloon.tsx` | 2D page controller, URL selection, controls, scrubber, responsive details, findings, and source/receipt Sheets |
+| `saloon-2d-board.tsx` | shadcn committee board, seats, evidence path, activity feed, selected-agent inspector, and receipt question tab |
 | `receipt-qa.tsx` | Questions answered from receipt SR-042 only |
-| `saloon-sheets.tsx` | Source sheet and decision-receipt sheet |
-| `saloon.css` | Agent, state, and result tokens, scoped to `.saloon-root` |
+| `saloon-sheets.tsx` | Source and decision-receipt Sheets |
+| `saloon.css` | Scoped semantic agent, state, and result tokens shared with the baseline |
 
-## Rules it holds to
+The remaining scene, shell, and orb files belong to the primary 3D implementation and are intentionally unused here.
 
-- One canvas, one renderer, one animation loop. Every orb shares one geometry.
-- The room is one local `.glb` of four merged meshes and four flat clay
-  materials. No textures, no CDN, no second 3D runtime.
-- One broad warm key, a weak fill, and one accumulated shadow baked over 60
-  frames. Nothing in the room is emissive or reflective.
-- The camera rig is the only owner of camera values.
-- Selection lives outside the canvas and in `?agent=<id>`, so a demo view is reproducible.
-- Text, evidence, and controls stay in DOM. Only the short orb labels sit over the canvas.
-- State is carried by motion, height, ring shape, and a written label, never by colour alone.
-- No raw Tailwind green or red. Every colour is a token in `saloon.css`.
-- Reduced motion cuts between camera poses instead of flying, and stops the orb motion.
-- A WebGL failure falls back to a seated roster that still selects agents.
-- The run is fixture data. Nothing here places an order.
+## Component rules
 
-## Scrubbing
+- Every interactive control uses the installed shadcn/Base UI Button, Tabs, Tooltip, or Sheet primitives.
+- Every panel uses Card composition. Agent identities use Avatar and AvatarFallback. State and record labels use Badge.
+- Progress, Scroll Area, and Separator provide the remaining structure. The branch adds no new UI package.
+- The activity presentation adapts the installed `@7ovr/activity-1` pattern.
+- The findings Sheet follows the dry-run-inspected `@7ovr/notifications-1` pattern without installing its static demo block.
+- Selection lives in `?agent=<id>` and clears with Escape.
+- State always has a written label and icon. Color never carries status alone.
+- The run is fixture data. Nothing here places a real-money order.
 
-The timeline strip under the header is both a visualisation and a scrubber: one
-tick per event, coloured by agent, taller for checkpoints and the risk gate.
-Selecting a tick rebuilds the entire room at that moment, including agent states,
-the relationship path, and which checks have run.
+## Validation
+
+Run from the repository root:
+
+```bash
+pnpm --filter web typecheck
+pnpm --filter web lint
+pnpm --filter web build
+```
+
+The branch has also been checked at 1280 by 720 and 390 by 844. The remaining decision is a side-by-side presentation-laptop comparison with `feat/saloon-polish`.
