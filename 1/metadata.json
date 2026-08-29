@@ -1,0 +1,68 @@
+{
+  "cli_version": "0.10.3",
+  "checkpoint_id": "01M16QWMAV60267F7N7QXBY2YY",
+  "session_id": "bfe5055d-3834-417f-bea3-8ac0b547d9f7",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-29T12:28:40.556212Z",
+  "branch": "feat/core-contracts",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "apps/web/lib/server/analysis/agents/portfolio-manager.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8",
+  "turn_id": "920230e7a319",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 40633,
+    "cache_read_tokens": 378257,
+    "output_tokens": 9199,
+    "api_call_count": 7
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-29T12:28:40.545048Z",
+    "agent_lines": 222,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 222,
+    "total_lines_changed": 222,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 448,
+      "user_lines_removed": 4,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "apps/web/lib/server/analysis/agents/fundamental-analyst.test.ts": 78,
+        "apps/web/lib/server/analysis/agents/fundamental-analyst.ts": 114,
+        "apps/web/lib/server/analysis/agents/market-context.test.ts": 79,
+        "apps/web/lib/server/analysis/agents/market-context.ts": 126,
+        "apps/web/lib/server/analysis/agents/types.ts": 32,
+        "apps/web/package.json": 6,
+        "apps/web/vitest.config.ts": 10,
+        "pnpm-lock.yaml": 3
+      },
+      "user_removed_per_file": {
+        "apps/web/package.json": 4
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 371,
+      "agent_lines_removed": 0
+    }
+  ]
+}
