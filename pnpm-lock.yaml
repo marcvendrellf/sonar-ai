@@ -97,7 +97,21 @@ importers:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@20.19.43)(lightningcss@1.32.0)
 
-  packages/risk-engine: {}
+  packages/risk-engine:
+    dependencies:
+      '@sonar-ai/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(@types/node@20.19.43)(lightningcss@1.32.0)
 
 packages:
 
