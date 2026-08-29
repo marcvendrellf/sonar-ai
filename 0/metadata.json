@@ -1,0 +1,65 @@
+{
+  "cli_version": "0.10.3",
+  "checkpoint_id": "01M16XKZW86HH4JM2V11KKEAQ0",
+  "session_id": "528cfe22-98ef-4361-a52b-3b12280ea392",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-29T14:08:48.540679Z",
+  "branch": "feat/core-contracts",
+  "checkpoints_count": 1,
+  "save_step_count": 2,
+  "files_touched": [
+    "apps/web/app/api/analysis/README.md",
+    "apps/web/app/api/analysis/[runId]/approve/route.ts",
+    "apps/web/app/api/analysis/run/route.ts",
+    "apps/web/lib/server/analysis/build-state.test.ts",
+    "apps/web/lib/server/analysis/build-state.ts",
+    "apps/web/lib/server/analysis/service.test.ts",
+    "apps/web/lib/server/analysis/service.ts",
+    "apps/web/lib/server/analysis/wiring.ts",
+    "apps/web/lib/server/runs/record.ts",
+    "apps/web/lib/server/runs/run-store.test.ts",
+    "apps/web/lib/server/runs/run-store.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8",
+  "turn_id": "9d8a2b882a58",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 574,
+    "cache_creation_tokens": 2689557,
+    "cache_read_tokens": 81545354,
+    "output_tokens": 420290,
+    "api_call_count": 287
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-29T14:08:48.392448Z",
+    "agent_lines": 1115,
+    "agent_removed": 5,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1115,
+    "total_lines_changed": 1120,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1115,
+      "agent_lines_removed": 1
+    }
+  ]
+}
