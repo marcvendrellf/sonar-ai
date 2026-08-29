@@ -31,3 +31,7 @@ Next steps, in order:
    - Re-run deterministic risk checks.
    - Submit approved orders to Alpaca Paper.
    - Store Alpaca order IDs and receipt.
+
+---
+
+commit this and push first
