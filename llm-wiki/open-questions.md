@@ -31,7 +31,7 @@ Only unresolved implementation and event questions remain. Concept selection is 
 
 | Question | Next action | Closure condition |
 | --- | --- | --- |
-| Primary faceless sphere or minimal Live Orb? | Prototype the three required states on the presentation laptop. | Pick the option that stays smooth beside Shader Gradient and React Flow. |
+| How will ongoing searches deliver new findings? | Define the typed finding record and compare bounded polling with server-sent events behind the server boundary. | The bell receives deduplicated evidence-linked records with stable IDs and data-mode labels, and the same flow works from an offline fixture. |
 
 ## Must close before demo lock
 
@@ -48,7 +48,10 @@ Only unresolved implementation and event questions remain. Concept selection is 
 - **Is trading real or simulated?** Closed 2026-08-29: Alpaca Paper only. Sonar never submits real-money orders.
 - **What are the primary team lanes?** Closed 2026-08-29: Marc owns frontend work; Josep and Axel focus mainly on agents and data.
 - **What is MVP agent topology?** Closed 2026-08-29 from the supplied architecture recommendation: one code-owned orchestrator, five decision agents (Portfolio Manager, Fundamental Analyst, Market Context Analyst, Risk Officer, Bear/Critic), human approval, then post-decision Communications/Report Writer. Cala relationship tracing is a research capability; Trader is deterministic paper-ledger code.
+- **How will the three UI surfaces continue in parallel?** Closed 2026-08-29: checkpoint the unified UI on `main`, then use `feat/onboarding-polish`, `feat/dashboard-polish`, and `feat/saloon-polish` with one writer and explicit shared-file coordination.
 - **Does Base UI `base-nova` work with the selected registries?** Closed 2026-08-29: the scaffold, application-shell block, selected third-party registry items, and required primitives compile with the Base UI preset.
+- **Which local clay-style shell and soft-light configuration meet the Saloon reference?** Closed 2026-08-29: the room is one original `saloon-shell.glb` of cutaway clay architecture with four flat matte materials, one broad warm key, a weak hemisphere fill, one subdued local environment, and a shadow accumulated over 60 frames. It loads offline, keeps all six orbs selectable in both camera modes, and passes the production build. Presentation-laptop confirmation is still outstanding. See the [asset provenance](../raw-sources/saloon-asset-provenance-2026-08-29.md).
+- **Custom faceless spheres or Live Orb for the Saloon?** Closed 2026-08-29: retain the six custom shared-canvas agent orbs and their current state behavior. Replace the room shell and lighting instead. Live Orb remains limited to a single onboarding fallback.
 - **Will `@abui/animated-chart` force an incompatible Motion version?** Closed 2026-08-29: the workspace has one Motion 12 dependency, the adapted chart supports reduced motion and stable agent IDs, and the production build passes.
 
 ## Current blockers
@@ -59,3 +62,4 @@ Only unresolved implementation and event questions remain. Concept selection is 
 - No sanitized Alpaca account, positions, or order fixture is recorded.
 - The Josep and Axel issue split and owners for Cala, Alpaca, contracts, risk, fixtures, deployment, and pitch are not recorded.
 - No organizer-provided judging rubric is recorded.
+- The clay Saloon room has not been judged on the presentation laptop.

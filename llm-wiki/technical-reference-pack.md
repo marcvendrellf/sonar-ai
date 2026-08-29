@@ -5,12 +5,14 @@ Sources:
 - [React technical references](../raw-sources/react-technical-references-2026-08-28.md)
 - [User-selected shadcn components](../raw-sources/user-selected-ui-components-2026-08-28.md)
 - [Alpaca paper-trading verification](../raw-sources/alpaca-paper-trading-verification-2026-08-29.md)
+- [Saloon 3D authoring references](../raw-sources/saloon-3d-authoring-references-2026-08-29.md)
+- [Saloon clay-style visual decision](../raw-sources/saloon-clay-style-decision-2026-08-29.md)
 
 Detailed composition: [interface plan](interface-plan.md)
 
 ## Recommended stack
 
-Use one application, Motion for DOM transitions, and one primary 3D sphere. The repository is a pnpm workspace monorepo (see the [naming and monorepo decision](../raw-sources/naming-monorepo-decision-2026-08-29.md)). Isolate the selected WebGL shader background to onboarding and waiting states:
+Use one application, Motion for DOM transitions, and one WebGL scene per active screen. The Saloon places its meeting table and agent orbs in one shared scene. The repository is a pnpm workspace monorepo (see the [naming and monorepo decision](../raw-sources/naming-monorepo-decision-2026-08-29.md)). Isolate the selected WebGL shader background to onboarding and waiting states:
 
 - **Next.js, React, and TypeScript** for the application and server-side Cala adapter.
 - **Tailwind CSS and shadcn/ui with the Base UI preset** for the application shell, onboarding, Saloon, dashboard, and accessible controls.
@@ -18,7 +20,9 @@ Use one application, Motion for DOM transitions, and one primary 3D sphere. The 
 - **7ovr Activity and Chat blocks** for agent presence and the Saloon execution trace.
 - **abui Animated Chart and Text Gradient** for agent work counts and one thinking label.
 - **Motion for React** for panels, number changes, cards, graph labels, and state transitions.
-- **React Three Fiber, Drei, and React Postprocessing** for the living sphere.
+- **React Three Fiber, Drei, and React Postprocessing** for the living fund sphere and the single-table Saloon scene.
+- **Triplex** as a development-only visual workspace for React Three Fiber composition and light tuning. It is not a production runtime dependency.
+- **Locally stored, license-recorded assets** for the simple room shell and an optional subdued environment. Photoreal material packs are not part of the clay-style target.
 - **React Flow and ELK.js** for a deterministic relationship graph.
 - **Zustand** for demo state and portfolio state.
 - **Zod** at every server boundary and fixture load.
@@ -27,6 +31,8 @@ Use one application, Motion for DOM transitions, and one primary 3D sphere. The 
 - **Lucide React** for interface icons.
 
 Do not use GSAP, Motion, Rive, Lottie, and Three.js for overlapping jobs. Motion plus React Three Fiber is enough. The selected Shader Gradient is a contained background effect, not a third general animation system. Add Rive only if a designer supplies a finished `.riv` asset that replaces the 3D sphere.
+
+Do not add the Spline runtime or a second WebGL canvas to the final Saloon. Do not replace the room with an abstract threecn effect. Spline and threecn may help with reference work, but the shipped room remains one local asset inside the existing React Three Fiber scene.
 
 ## Why these choices
 
@@ -166,9 +172,14 @@ Browser
     MandateSetup
     AgentIntroduction
   Saloon
-    AgentRoster
-    AgentChat
-    EvidencePanel
+    SaloonSceneCanvas
+      MeetingTable
+      AgentOrbs
+      SaloonCameraRig
+    AgentInterviewPanel
+    NewFindingsBell
+    NewFindingsPanel
+    SaloonRosterFallback
   Dashboard
     PortfolioSummary
     FundOrbCanvas
@@ -222,6 +233,7 @@ Analysis
   nodes[]
   edges[]
   evidence[]
+  findings[]
   bullThesis
   bearThesis
   proposedOrders[]
@@ -231,7 +243,7 @@ Analysis
   phase
 ```
 
-Each edge and thesis claim carries one or more `evidenceIds`. Every timestamp includes its source and whether the event is live, historical, or synthetic.
+Each edge and thesis claim carries one or more `evidenceIds`. Every timestamp includes its source and whether the event is live, historical, synthetic, or a fixture replay. A finding notification has a stable ID, agent ID, material event type, observation time, evidence IDs, affected record IDs, data-mode label, summary, and read state.
 
 Each stage output carries `runId`, `stage`, `status`, `startedAt`, `completedAt`, and a stable output ID. Failed or skipped stages remain visible in the receipt. A model output is invalid until its Zod schema passes and all material claims resolve to known evidence IDs. `userDecision` is required before paper-ledger mutation.
 
@@ -282,12 +294,108 @@ Drive changes through springs rather than replacing the entire canvas.
 
 ### Performance budget
 
-- Render one WebGL canvas.
+- Render one WebGL canvas per active screen.
 - Cap device pixel ratio around 1.5.
 - Pause rendering when the tab is hidden.
 - Avoid real-time shadows if a baked or contact shadow works.
 - Respect `prefers-reduced-motion` and render a static sphere state.
 - Test the deployed build on the presentation laptop before adding postprocessing.
+
+## Saloon 3D scene
+
+Source: [single-table 3D Saloon decision](../raw-sources/saloon-single-table-3d-decision-2026-08-29.md)
+
+The first Saloon uses one React Three Fiber canvas with one meeting table and six agent orbs. Keep every orb in the same scene so the application pays for one renderer and one animation loop.
+
+The warm-scene rebuild uses one authored clay-style shell. Replace the procedural room, white table, and pedestal seats with one optimized local `saloon-shell.glb`. Keep the current custom agent orbs, hit areas, state motion, camera owner, and DOM overlays in React code. The shell owns only simple cutaway architecture, a rounded table, and seat plinths. It should read as a compact video-game diorama rather than a textured real interior.
+
+Suggested ownership:
+
+```text
+apps/web/
+  features/saloon/
+    saloon-scene.tsx          # Canvas, light rig, camera, shell and orb composition
+    saloon-shell.tsx          # useGLTF loader and material bindings
+    agent-orb.tsx             # existing interactive custom orb
+  public/
+    models/saloon/
+      saloon-shell.glb
+      provenance.md
+    textures/saloon/
+      ...local 1K textures
+    environments/saloon/
+      ...local HDR, EXR, or gainmap
+```
+
+The exact public asset path may follow the existing Next.js asset convention, but all runtime files must remain inside the repository and load without network access. Record source URL, retrieval date, author when provided, license, and local filename in the provenance note.
+
+Use `useGLTF` for the shell and preload it after the Saloon route becomes likely to open. If the selected source asset needs cleanup, optimize it before committing. Prefer one merged static shell, a few shared materials, no photoreal texture set, and no unnecessary animation tracks. Target a device-pixel-ratio cap of 1.5. After approval, remove invisible geometry and compress the model without changing the accepted camera compositions.
+
+Lighting rules for the rebuilt shell:
+
+- remove the current high-intensity point lights and reduce or remove environment reflections on room materials;
+- use one very broad warm key in the 2,700 to 3,200 K range;
+- use a weak hemisphere or neutral fill so unlit faces remain legible without erasing form;
+- prefer Drei `AccumulativeShadows` with a static `RandomizedLight` cluster for the broad baked-style shadow, or use a low-opacity, high-blur `ContactShadows` fallback;
+- keep shadow edges wide, opacity low, and contrast gentle across the room;
+- no transmission, clearcoat, mirror material, chrome room furniture, or emissive architecture;
+- cyan emission remains local to agent state and the active evidence path.
+
+Starting light and shadow envelope for visual tuning:
+
+```text
+room environment contribution: 0 to 0.25
+hemisphere or ambient fill: low, enough to retain the clay silhouette
+randomized warm key: 6 to 10 samples across a broad radius
+accumulated shadow frames: 40 to 80 for the static shell
+contact-shadow fallback opacity: 0.18 to 0.28
+contact-shadow fallback blur: broad, approximately 4 to 6
+```
+
+Treat these as tuning ranges rather than product requirements. Judge the final values against the supplied reference and the presentation laptop.
+
+Material rules:
+
+- warm sand shell: `roughness` 0.9 to 1 and `metalness` 0;
+- dark brown table and seats: `roughness` 0.82 to 0.95 and `metalness` 0;
+- agent orbs: `roughness` 0.55 to 0.72, `metalness` 0, and low environment intensity;
+- use flat colors, subtle ambient occlusion, or low-frequency procedural variation only;
+- do not use visible wood grain, fabric weave, stone veining, or photoreal normal maps;
+- let rounded bevels, silhouette, ambient occlusion, and soft light describe the geometry;
+- dispose or reuse generated GPU resources and do not create materials inside the render loop.
+
+Use Triplex only while authoring. Expose a small set of source-backed controls for the table camera, interview camera offset, broad-key position, radius and intensity, fill level, shadow opacity and blur, and the main material roughness values. Save accepted values to source and verify the ordinary Next.js development and production builds without Triplex running.
+
+Use two explicit camera modes:
+
+```text
+table
+interview(agentId)
+```
+
+The table mode uses a slightly elevated camera that keeps the gathering visible. Selecting an orb sets `interview(agentId)` and moves the camera to a frontal view of that orb. The right-side details remain DOM UI outside the canvas. Returning to `table` restores the overview camera.
+
+Drive camera position, look target, selected orb emphasis, labels, and the details panel from the same selection state. Use Motion for the DOM panel and React Three Fiber interpolation or Drei camera helpers for the 3D transition. Do not let two animation systems own the same camera values.
+
+Implementation rules:
+
+- use instancing or shared geometry and materials for repeated orb meshes where it does not erase agent identity;
+- use simple collision-free fixed seats around the table instead of physics;
+- keep hit areas larger than the visible orb and provide a matching keyboard-accessible DOM roster;
+- keep text, evidence, controls, and long-form details in DOM;
+- cut or crossfade camera poses for reduced motion;
+- provide a static table or roster fallback when WebGL initialization fails;
+- preserve selected agent state outside the canvas so routing, replay, and tests remain deterministic.
+
+### New findings delivery
+
+The bottom-right bell is DOM UI over the Saloon scene. The client event store derives its unread count from typed finding records. Selecting a finding sets the selected agent and affected record before opening the interview panel.
+
+A search attempt does not create a finding. The server emits a finding only after validation and deduplication produce a new evidence-linked record or a material change to a relationship, claim, risk flag, or proposed order. Use stable finding and evidence IDs so retries do not duplicate notifications.
+
+Keep material-event delivery behind a server boundary. The browser must not hold Cala, Alpaca, search-provider, or model credentials. The transport can be bounded polling or server-sent events; choose it during implementation based on the agent pipeline. Both live and fixture delivery must feed the same validated finding schema.
+
+The hackathon fallback replays a short deterministic finding sequence with preserved source and data-mode labels. Continuous search can start another analysis cycle, but it cannot bypass risk checks or submit an order.
 
 ## Relationship graph implementation
 
@@ -321,6 +429,7 @@ Animate only the path currently being explained. All other edges remain still. C
 | Reference | Borrow | Do not copy |
 | --- | --- | --- |
 | User image | Warm white, large radius, editorial spacing, glossy sphere, deep blue active state | Quantum text, branding, exact layout |
+| User clay-style Saloon reference | Cutaway game diorama, rounded forms, matte color blocks, broad warm light, soft shadows | Photoreal textures, realistic decorative detail, glossy room materials |
 | IBM Quantum | Scientific restraint, blue depth, technical credibility | Corporate density |
 | Palantir Foundry | Objects connected by sourced relationships | Enterprise chrome and excessive controls |
 | BlackRock Aladdin | Mandate, exposure, scenario, and risk vocabulary | Dense institutional dashboard styling |
@@ -366,8 +475,8 @@ Workspace rules:
 
 1. Scaffold the pnpm workspace, initialize shadcn with `base-nova`, inspect each registry component, and define validated shared contracts plus one fixture.
 2. Build the four-scene onboarding flow as its own Marc-owned feature.
-3. Build static Saloon and dashboard shells against reviewed fixture contracts.
-4. Implement typed `AnalysisOrchestrator`, `InvestmentCommitteeState`, isolated agent outputs, sourced evidence, and explicit phase transitions.
+3. Build the single-table clay Saloon and dashboard shells, then map their presentational fixtures to reviewed shared contracts.
+4. Implement typed `AnalysisOrchestrator`, `InvestmentCommitteeState`, isolated agent outputs, sourced evidence, material events, and explicit phase transitions.
 5. Make the sphere respond to idle, tracing, and complete.
 6. Render one fixed relationship graph from a fixture and animate the active path.
 7. Implement deterministic portfolio metrics, Risk Officer hard blocks, and human approval gate.
@@ -377,4 +486,4 @@ Workspace rules:
 
 ## Cut list if time runs short
 
-Cut autonomous loops, framework integration, postprocessing, then full sphere state set, then live orb, then active-agent chart, then interactive graph dragging. Keep a static price chart if needed. Never cut source inspection, deterministic risk rejection, fixture fallback, Bear/Critic challenge, human approval, or decision receipt.
+Cut autonomous loops, workflow-framework integration, postprocessing, secondary room props, the full sphere state set, the live orb, the active-agent chart, then interactive graph dragging. Keep the rounded dark table, cutaway clay shell, one broad warm light, six selectable committee seats, a static price chart if needed, and the non-WebGL Saloon fallback. Never cut source inspection, deterministic risk rejection, fixture fallback, Bear/Critic challenge, human approval, or the decision receipt.

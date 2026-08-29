@@ -88,13 +88,11 @@ Reference: [user-supplied visual](../../raw-sources/assets/agent-fund-visual-ref
 
 ### Layout
 
-Use three tall rounded panels:
+The product can use panels for the dashboard and receipt, but the Saloon is a spatial scene rather than a three-column operations screen. See the [single-table 3D Saloon decision](../../raw-sources/saloon-single-table-3d-decision-2026-08-29.md).
 
-1. **Fund state** shows mandate, NAV, exposure, and the sphere.
-2. **Reasoning scene** shows the event and animated relationship graph.
-3. **Decision receipt** shows recommendation, risk checks, approval, paper actions, and report.
+The Saloon uses one physical meeting table in a sparse 3D room. Six faceless agent orbs represent the five decision agents and the post-decision Report Writer. The default camera shows the gathering. Selecting an orb moves the camera into a frontal interview view, while a DOM panel on the right shows that agent's task, evidence, contradiction, risk result, and blockers. A bottom-right bell may replay bounded source-linked material events from the orchestrator; it does not imply an autonomous search loop. See the [new-findings notification decision](../../raw-sources/saloon-new-findings-notification-decision-2026-08-29.md).
 
-Avoid a dense terminal. Show only the information needed for the current state.
+Keep the game quality in the camera, seating, light, and orb state. Do not add character statistics, fake dialogue, a dense HUD, or a literal Western theme. Outside the Saloon, show only the panels needed for fund state and the current decision.
 
 ### Sphere states
 
@@ -138,9 +136,10 @@ Build only:
 - two paper allocation actions;
 - one rejected or resized action;
 - one decision receipt;
+- one bottom-right new-findings bell with a bounded source-linked fixture stream;
 - the sphere states needed for research, challenge, approval, block, and completion; only three need live-demo polish.
 
-Do not build agent swarms, brokerage order integration, real-time P&L infrastructure, continuous autonomous operation, tax handling, customer accounts, backtesting, price forecasting, reinforcement learning, multiple MCP servers, distributed services, or an unconstrained trading model.
+Do not build agent swarms, brokerage order integration outside Alpaca Paper, real-time P&L infrastructure, continuous autonomous operation, tax handling, customer accounts, backtesting, price forecasting, reinforcement learning, multiple MCP servers, distributed services, or an unconstrained trading model.
 
 ## Technical flow
 
@@ -152,10 +151,10 @@ Do not build agent swarms, brokerage order integration, real-time P&L infrastruc
 6. Bear/Critic attacks surviving recommendation.
 7. Portfolio Manager revises recommendation.
 8. Human approves or rejects paper action.
-9. Trader applies approved action internally; Report Writer generates narrative after decision.
-10. Drive sphere, graph, and receipt from typed stage transitions.
+9. Alpaca Paper applies approved action; Report Writer generates narrative after decision.
+10. Typed stage transitions drive the sphere, graph, receipt, and bounded Saloon material-event notifications.
 
-For hackathon MVP, agents receive isolated context and structured state, not giant prompts or free-form transcripts. No autonomous loop, agent swarm, or live order tool exists. This preserves visible committee reasoning while keeping replay and debugging deterministic.
+For the hackathon MVP, agents receive isolated context and structured state, not giant prompts or free-form transcripts. No autonomous loop, agent swarm, or live-market order path exists. This preserves visible committee reasoning while keeping replay and debugging deterministic.
 
 ## Risk mandate for the demo
 

@@ -58,12 +58,12 @@ function AnimatedChartColumn({
       className={cn("relative flex flex-1 flex-col", !isLast && "border-r", className)}
       {...props}
     >
-      <div className="absolute inset-x-0 top-0 z-10 px-3 py-2">
-        <span className={cn("text-xs font-medium text-muted-foreground", titleClassName, column.titleClassName)}>
+      <div className="flex min-h-12 items-start px-1 py-2 sm:px-2 lg:px-3">
+        <span className={cn("block min-w-0 text-xs font-medium text-muted-foreground", titleClassName, column.titleClassName)}>
           {column.title}
         </span>
       </div>
-      <div className="relative flex flex-1 flex-col justify-end border-t border-border/10">
+      <div className="relative flex min-h-0 flex-1 flex-col justify-end border-t border-border/10">
         <motion.div
           className={cn("relative w-full border-t-2 bg-muted/20", column.className, column.topBorderClassName)}
           initial={{ height: reducedMotion ? `${heightPercentage}%` : 0 }}
