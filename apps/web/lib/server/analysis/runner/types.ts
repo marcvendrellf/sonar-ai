@@ -8,7 +8,7 @@ import type { ZodType } from "zod";
  * a stage id, instructions, an output schema, and a function that turns its
  * isolated context pack into a model input. A {@link AgentRunner} executes a
  * def. `StubAgentRunner` (Phase 3) returns canned fixture outputs;
- * `OpenAIAgentRunner` (Phase 5) calls the model — swapping one for the other is
+ * `OpenAIAgentRunner` calls the model — swapping one for the other is
  * the only change needed to go from an offline demo to live agents.
  */
 

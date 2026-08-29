@@ -4,7 +4,7 @@ One file per committee stage, each exporting an `AgentDef` (see
 [`../runner/types.ts`](../runner/types.ts)). An agent is **data**: a stage id,
 instructions, an output schema from `@sonar-ai/core`, and a `buildInput` that
 turns its isolated context pack into a model input. The `AgentRunner` executes
-it — stubbed in Phase 3, real OpenAI in Phase 5.
+it — deterministic stub offline, OpenAI structured-output runner live.
 
 | File | Stage | Output schema | Authority |
 | --- | --- | --- | --- |

@@ -33,8 +33,8 @@ export function collectReferencedEvidenceIds(
     ids.push(...claimEvidenceIds(report.claims));
   ids.push(...claimEvidenceIds(state.marketContext?.claims));
 
-  const rec = state.finalRecommendation;
-  if (rec) {
+  for (const rec of [state.proposal, state.finalRecommendation]) {
+    if (!rec) continue;
     ids.push(...claimEvidenceIds(rec.bull));
     ids.push(...claimEvidenceIds(rec.context));
     ids.push(...claimEvidenceIds(rec.bear));

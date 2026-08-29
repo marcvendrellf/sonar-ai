@@ -93,3 +93,11 @@ Wired both packages plus Zod into `apps/web` (workspace deps + `transpilePackage
 ## [2026-08-29] correction | Alpaca Paper replaces prior broker assumption
 
 The active broker direction is Alpaca Trading API with a Paper Only account. Alpaca account and position reads use a server-only client with a fixed Paper endpoint; paper order submission remains behind evidence, deterministic risk, and explicit human approval gates. Prior broker references remain historical captures only and are not active implementation guidance.
+
+## [2026-08-29] implementation | Deterministic committee orchestrator
+
+Implemented the Phase 3 server-side committee flow under `apps/web/lib/server/analysis`: isolated contexts, typed definitions for Fundamental Analyst, Market Context Analyst, Portfolio Manager, Risk Officer, Bear/Critic, and post-decision Report Writer, plus evidence, deterministic-risk, and human-approval gates. Added deterministic internal paper-ledger application and sequential fixture replay with fixed timestamps. The flow pauses at `awaiting_approval`, rejects mandate hard blocks, and cannot mutate paper state before approval. Extended the stub runner with deterministic per-stage output sequences and tightened evidence integrity to include revision-0 proposal claims. Orchestration tests cover pause, approval, replay, and hard-block behavior.
+
+## [2026-08-29] implementation | OpenAI structured-output runner
+
+Added the official `openai` TypeScript SDK behind the existing `AgentRunner` seam. Live stages use Responses API `responses.parse()` with each agent's Zod schema, disabled response storage, bounded output tokens and timeout, zero SDK-level retries, and one exact code-owned retry budget. The model receives no tools and cannot select stages or gates. `SONAR_OFFLINE=true` continues to force deterministic fixture execution. Offline unit tests cover request shape, schema parsing, retry count, and sanitized failures; no live API request was made.

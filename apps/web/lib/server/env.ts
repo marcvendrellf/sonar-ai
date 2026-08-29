@@ -21,6 +21,7 @@ const EnvSchema = z.object({
   SONAR_AGENT_MODEL: z.string().default("gpt-5"),
   SONAR_AGENT_MAX_TOKENS: z.coerce.number().int().positive().default(4096),
   SONAR_AGENT_MAX_RETRIES: z.coerce.number().int().min(0).default(1),
+  SONAR_AGENT_TIMEOUT_MS: z.coerce.number().int().positive().default(30000),
 
   // Cala (server-only)
   CALA_API_KEY: z.string().optional(),
