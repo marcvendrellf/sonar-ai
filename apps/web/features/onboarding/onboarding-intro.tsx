@@ -74,7 +74,7 @@ const THINKING_MESSAGES = [
 
 const ASSET_CLASSES = [
   { id: "stocks", label: "U.S. stocks", icon: ChartNoAxesCombined },
-  { id: "etfs", label: "ETFs", icon: Layers3 },
+  { id: "etfs", label: "Bonds", icon: Layers3 },
   { id: "crypto", label: "Crypto", icon: Bitcoin },
 ] as const satisfies ReadonlyArray<{
   id: AssetClassId

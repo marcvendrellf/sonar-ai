@@ -46,8 +46,8 @@ const allocationSeries = [
   { time: "14:01", cash: 100_000, invested: 0 },
   { time: "14:02", cash: 100_000, invested: 0 },
   { time: "14:04", cash: 100_000, invested: 0 },
-  { time: "14:05", cash: 50_000, invested: 50_000 },
-  { time: "14:06", cash: 50_000, invested: 50_000 },
+  { time: "14:05", cash: 0, invested: 100_000 },
+  { time: "14:06", cash: 0, invested: 100_000 },
 ]
 
 const allocationChartConfig = {
@@ -62,6 +62,7 @@ const allocationChartConfig = {
 } satisfies ChartConfig
 
 const after = committeeDemo.portfolioAfter ?? committeeDemo.portfolioSnapshot
+const cashWeight = after.nav.amount > 0 ? after.cash.amount / after.nav.amount : 0
 const positions = after.positions.flatMap((position) => {
   const instrument = getDemoInstrument(position.instrumentId)
   if (!instrument) return []
@@ -190,7 +191,7 @@ function DecisionReceipt() {
         <div className="rounded-xl border p-3">
           <p className="text-xs font-medium text-muted-foreground">Portfolio Manager</p>
           <p className="mt-1 text-sm leading-6">
-            30% Nvidia, 20% Siemens Energy and 50% cash after revision.
+            Defensive Growth allocation: 55% equities, 40% fixed income and 5% crypto.
           </p>
         </div>
         <div className="rounded-xl border p-3">
@@ -271,7 +272,9 @@ export function Dashboard() {
                 <TableRow>
                   <TableCell className="font-medium">Cash</TableCell>
                   <TableCell className="text-muted-foreground">Reserve</TableCell>
-                  <TableCell className="text-right tabular-nums">50%</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {Math.round(cashWeight * 100)}%
+                  </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {euroFormatter.format(
                       scaleDemoNotional(after.cash.amount)
