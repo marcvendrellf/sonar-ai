@@ -1,6 +1,6 @@
 import type { InvestmentCommitteeState, UserDecision } from "@sonar-ai/core";
 import type { InstrumentStats, StressScenario } from "@sonar-ai/risk-engine";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { AnalysisOrchestrator } from "../analysis/orchestrator";
 import type { AgentRunner } from "../analysis/runner/types";
@@ -97,4 +97,30 @@ export async function saveRecording(
 
 export async function loadRecording(path: string): Promise<RunRecording> {
   return RunRecordingSchema.parse(JSON.parse(await readFile(path, "utf8")));
+}
+
+/**
+ * Load the most recently modified recording in `dir`, or `null` if none exist.
+ * Used offline as the committee's "brain": its recorded outputs drive the stub
+ * runner so `/api/analysis/run` can produce a real committee result with no key.
+ */
+export async function loadLatestRecording(
+  dir: string = DEFAULT_RUNS_DIR,
+): Promise<RunRecording | null> {
+  let files: string[];
+  try {
+    files = (await readdir(dir)).filter((name) => name.endsWith(".json"));
+  } catch {
+    return null; // Directory absent = no recordings yet.
+  }
+  if (files.length === 0) return null;
+
+  const withMtime = await Promise.all(
+    files.map(async (name) => {
+      const path = join(dir, name);
+      return { path, mtimeMs: (await stat(path)).mtimeMs };
+    }),
+  );
+  withMtime.sort((a, b) => b.mtimeMs - a.mtimeMs);
+  return loadRecording(withMtime[0]!.path);
 }
