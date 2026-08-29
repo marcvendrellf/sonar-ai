@@ -80,6 +80,12 @@ describe("evaluateProposal — happy path with a position-limit resize", () => {
     expect(report.comparison.proposedCash.amount).toBe(500);
   });
 
+  it("surfaces cashRatio and turnover in the metrics", () => {
+    expect(report.metrics.cashRatio).toBeCloseTo(0.5, 10);
+    expect(report.metrics.turnover).toBe(0); // all-cash deploy → no sell-side churn
+    expect(report.metrics.concentration).toBe(0.3);
+  });
+
   it("is deterministic — identical input yields identical output", () => {
     const again = evaluateProposal({
       portfolio: allCashPortfolio(),

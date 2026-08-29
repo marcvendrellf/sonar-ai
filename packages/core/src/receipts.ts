@@ -37,6 +37,9 @@ export const DecisionReceiptSchema = z.object({
   event: MaterialEventSchema.nullable(),
   portfolioBefore: PortfolioSnapshotSchema,
   portfolioAfter: PortfolioSnapshotSchema,
+  /** The initial proposal (revision 0) risk evaluated; `riskReport.checks` cite its actions. */
+  proposal: RecommendationSchema.nullable(),
+  /** The revised recommendation the human approved or rejected. */
   recommendation: RecommendationSchema,
   riskReport: RiskReportSchema,
   bearCase: BearCaseSchema.nullable(),

@@ -12,7 +12,13 @@ export const RiskLimitsSchema = z.object({
   maxSectorExposure: RatioSchema,
   /** Minimum cash held, as a fraction of NAV. */
   minCashRatio: RatioSchema,
-  /** Maximum fraction of NAV that may turn over in response to one event. */
+  /**
+   * Maximum turnover per event, as a fraction of NAV. Turnover is SELL-SIDE
+   * only: the notional rotated OUT of existing positions, not gross traded
+   * notional. Deploying an all-cash book into new positions is deployment, not
+   * turnover, so the cash-only baseline has turnover 0. Enforced by
+   * `@sonar-ai/risk-engine`'s `checkTurnover` (`sellNotional / NAV`).
+   */
   maxTurnoverPerEvent: RatioSchema,
 });
 export type RiskLimits = z.infer<typeof RiskLimitsSchema>;

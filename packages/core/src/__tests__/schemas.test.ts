@@ -40,4 +40,21 @@ describe("golden committee state", () => {
     expect(goldenState.userDecision?.decision).toBe("approved");
     expect(goldenState.appliedOrders.length).toBeGreaterThan(0);
   });
+
+  it("surfaces the current value of all four mandate limits in risk metrics", () => {
+    const m = goldenState.riskReport!.metrics;
+    expect(m.concentration).toBe(0.3); // position limit
+    expect(m.sectorExposure.Semiconductors).toBe(0.3); // sector limit
+    expect(m.cashRatio).toBe(0.5); // cash floor
+    expect(m.turnover).toBe(0); // turnover limit (sell-side; all-cash deploy)
+  });
+
+  it("keeps the phase invariant: applied orders imply an approved decision", () => {
+    // The schema permits progressive enrichment (partial states validate), so
+    // this invariant is enforced by the orchestrator. We assert the reference
+    // fixture upholds it so the guarantee lives with the contract.
+    if (goldenState.appliedOrders.length > 0) {
+      expect(goldenState.userDecision?.decision).toBe("approved");
+    }
+  });
 });

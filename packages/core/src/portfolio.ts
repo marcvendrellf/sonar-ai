@@ -12,6 +12,13 @@ import {
 export const TradeSideSchema = z.enum(["buy", "sell"]);
 export type TradeSide = z.infer<typeof TradeSideSchema>;
 
+/**
+ * Sentinel `actionId` for a portfolio-wide risk check that is not tied to a
+ * single proposed action (sector, cash-floor, and turnover breaches). Shared so
+ * the engine, the integrity gate, and the UI agree on the same value.
+ */
+export const PORTFOLIO_LEVEL_ACTION_ID = "portfolio";
+
 /** A held position. The MVP baseline holds none of these (all cash). */
 export const PositionSchema = z.object({
   instrumentId: IdSchema,

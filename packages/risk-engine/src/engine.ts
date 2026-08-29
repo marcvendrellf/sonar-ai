@@ -5,8 +5,10 @@ import type {
   ProposedAction,
   RiskBreachCode,
   RiskCheck,
+  RiskMetrics,
   RiskReport,
 } from "@sonar-ai/core";
+import { PORTFOLIO_LEVEL_ACTION_ID } from "@sonar-ai/core";
 import { comparePortfolios } from "./compare";
 import { computeMetrics, type InstrumentStats } from "./metrics";
 import { applyPositionLimit } from "./rules/position-limit";
@@ -107,14 +109,14 @@ export function evaluateProposal(input: EvaluateInput): RiskReport {
 
   // ── Portfolio-level view (post-resize, valid actions only) ─────────────────
   const proposed = proposedWeights(portfolio, appliedActions, overrides);
-  const metrics = computeMetrics(proposed, instruments, instrumentStats);
+  const baseMetrics = computeMetrics(proposed, instruments, instrumentStats);
   const comparison = comparePortfolios(portfolio, proposed);
   const invested = investedWeight(proposed);
 
-  for (const breach of checkSectorLimits(metrics.sectorExposure, mandate)) {
+  for (const breach of checkSectorLimits(baseMetrics.sectorExposure, mandate)) {
     checks.push({
       id: `rsk_sector_${breach.sector}`,
-      actionId: "portfolio",
+      actionId: PORTFOLIO_LEVEL_ACTION_ID,
       result: "reject",
       breachCode: "RISK_MANDATE_BREACH",
       detail: `Sector ${breach.sector} exposure ${pct(breach.exposure)} exceeds the ${pct(
@@ -129,7 +131,7 @@ export function evaluateProposal(input: EvaluateInput): RiskReport {
   if (!cash.ok) {
     checks.push({
       id: "rsk_cash_floor",
-      actionId: "portfolio",
+      actionId: PORTFOLIO_LEVEL_ACTION_ID,
       result: "reject",
       breachCode: "RISK_MANDATE_BREACH",
       detail: `Cash ratio ${pct(cash.cashRatio)} is below the ${pct(cash.minCashRatio)} floor.`,
@@ -142,7 +144,7 @@ export function evaluateProposal(input: EvaluateInput): RiskReport {
   if (!turnover.ok) {
     checks.push({
       id: "rsk_turnover",
-      actionId: "portfolio",
+      actionId: PORTFOLIO_LEVEL_ACTION_ID,
       result: "reject",
       breachCode: "RISK_MANDATE_BREACH",
       detail: `Turnover ${pct(turnover.turnover)} exceeds the ${pct(turnover.maxTurnover)} per-event limit.`,
@@ -150,6 +152,13 @@ export function evaluateProposal(input: EvaluateInput): RiskReport {
     });
     hardBlocks.add("RISK_MANDATE_BREACH");
   }
+
+  // Surface the current value of every mandate limit in the metrics.
+  const metrics: RiskMetrics = {
+    ...baseMetrics,
+    cashRatio: cash.cashRatio,
+    turnover: turnover.turnover,
+  };
 
   const stress = stressScenarios.map((s) =>
     runStressTest(proposed, nav, currency, s, instrumentStats),

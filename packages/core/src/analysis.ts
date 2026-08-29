@@ -65,10 +65,20 @@ export const InvestmentCommitteeStateSchema = z.object({
   fundamentalReports: z.array(FundamentalReportSchema).default([]),
   marketContext: MarketContextReportSchema.nullable(),
   riskReport: RiskReportSchema.nullable(),
+  /**
+   * The Portfolio Manager's initial proposal (revision 0) — the exact set of
+   * actions the Risk Officer evaluated. Kept so every `riskChecks[].actionId`
+   * resolves to a real action even after the proposal is revised.
+   */
+  proposal: RecommendationSchema.nullable(),
+  /** The revised recommendation (revision 1) after risk + critique. */
   finalRecommendation: RecommendationSchema.nullable(),
   bearCase: BearCaseSchema.nullable(),
 
-  // Flattened views for the UI (derived from the outputs above)
+  // Flattened views for the UI, DERIVED from the outputs above (not
+  // authoritative): `proposedActions` mirrors `finalRecommendation.actions` and
+  // `riskChecks` mirrors `riskReport.checks`. The orchestrator keeps them in
+  // sync; a consumer that needs the source of truth reads the outputs directly.
   proposedActions: z.array(ProposedActionSchema).default([]),
   riskChecks: z.array(RiskCheckSchema).default([]),
 

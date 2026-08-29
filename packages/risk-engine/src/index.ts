@@ -15,6 +15,7 @@ export {
   portfolioVolatility,
   sectorExposure,
   type InstrumentStats,
+  type PortfolioRiskMetrics,
 } from "./metrics";
 export { comparePortfolios } from "./compare";
 export { runStressTest, type StressScenario } from "./stress";

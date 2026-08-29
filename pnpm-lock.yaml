@@ -84,7 +84,7 @@ importers:
   packages/core:
     dependencies:
       zod:
-        specifier: ^4.1.5
+        specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
       '@types/node':

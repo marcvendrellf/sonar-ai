@@ -30,7 +30,6 @@ export const ID_PREFIXES = {
   recommendation: "rec",
   bearCase: "bear",
   report: "rpt",
-  stageOutput: "stg",
   receipt: "rcpt",
 } as const;
 

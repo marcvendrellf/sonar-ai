@@ -80,12 +80,23 @@ export const MarketContextReportSchema = z.object({
 });
 export type MarketContextReport = z.infer<typeof MarketContextReportSchema>;
 
+/**
+ * Deterministic portfolio metrics. Beyond volatility and beta, these surface
+ * the current value of each of the four mandate limits, so the metrics panel is
+ * symmetric with the mandate: `concentration` (position limit), `sectorExposure`
+ * (sector limit), `cashRatio` (cash floor), and `turnover` (turnover limit).
+ */
 export const RiskMetricsSchema = z.object({
   volatility: z.number().nonnegative(),
   beta: z.number(),
+  /** Largest single-position weight — the value the position limit constrains. */
   concentration: RatioSchema,
   /** Exposure by sector name, each a fraction of NAV. */
   sectorExposure: z.record(z.string(), RatioSchema),
+  /** Cash held after the proposed allocation, as a fraction of NAV. */
+  cashRatio: RatioSchema,
+  /** Sell-side turnover for this event, as a fraction of NAV. */
+  turnover: RatioSchema,
 });
 export type RiskMetrics = z.infer<typeof RiskMetricsSchema>;
 

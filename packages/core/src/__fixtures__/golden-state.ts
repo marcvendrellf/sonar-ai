@@ -157,6 +157,8 @@ export const goldenState: InvestmentCommitteeState = {
       beta: 1.2,
       concentration: 0.3,
       sectorExposure: { Semiconductors: 0.3, Energy: 0.2 },
+      cashRatio: 0.5,
+      turnover: 0,
     },
     stress: [
       { scenario: "AI capex slowdown (-20%)", navImpact: { amount: -80, currency: "EUR" }, navImpactPct: -0.08 },
@@ -175,6 +177,21 @@ export const goldenState: InvestmentCommitteeState = {
       ],
     },
     hardBlocks: [],
+  },
+
+  proposal: {
+    id: "rec_proposal",
+    revision: 0,
+    actions: [
+      { id: "acn_sie_v0", instrumentId: "inst_siemens", side: "buy", targetWeight: 0.2, amount: { amount: 200, currency: "EUR" }, evidenceIds: ["ev_power_demand"] },
+      { id: "acn_nvda_v0", instrumentId: "inst_nvidia", side: "buy", targetWeight: 0.35, amount: { amount: 350, currency: "EUR" }, evidenceIds: ["ev_nvda_supplier", "ev_nvda_fund"] },
+    ],
+    bull: [{ id: "clm_bull0", statement: "Nvidia benefits directly from GlobalCloud's GPU spend.", stance: "bull", evidenceIds: ["ev_nvda_supplier", "ev_nvda_fund"] }],
+    context: [{ id: "clm_ctx0", statement: "Siemens Energy is the second-order grid beneficiary the headline omits.", stance: "context", evidenceIds: ["ev_power_demand"] }],
+    bear: [{ id: "clm_bear0", statement: "ASML supply constraints could cap Nvidia unit growth.", stance: "bear", evidenceIds: ["ev_asml_supplier"] }],
+    confidence: 0.58,
+    invalidationConditions: ["GlobalCloud delays or cuts the capex plan", "Grid permitting stalls Siemens orders"],
+    expectedCashAfter: { amount: 450, currency: "EUR" },
   },
 
   finalRecommendation: {
@@ -293,6 +310,20 @@ export const goldenState: InvestmentCommitteeState = {
       ],
       label: "synthetic",
     },
+    proposal: {
+      id: "rec_proposal",
+      revision: 0,
+      actions: [
+        { id: "acn_sie_v0", instrumentId: "inst_siemens", side: "buy", targetWeight: 0.2, amount: { amount: 200, currency: "EUR" }, evidenceIds: ["ev_power_demand"] },
+        { id: "acn_nvda_v0", instrumentId: "inst_nvidia", side: "buy", targetWeight: 0.35, amount: { amount: 350, currency: "EUR" }, evidenceIds: ["ev_nvda_supplier", "ev_nvda_fund"] },
+      ],
+      bull: [{ id: "clm_bull0", statement: "Nvidia benefits directly from GlobalCloud's GPU spend.", stance: "bull", evidenceIds: ["ev_nvda_supplier", "ev_nvda_fund"] }],
+      context: [{ id: "clm_ctx0", statement: "Siemens Energy is the second-order grid beneficiary the headline omits.", stance: "context", evidenceIds: ["ev_power_demand"] }],
+      bear: [{ id: "clm_bear0", statement: "ASML supply constraints could cap Nvidia unit growth.", stance: "bear", evidenceIds: ["ev_asml_supplier"] }],
+      confidence: 0.58,
+      invalidationConditions: ["GlobalCloud delays or cuts the capex plan", "Grid permitting stalls Siemens orders"],
+      expectedCashAfter: { amount: 450, currency: "EUR" },
+    },
     recommendation: {
       id: "rec_final",
       revision: 1,
@@ -309,7 +340,7 @@ export const goldenState: InvestmentCommitteeState = {
     },
     riskReport: {
       id: "rrp_main",
-      metrics: { volatility: 0.18, beta: 1.2, concentration: 0.3, sectorExposure: { Semiconductors: 0.3, Energy: 0.2 } },
+      metrics: { volatility: 0.18, beta: 1.2, concentration: 0.3, sectorExposure: { Semiconductors: 0.3, Energy: 0.2 }, cashRatio: 0.5, turnover: 0 },
       stress: [{ scenario: "AI capex slowdown (-20%)", navImpact: { amount: -80, currency: "EUR" }, navImpactPct: -0.08 }],
       checks: [
         { id: "rsk_sie", actionId: "acn_sie_v0", result: "pass", detail: "Siemens 20% within the 30% position limit and 45% sector limit.", numbers: { positionWeight: 0.2, sectorExposure: 0.2 } },

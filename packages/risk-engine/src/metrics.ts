@@ -2,6 +2,13 @@ import type { Instrument, RiskMetrics } from "@sonar-ai/core";
 import type { WeightMap } from "./weights";
 
 /**
+ * The weight-derived subset of {@link RiskMetrics}. `cashRatio` and `turnover`
+ * are mandate-compliance figures the engine adds once it knows the invested
+ * total and sell-side notional, so `computeMetrics` returns everything else.
+ */
+export type PortfolioRiskMetrics = Omit<RiskMetrics, "cashRatio" | "turnover">;
+
+/**
  * Optional per-instrument risk statistics. Absent an entry, an instrument is
  * treated as beta 1.0, volatility 0. These feed simplified portfolio metrics.
  */
@@ -58,12 +65,16 @@ export function portfolioVolatility(
   return vol;
 }
 
-/** Compute the full deterministic metric set for a proposed weight map. */
+/**
+ * Compute the weight-derived metrics for a proposed weight map. The engine
+ * augments the result with `cashRatio` and `turnover` to form a full
+ * {@link RiskMetrics}.
+ */
 export function computeMetrics(
   weights: WeightMap,
   instruments: readonly Instrument[],
   stats: InstrumentStats = {},
-): RiskMetrics {
+): PortfolioRiskMetrics {
   return {
     volatility: portfolioVolatility(weights, stats),
     beta: portfolioBeta(weights, stats),
