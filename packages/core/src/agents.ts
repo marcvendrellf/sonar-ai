@@ -17,8 +17,8 @@ import {
 export const AGENT_STAGES = [
   "fundamental_analyst",
   "market_context",
-  "risk_officer",
   "portfolio_manager",
+  "risk_officer",
   "bear_critic",
   "report_writer",
 ] as const;

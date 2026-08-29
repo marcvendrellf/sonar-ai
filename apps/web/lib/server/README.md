@@ -2,7 +2,7 @@
 
 This directory is the **agents & data lane** (Josep + Axel). It holds everything
 that runs on the server: the committee orchestrator, the agents, the tool layer,
-the Cala and eToro adapters, and the OpenAI client. The browser never imports
+the Cala and Alpaca adapters, and the OpenAI client. The browser never imports
 anything here.
 
 Read this before opening a file. The cross-lane contract lives in
@@ -18,8 +18,8 @@ portfolio + mandate + scenario
       AnalysisOrchestrator            analysis/orchestrator.ts
         ├─ Fundamental Analyst  ┐     analysis/agents/fundamental-analyst.ts
         ├─ Market Context       ┘     analysis/agents/market-context.ts   (parallel)
-        ├─ Risk Officer               analysis/agents/risk-officer.ts  → risk-engine
         → Portfolio Manager proposal  analysis/agents/portfolio-manager.ts
+        ├─ Risk Officer               analysis/agents/risk-officer.ts  → risk-engine
         → Bear / Critic               analysis/agents/bear-critic.ts   (no veto)
         → Portfolio Manager revision
         → human approve / reject      ← gate before any ledger mutation
@@ -40,11 +40,11 @@ portfolio + mandate + scenario
 | `analysis/runner/openai-runner.ts` | Real OpenAI structured-output runner. | ☐ Phase 5 |
 | `analysis/agents/*.ts` | One `AgentDef` per committee stage. | ☐ Phase 3/5 |
 | `tools/types.ts` | The closed `ToolName` set + `Tool` / `ToolRegistry`. | ✅ ready |
-| `tools/*.ts` | One file per tool; resolves to risk-engine / Cala / eToro / fixture. | ☐ Phase 4 |
+| `tools/*.ts` | One file per tool; resolves to risk-engine / Cala / Alpaca / fixture. | ☐ Phase 4 |
 | `llm/openai-client.ts` | Thin OpenAI wrapper (bounded tokens + retries). | ☐ Phase 5 |
 | `llm/structured-output.ts` | Zod → JSON schema · call · parse · validate. | ☐ Phase 5 |
 | `cala/*.ts` | The only Cala client; normalize + evidence-validate; fixture fallback. | ☐ Phase 4 |
-| `etoro/*.ts` | The only eToro client — **read-only**; normalize; fixture fallback. | ☐ Phase 4 |
+| `alpaca/*.ts` | The only Alpaca client — **Paper-only**; normalize; fixture fallback. | ✅ portfolio slice |
 
 Fixtures live in [`apps/web/fixtures`](../../fixtures). Route handlers live in
 `apps/web/app/api/*` and stay thin — they invoke one committee run and nothing more.
@@ -66,8 +66,8 @@ Fixtures live in [`apps/web/fixtures`](../../fixtures). Route handlers live in
 5. **The three gates, enforced in code (not prompts):**
    evidence gate → risk gate (`evaluateProposal`) → human-approval gate.
    `userDecision` must be `approved` before the trader mutates the ledger.
-6. **eToro is read-only.** Its module exposes no order/deposit/withdrawal/account
-   method (an architectural test proves this in Phase 4).
+6. **Alpaca is Paper-only.** Its module uses a fixed Paper endpoint; live
+   credentials and live endpoints are rejected.
 7. **Secrets stay here.** Never prefix a server var with `NEXT_PUBLIC_`; never
    import `env.ts` from a client component. The browser receives typed records
    only — never prompts, credentials, or hidden reasoning.
@@ -87,7 +87,7 @@ Fixtures live in [`apps/web/fixtures`](../../fixtures). Route handlers live in
 
 1. Add the name to `TOOL_NAMES` in `tools/types.ts`.
 2. Create `tools/<name>.ts` implementing `Tool<In, Out>` with Zod input/output schemas.
-3. Resolve to risk-engine / Cala / eToro / fixture inside `execute`, honoring `ctx.offline`.
+3. Resolve to risk-engine / Cala / Alpaca / fixture inside `execute`, honoring `ctx.offline`.
 4. Register it in the tool registry the orchestrator builds.
 
 ## Build order (this lane)

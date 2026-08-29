@@ -27,10 +27,14 @@ const EnvSchema = z.object({
   CALA_MCP_ENDPOINT: z.string().default("https://api.cala.ai/mcp/"),
   CALA_TIMEOUT_MS: z.coerce.number().int().positive().default(15000),
 
-  // eToro (read-only, unverified)
-  ETORO_API_KEY: z.string().optional(),
-  ETORO_API_BASE: z.string().optional(),
-  ETORO_TIMEOUT_MS: z.coerce.number().int().positive().default(15000),
+  // Alpaca Paper Trading (server-only; live trading is forbidden)
+  ALPACA_API_KEY: z.string().optional(),
+  ALPACA_SECRET_KEY: z.string().optional(),
+  ALPACA_PAPER_TRADE: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true"),
+  ALPACA_TIMEOUT_MS: z.coerce.number().int().positive().default(15000),
 });
 
 export type ServerEnv = z.infer<typeof EnvSchema>;

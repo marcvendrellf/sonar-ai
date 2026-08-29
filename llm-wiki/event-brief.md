@@ -3,7 +3,7 @@
 Sources:
 
 - [Luma event capture](../raw-sources/event-luma-2026-08-28.md)
-- [Sonar AI, eToro, and paper-trading decision](../raw-sources/sonar-etoro-paper-decision-2026-08-29.md)
+- [Alpaca Paper Trading verification](../raw-sources/alpaca-paper-trading-verification-2026-08-29.md)
 
 ## Facts
 

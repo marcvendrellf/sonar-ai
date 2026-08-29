@@ -22,7 +22,7 @@ export type ToolName = (typeof TOOL_NAMES)[number];
 
 /**
  * Services the orchestrator injects into every tool call. Adapters resolve to
- * Cala/eToro or a fixture depending on `offline`.
+ * Cala/Alpaca or a fixture depending on `offline`.
  */
 export interface ToolContext {
   offline: boolean;

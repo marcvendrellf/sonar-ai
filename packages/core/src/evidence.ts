@@ -14,7 +14,7 @@ import {
  */
 export const EvidenceSchema = z.object({
   id: IdSchema,
-  kind: z.enum(["cala", "etoro", "news", "filing", "market", "derived"]),
+  kind: z.enum(["cala", "alpaca", "news", "filing", "market", "derived"]),
   title: z.string().min(1),
   sourceName: z.string().min(1),
   sourceUrl: z.url().optional(),

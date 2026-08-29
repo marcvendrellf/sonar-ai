@@ -3,7 +3,7 @@
 Sources:
 
 - [Team ownership and delivery direction](../raw-sources/team-ownership-and-delivery-2026-08-29.md)
-- [Sonar AI, eToro, and paper-trading decision](../raw-sources/sonar-etoro-paper-decision-2026-08-29.md)
+- [Alpaca Paper Trading verification](../raw-sources/alpaca-paper-trading-verification-2026-08-29.md)
 
 Read this page before choosing an issue or opening a branch.
 
@@ -12,12 +12,12 @@ Read this page before choosing an issue or opening a branch.
 | Person | Primary lane | Responsibility |
 | --- | --- | --- |
 | Marc | Frontend | Onboarding, Saloon, dashboard, motion, accessibility, responsive behavior, and integration of typed agent events |
-| Josep | Agents and data | Shared ownership of agent behavior, Cala and eToro adapters, evidence records, and the analysis pipeline. Individual issues are not split yet. |
-| Axel | Agents and data | Shared ownership of agent behavior, Cala and eToro adapters, evidence records, and the analysis pipeline. Individual issues are not split yet. |
+| Josep | Agents and data | Shared ownership of agent behavior, Cala and Alpaca adapters, evidence records, and the analysis pipeline. Individual issues are not split yet. |
+| Axel | Agents and data | Shared ownership of agent behavior, Cala and Alpaca adapters, evidence records, and the analysis pipeline. Individual issues are not split yet. |
 
 Josep and Axel assign one direct owner to every agent-side issue. Two coding agents must not edit the same shared files without coordination.
 
-Ownership still needed: `packages/core`, `packages/risk-engine`, Cala integration, eToro integration, fixtures, deployment, and pitch.
+Ownership still needed: `packages/core`, `packages/risk-engine`, Cala integration, Alpaca integration, fixtures, deployment, and pitch.
 
 ## Concerns by lane
 
@@ -30,8 +30,8 @@ Ownership still needed: `packages/core`, `packages/risk-engine`, Cala integratio
 - Every material graph edge and thesis claim includes evidence IDs.
 - Fundamental/Market Context reports can support different conclusions while citing the same evidence; Bear/Critic challenges proposal without veto power.
 - Risk Officer calls the pure deterministic risk engine. A model cannot approve its own exception.
-- Cala and eToro credentials remain on the server.
-- eToro is read-only unless an official paper-trading interface is verified.
+- Cala and Alpaca credentials remain on the server.
+- Alpaca is fixed to Paper Trading; live credentials and endpoints are forbidden.
 - Sonar simulates orders internally and never submits real-money orders.
 - Zod validates every external response and fixture.
 - The complete demo works from sanitized fixtures without network access.
@@ -76,13 +76,13 @@ Marc owns the interface. Josep and Axel own the events and evidence records it c
 
 ### Epic 4: market data, mandate, risk, portfolio, and receipt
 
-The data lane owns the read-only eToro adapter and price fixtures. The risk-engine owner owns deterministic pass, resize, and reject results. Marc owns portfolio and receipt presentation.
+The data lane owns the Alpaca Paper adapter and price/account fixtures. The risk-engine owner owns deterministic pass, resize, and reject results. Marc owns portfolio and receipt presentation.
 
 Done means one recommendation is approved by a human, one action is accepted, and another is resized or rejected by deterministic checks. No path can submit a live order.
 
 ### Epic 5: demo integration and lock
 
-Freeze the €1,000 all-cash baseline, five-asset candidate universe, Cala fixture, eToro price fixture, three-minute script, and offline mode. Run the production build on the presentation laptop.
+Freeze the €1,000 all-cash baseline, five-asset candidate universe, Cala fixture, Alpaca Paper fixture, three-minute script, and offline mode. Run the production build on the presentation laptop.
 
 ## Branch proposal
 
@@ -99,7 +99,7 @@ Examples:
 ```text
 feat/12-onboarding-flow
 feat/18-agent-event-contract
-feat/23-etoro-market-data
+feat/23-alpaca-paper-trading
 ```
 
 Rules:
@@ -148,7 +148,7 @@ apps/
             bear-critic.ts
             report-writer.ts
         cala/
-        etoro/               # read-only adapter
+        alpaca/              # Paper-only adapter
       demo/
     fixtures/
     tests/
@@ -176,7 +176,7 @@ Folder rules:
 - `packages/core` owns cross-lane types and Zod schemas and imports neither React nor Next.js.
 - `packages/risk-engine` stays pure and consumes plain values from `packages/core`.
 - `lib/server/cala` is the only Cala client location.
-- `lib/server/etoro` is the only eToro integration location and exposes read-only normalized data.
+- `lib/server/alpaca` is the only Alpaca integration location and exposes normalized Paper data.
 - `lib/server/analysis` owns orchestrator and agent stage boundaries. Agent contexts stay isolated and outputs use Zod schemas.
 - Route handlers stay thin.
 - Keep unit tests beside the module they test. Reserve `tests/e2e` for complete flows.
@@ -198,5 +198,5 @@ Before review:
 - show reduced-motion and keyboard checks for UI work;
 - show evidence-link and deterministic-risk tests for agent work;
 - show human-approval gate and post-decision Report Writer ordering;
-- prove eToro code cannot submit orders;
+- prove Alpaca code cannot reach live endpoint;
 - update the wiki when architecture, scope, ownership, or demo behavior changes.

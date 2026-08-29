@@ -8,7 +8,7 @@ agent — the orchestrator is the only sequencer.
 | Tool | Resolves to | Notes |
 | --- | --- | --- |
 | `get_portfolio_snapshot` | internal state | current paper portfolio |
-| `get_price_history` | eToro / fixture | read-only |
+| `get_price_history` | Alpaca Market Data / fixture | read-only |
 | `get_company_fundamentals` | Cala / fixture | |
 | `search_company_information` | Cala / fixture | relationship tracing lives here |
 | `calculate_portfolio_metrics` | `@sonar-ai/risk-engine` | deterministic |

@@ -8,7 +8,7 @@ import {
 
 /**
  * A tradable instrument in the candidate universe. Sourced read-only from
- * eToro or a fixture — never an order-capable handle.
+ * Alpaca or a fixture — never an order-capable handle.
  */
 export const InstrumentSchema = z.object({
   id: IdSchema,
@@ -30,7 +30,7 @@ export type PricePoint = z.infer<typeof PricePointSchema>;
 export const PriceHistorySchema = z.object({
   instrumentId: IdSchema,
   currency: CurrencySchema,
-  source: z.enum(["etoro", "fixture"]),
+  source: z.enum(["alpaca", "fixture"]),
   label: DataLabelSchema,
   asOf: IsoDateTimeSchema,
   points: z.array(PricePointSchema).min(1),
@@ -47,7 +47,7 @@ export type InstrumentQuote = z.infer<typeof InstrumentQuoteSchema>;
 /** A point-in-time snapshot of quotes for the universe. */
 export const MarketSnapshotSchema = z.object({
   asOf: IsoDateTimeSchema,
-  source: z.enum(["etoro", "fixture"]),
+  source: z.enum(["alpaca", "fixture"]),
   label: DataLabelSchema,
   quotes: z.array(InstrumentQuoteSchema),
 });

@@ -1,0 +1,15 @@
+{
+  "account": {
+    "id": "paper-account-fixture",
+    "status": "ACTIVE",
+    "currency": "USD",
+    "cash": "100000",
+    "equity": "100000",
+    "portfolio_value": "100000",
+    "buying_power": "100000",
+    "trading_blocked": false,
+    "account_blocked": false,
+    "trade_suspended_by_user": false
+  },
+  "positions": []
+}

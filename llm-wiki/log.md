@@ -89,3 +89,7 @@ Built `@sonar-ai/core` (the cross-lane Zod contract, stable-ID helpers, evidence
 Addressed a contract review: stored the revision-0 proposal so every `riskChecks[].actionId` resolves, added action- and receipt-scoped integrity gates, surfaced all four mandate limits in `RiskMetrics`, and tightened the turnover doc.
 
 Wired both packages plus Zod into `apps/web` (workspace deps + `transpilePackages`) and scaffolded the agent backend under `apps/web/lib/server`: validated server `env.ts`, the `AgentRunner`/`AgentDef` seam with a deterministic `StubAgentRunner`, and the closed tool-name set. Documented the whole structure, conventions, and per-folder responsibilities in [`apps/web/lib/server/README.md`](../apps/web/lib/server/README.md) so both agent-lane owners can claim files without collision. Orchestrator, agents, tools, and adapters remain to be implemented (Phases 3–6).
+
+## [2026-08-29] correction | Alpaca Paper replaces prior broker assumption
+
+The active broker direction is Alpaca Trading API with a Paper Only account. Alpaca account and position reads use a server-only client with a fixed Paper endpoint; paper order submission remains behind evidence, deterministic risk, and explicit human approval gates. Prior broker references remain historical captures only and are not active implementation guidance.

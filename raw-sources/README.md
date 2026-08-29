@@ -24,6 +24,7 @@ Current captures:
 - [Final Agent Fund decision](final-decision-2026-08-28.md)
 - [Naming and monorepo decision](naming-monorepo-decision-2026-08-29.md)
 - [Team ownership and delivery direction](team-ownership-and-delivery-2026-08-29.md)
-- [Sonar AI, eToro, and paper-trading decision](sonar-etoro-paper-decision-2026-08-29.md)
+- [Historical broker decision — superseded](sonar-etoro-paper-decision-2026-08-29.md)
+- [Alpaca Paper Trading verification](alpaca-paper-trading-verification-2026-08-29.md)
 - [MVP agent-structure direction](agent-structure-mvp-direction-2026-08-29.md)
 - [Cash-only MVP direction](cash-only-mvp-direction-2026-08-29.md)

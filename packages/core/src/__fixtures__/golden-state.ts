@@ -106,8 +106,8 @@ export const goldenState: InvestmentCommitteeState = {
   stages: [
     { runId: "run_demo1", stage: "fundamental_analyst", status: "complete", startedAt: "2026-08-29T14:01:00Z", completedAt: "2026-08-29T14:02:00Z", outputId: "frp_nvidia" },
     { runId: "run_demo1", stage: "market_context", status: "complete", startedAt: "2026-08-29T14:01:00Z", completedAt: "2026-08-29T14:02:00Z", outputId: "mrp_main" },
-    { runId: "run_demo1", stage: "risk_officer", status: "complete", startedAt: "2026-08-29T14:03:00Z", completedAt: "2026-08-29T14:03:30Z", outputId: "rrp_main" },
     { runId: "run_demo1", stage: "portfolio_manager", status: "complete", startedAt: "2026-08-29T14:04:00Z", completedAt: "2026-08-29T14:04:30Z", outputId: "rec_final" },
+    { runId: "run_demo1", stage: "risk_officer", status: "complete", startedAt: "2026-08-29T14:04:30Z", completedAt: "2026-08-29T14:05:00Z", outputId: "rrp_main" },
     { runId: "run_demo1", stage: "bear_critic", status: "complete", startedAt: "2026-08-29T14:04:30Z", completedAt: "2026-08-29T14:05:00Z", outputId: "bear_main" },
     { runId: "run_demo1", stage: "report_writer", status: "complete", startedAt: "2026-08-29T14:05:30Z", completedAt: "2026-08-29T14:06:00Z", outputId: "rpt_main" },
   ],
@@ -271,8 +271,8 @@ export const goldenState: InvestmentCommitteeState = {
     { id: "act_1", kind: "phase_changed", message: "Committee run started.", at: "2026-08-29T14:00:05Z", evidenceIds: [] },
     { id: "act_2", stage: "market_context", kind: "source_read", message: "Read GlobalCloud capex announcement.", at: "2026-08-29T14:01:10Z", evidenceIds: ["ev_capex"], refId: "evt_capex" },
     { id: "act_3", stage: "fundamental_analyst", kind: "relationship_added", message: "Traced Siemens Energy as a second-order grid beneficiary.", at: "2026-08-29T14:02:00Z", evidenceIds: ["ev_power_demand"], refId: "edg_siemens_event" },
-    { id: "act_4", stage: "risk_officer", kind: "risk_changed_action", message: "Resized Nvidia from 35% to the 30% position limit.", at: "2026-08-29T14:03:20Z", evidenceIds: [], refId: "rsk_nvda" },
-    { id: "act_5", stage: "portfolio_manager", kind: "recommendation_made", message: "Proposed Siemens 20% and Nvidia 30%, holding 50% cash.", at: "2026-08-29T14:04:20Z", evidenceIds: [], refId: "rec_final" },
+    { id: "act_4", stage: "portfolio_manager", kind: "recommendation_made", message: "Proposed Siemens 20% and Nvidia 35%, holding 45% cash.", at: "2026-08-29T14:04:20Z", evidenceIds: [], refId: "rec_final" },
+    { id: "act_5", stage: "risk_officer", kind: "risk_changed_action", message: "Resized Nvidia from 35% to the 30% position limit.", at: "2026-08-29T14:04:50Z", evidenceIds: [], refId: "rsk_nvda" },
     { id: "act_6", kind: "paper_trade", message: "Applied 2 paper orders after approval.", at: "2026-08-29T14:05:25Z", evidenceIds: [], refId: "rcpt_main" },
   ],
 
