@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.10.3",
+  "checkpoint_id": "01M16K8J35MEPFT37NFYR482P3",
+  "strategy": "manual-commit",
+  "branch": "feat/core-contracts",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/core/package.json",
+    "packages/core/src/__fixtures__/golden-state.ts",
+    "packages/core/src/__tests__/evidence-integrity.test.ts",
+    "packages/core/src/__tests__/schemas.test.ts",
+    "packages/core/src/agents.ts",
+    "packages/core/src/analysis.ts",
+    "packages/core/src/ids.ts",
+    "packages/core/src/integrity.ts",
+    "packages/core/src/mandate.ts",
+    "packages/core/src/portfolio.ts",
+    "packages/core/src/receipts.ts",
+    "packages/risk-engine/src/__tests__/engine.test.ts",
+    "packages/risk-engine/src/engine.ts",
+    "packages/risk-engine/src/index.ts",
+    "packages/risk-engine/src/metrics.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 238,
+    "cache_creation_tokens": 999212,
+    "cache_read_tokens": 22211884,
+    "output_tokens": 164853,
+    "api_call_count": 119
+  }
+}
