@@ -17,6 +17,7 @@ import { marketContextAnalyst } from "./agents/market-context";
 import { portfolioManager } from "./agents/portfolio-manager";
 import { reportWriter } from "./agents/report-writer";
 import { runRiskOfficer } from "./agents/risk-officer";
+import type { Agent } from "./agents/types";
 import {
   buildBearCriticContext,
   buildFundamentalContext,
@@ -118,7 +119,11 @@ export class AnalysisOrchestrator {
       for (const instrument of selectedInstruments) {
         const report = await executeStage(
           "fundamental_analyst",
-          () => runAgent(fundamentalAnalyst, buildFundamentalContext(state, instrument), this.options.runner),
+          () => runFinalizedAgent(
+            fundamentalAnalyst,
+            buildFundamentalContext(state, instrument),
+            this.options.runner,
+          ),
           (output) => output.id,
         );
         fundamentalReports.push(report);
@@ -127,7 +132,11 @@ export class AnalysisOrchestrator {
 
       const marketContext = await executeStage(
         "market_context",
-        () => runAgent(marketContextAnalyst, buildMarketContext(state, selectedInstruments), this.options.runner),
+        () => runFinalizedAgent(
+          marketContextAnalyst,
+          buildMarketContext(state, selectedInstruments),
+          this.options.runner,
+        ),
         (output) => output.id,
       );
       state.marketContext = marketContext;
@@ -340,6 +349,15 @@ async function runAgent<TContext, TOutput>(
     throw new Error(`${definition.stage} output failed schema validation.`);
   }
   return parsed.data;
+}
+
+async function runFinalizedAgent<TContext, TDraft, TOutput>(
+  agent: Agent<TContext, TDraft, TOutput>,
+  context: TContext,
+  runner: AgentRunner,
+): Promise<TOutput> {
+  const draft = await runAgent(agent.def, context, runner);
+  return agent.finalize(draft, context);
 }
 
 function pendingStages(runId: string): StageRecord[] {

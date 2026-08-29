@@ -2,35 +2,17 @@ import type {
   BearCase,
   Evidence,
   FundamentalReport,
-  GraphNode,
   InvestmentCommitteeState,
   Mandate,
   MarketContextReport,
-  MaterialEvent,
   PortfolioSnapshot,
   Recommendation,
-  RelationshipGraph,
   RiskReport,
   UserDecision,
   Instrument,
 } from "@sonar-ai/core";
-
-export interface FundamentalContext {
-  mandate: Mandate;
-  portfolio: PortfolioSnapshot;
-  instrument: Instrument;
-  materialEvents: readonly MaterialEvent[];
-  evidence: readonly Evidence[];
-  relatedNodes: readonly GraphNode[];
-}
-
-export interface MarketContext {
-  portfolio: PortfolioSnapshot;
-  selectedInstruments: readonly Instrument[];
-  materialEvents: readonly MaterialEvent[];
-  evidence: readonly Evidence[];
-  graph: RelationshipGraph;
-}
+import type { FundamentalContext } from "./agents/fundamental-analyst";
+import type { MarketContextContext } from "./agents/market-context";
 
 export interface PortfolioManagerContext {
   mode: "proposal" | "revision";
@@ -92,31 +74,25 @@ export function buildFundamentalContext(
   for (const event of state.materialEvents) event.evidenceIds.forEach((id) => ids.add(id));
 
   return {
-    mandate: state.mandate,
-    portfolio: state.portfolioSnapshot,
     instrument,
-    materialEvents: state.materialEvents,
     evidence: evidenceByIds(state, ids),
-    relatedNodes: state.graph.nodes.filter(
-      (node) => node.instrumentId === instrument.id || ids.size === 0,
-    ),
+    priorThesis: null,
   };
 }
 
 export function buildMarketContext(
   state: InvestmentCommitteeState,
   selectedInstruments: readonly Instrument[],
-): MarketContext {
+): MarketContextContext {
   const evidenceIds = new Set<string>();
   for (const event of state.materialEvents) event.evidenceIds.forEach((id) => evidenceIds.add(id));
   for (const edge of state.graph.edges) edge.evidenceIds.forEach((id) => evidenceIds.add(id));
 
   return {
-    portfolio: state.portfolioSnapshot,
-    selectedInstruments,
-    materialEvents: state.materialEvents,
+    instruments: [...selectedInstruments],
+    materialEvents: [...state.materialEvents],
     evidence: evidenceByIds(state, evidenceIds),
-    graph: state.graph,
+    holdings: [...state.portfolioSnapshot.positions],
   };
 }
 
