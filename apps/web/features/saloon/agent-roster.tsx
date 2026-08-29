@@ -15,6 +15,7 @@ const workingStates: ReadonlySet<AgentState> = new Set([
   "tracing",
   "debating",
   "checking-risk",
+  "awaiting-approval",
   "executing",
 ])
 

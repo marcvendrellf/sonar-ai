@@ -1,4 +1,4 @@
-import { CheckCircle2 } from "lucide-react"
+import { Database } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import {
@@ -9,38 +9,42 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { AnimatedStatValue } from "@/features/dashboard/animated-stat-value"
+import { committeeDemo } from "@/fixtures/committee-demo"
 
-type PortfolioStat = {
-  id: string
-  metric: string
-  current: string
-  difference: string
-  initialValue: string
-}
+const euroFormatter = new Intl.NumberFormat("en-IE", {
+  style: "currency",
+  currency: "EUR",
+  maximumFractionDigits: 0,
+})
+
+const after = committeeDemo.portfolioAfter ?? committeeDemo.portfolioSnapshot
+const invested = after.nav.amount - after.cash.amount
+const grossExposure = after.nav.amount > 0 ? invested / after.nav.amount : 0
+const cashRatio = after.nav.amount > 0 ? after.cash.amount / after.nav.amount : 0
 
 const portfolioStats = [
   {
     id: "nav",
     metric: "Paper NAV",
-    current: "€1,018,420",
-    difference: "+1.84%",
-    initialValue: "€1,000,000",
+    current: euroFormatter.format(after.nav.amount),
+    difference: "Synthetic fixture",
+    initialValue: euroFormatter.format(committeeDemo.portfolioSnapshot.nav.amount),
   },
   {
-    id: "pnl",
-    metric: "Daily P&L",
-    current: "+€6,240",
-    difference: "+0.62%",
-    initialValue: "+€0",
+    id: "invested",
+    metric: "Invested exposure",
+    current: euroFormatter.format(invested),
+    difference: `${Math.round(grossExposure * 100)}% gross`,
+    initialValue: euroFormatter.format(0),
   },
   {
     id: "cash",
     metric: "Available cash",
-    current: "€179,210",
-    difference: "17.6%",
-    initialValue: "€0",
+    current: euroFormatter.format(after.cash.amount),
+    difference: `${Math.round(cashRatio * 100)}% retained`,
+    initialValue: euroFormatter.format(committeeDemo.portfolioSnapshot.cash.amount),
   },
-] satisfies ReadonlyArray<PortfolioStat>
+]
 
 export function PortfolioStats() {
   return (
@@ -54,8 +58,8 @@ export function PortfolioStats() {
                 <AnimatedStatValue initialValue={item.initialValue} value={item.current} />
               </CardTitle>
               <CardAction>
-                <Badge className="tabular-nums text-[var(--status-complete)]" variant="outline">
-                  <CheckCircle2 aria-hidden="true" />
+                <Badge className="tabular-nums" variant="outline">
+                  <Database aria-hidden="true" />
                   {item.difference}
                 </Badge>
               </CardAction>

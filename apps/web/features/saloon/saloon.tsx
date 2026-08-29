@@ -3,10 +3,12 @@
 import * as React from "react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 import { AgentInterviewPanel } from "./agent-interview-panel"
-import { AgentRoster, AgentStateBadge } from "./agent-roster"
+import { AgentStateBadge } from "./agent-roster"
+import { SaloonOverview } from "./saloon-overview"
 import { SourceSheet } from "./saloon-sheets"
 import { SaloonScene } from "./saloon-scene"
 import { agents, type AgentId } from "./run-fixture"
@@ -30,7 +32,8 @@ function detectWebgl(): boolean {
 
 function agentFromUrl(): AgentId | null {
   const value = new URLSearchParams(window.location.search).get("agent")
-  return agents.some((agent) => agent.id === value) ? (value as AgentId) : null
+  const agent = agents.find((candidate) => candidate.id === value)
+  return agent?.id ?? null
 }
 
 /** Shown when WebGL cannot initialise. Selection keeps working. */
@@ -65,7 +68,9 @@ function StaticTable({
                   <span className="text-sm font-medium">{agent.name}</span>
                   <AgentStateBadge state={runtime[agent.id].state} />
                 </span>
-                <span className="mt-1 block text-xs text-white/60">Seat {agent.seat + 1}</span>
+                <span className="mt-1 block text-xs text-white/60">
+                  Seat {agent.seat + 1}
+                </span>
               </button>
             </li>
           ))}
@@ -75,29 +80,12 @@ function StaticTable({
   )
 }
 
-function TablePanel({
-  run,
-  selected,
-  onSelect,
-}: {
-  run: SaloonRun
-  selected: AgentId | null
-  onSelect: (id: AgentId) => void
-}) {
-  return (
-    <div className="p-4">
-      <AgentRoster runtime={run.runtime} selected={selected} onSelect={onSelect} />
-    </div>
-  )
-}
-
-export function Saloon() {
+function SaloonRoom({ onClose }: { onClose: () => void }) {
   const run = useSaloonRun()
   const reduceMotion = useReducedMotion() ?? false
 
-  // Selection lives outside the canvas and in the URL, so a demo view is
-  // reproducible. `undefined` means the user has not chosen yet, so the URL
-  // still decides; both reads are client-only and null on the server.
+  // Selection is outside WebGL and reflected in the URL so the exact room
+  // state can be replayed. The panel overlays the scene instead of resizing it.
   const [chosen, setChosen] = React.useState<AgentId | null | undefined>(undefined)
   const [sourceId, setSourceId] = React.useState<string | null>(null)
 
@@ -116,63 +104,113 @@ export function Saloon() {
 
   React.useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") select(null)
+      if (event.key !== "Escape") return
+      if (selected) select(null)
+      else onClose()
     }
+
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [select])
+  }, [onClose, select, selected])
 
   const openSource = React.useCallback((id: string) => setSourceId(id), [])
-
   const selectedAgent = agents.find((agent) => agent.id === selected) ?? null
   const selectedRecords = React.useMemo(
     () => (selected ? run.visible.filter((entry) => entry.agent === selected) : []),
     [run.visible, selected]
   )
 
-  const panel = selectedAgent ? (
-    <AgentInterviewPanel
-      agent={selectedAgent}
-      runtime={run.runtime[selectedAgent.id]}
-      records={selectedRecords}
-      onOpenSource={openSource}
-      onBack={() => select(null)}
-    />
-  ) : (
-    <TablePanel run={run} selected={selected} onSelect={select} />
-  )
-
   return (
-    <div className="saloon-root flex h-dvh flex-col overflow-hidden bg-background text-foreground">
-      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="relative min-h-0">
-          {webgl === false ? (
-            <StaticTable runtime={run.runtime} selected={selected} onSelect={select} />
-          ) : webgl ? (
-            <SaloonScene
-              selected={selected}
-              reduceMotion={reduceMotion}
-              onSelect={select}
-            />
-          ) : null}
-        </div>
-
-        <aside className="hidden min-h-0 overflow-y-auto border-l lg:block">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={selected ?? "table"}
-              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
-              transition={{ duration: reduceMotion ? 0 : 0.22, ease: [0.23, 1, 0.32, 1] }}
-            >
-              {panel}
-            </motion.div>
-          </AnimatePresence>
-        </aside>
+    <div className="saloon-root relative h-dvh w-dvw overflow-hidden bg-background text-foreground">
+      <div className="absolute inset-0">
+        {webgl === false ? (
+          <StaticTable runtime={run.runtime} selected={selected} onSelect={select} />
+        ) : webgl ? (
+          <SaloonScene selected={selected} reduceMotion={reduceMotion} onSelect={select} />
+        ) : null}
       </div>
 
-      <SourceSheet sourceId={sourceId} onOpenChange={(open) => !open && setSourceId(null)} />
+      <Button
+        className="absolute right-4 top-4 z-30"
+        variant="outline"
+        onClick={onClose}
+      >
+        Close room
+      </Button>
+
+      <AnimatePresence initial={false}>
+        {selectedAgent ? (
+          <motion.aside
+            key={selectedAgent.id}
+            className="absolute inset-y-0 right-0 z-20 w-1/2 overflow-y-auto border-l bg-background/95 pt-14 backdrop-blur"
+            aria-label={`${selectedAgent.name} details`}
+            initial={reduceMotion ? false : { opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={reduceMotion ? { opacity: 1 } : { opacity: 0, x: 24 }}
+            transition={{
+              duration: reduceMotion ? 0 : 0.22,
+              ease: [0.23, 1, 0.32, 1],
+            }}
+          >
+            <AgentInterviewPanel
+              agent={selectedAgent}
+              runtime={run.runtime[selectedAgent.id]}
+              records={selectedRecords}
+              onOpenSource={openSource}
+              onBack={() => select(null)}
+            />
+          </motion.aside>
+        ) : null}
+      </AnimatePresence>
+
+      <SourceSheet
+        sourceId={sourceId}
+        onOpenChange={(open) => !open && setSourceId(null)}
+      />
     </div>
+  )
+}
+
+export function Saloon() {
+  const [roomOpen, setRoomOpen] = React.useState(false)
+  const reduceMotion = useReducedMotion() ?? false
+
+  const openRoom = React.useCallback(() => setRoomOpen(true), [])
+  const closeRoom = React.useCallback(() => setRoomOpen(false), [])
+
+  React.useEffect(() => {
+    if (!roomOpen) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [roomOpen])
+
+  return (
+    <>
+      <SaloonOverview onOpenRoom={openRoom} />
+      <AnimatePresence>
+        {roomOpen ? (
+          <motion.div
+            className="fixed inset-0 z-50 bg-background"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Saloon room"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: reduceMotion ? 0 : 0.3,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            <SaloonRoom onClose={closeRoom} />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </>
   )
 }

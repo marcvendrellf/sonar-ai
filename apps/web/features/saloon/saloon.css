@@ -7,23 +7,24 @@
  */
 
 .saloon-root {
-  --agent-scout: #4a7e9a;
-  --agent-cartographer: #087f9d;
-  --agent-analyst: #397567;
-  --agent-skeptic: #8b651f;
-  --agent-marshal: #625d77;
-  --agent-trader: #39485a;
+  --agent-portfolio-manager: #4a7e9a;
+  --agent-fundamental-analyst: #b7834c;
+  --agent-market-context: #397567;
+  --agent-risk-officer: #8b651f;
+  --agent-bear-critic: #625d77;
+  --agent-report-writer: #59697c;
 
   --sonar-navy: #06182f;
   --sonar-blue: #087f9d;
   --sonar-cyan: #39bdd1;
 
   --state-idle: #6b7280;
-  --state-reading: var(--agent-scout);
-  --state-tracing: var(--agent-cartographer);
-  --state-debating: var(--agent-skeptic);
-  --state-checking-risk: var(--agent-marshal);
-  --state-executing: #0f6f86;
+  --state-reading: var(--agent-fundamental-analyst);
+  --state-tracing: var(--agent-market-context);
+  --state-debating: var(--agent-bear-critic);
+  --state-checking-risk: var(--agent-risk-officer);
+  --state-awaiting-approval: #9b701f;
+  --state-executing: var(--agent-report-writer);
   --state-blocked: #8a4030;
   --state-complete: #256b5d;
 
@@ -64,17 +65,18 @@
 .saloon-state[data-state="tracing"] { --tone: var(--state-tracing); }
 .saloon-state[data-state="debating"] { --tone: var(--state-debating); }
 .saloon-state[data-state="checking-risk"] { --tone: var(--state-checking-risk); }
+.saloon-state[data-state="awaiting-approval"] { --tone: var(--state-awaiting-approval); }
 .saloon-state[data-state="executing"] { --tone: var(--state-executing); }
 .saloon-state[data-state="blocked"] { --tone: var(--state-blocked); }
 .saloon-state[data-state="complete"] { --tone: var(--state-complete); }
 
 /* One --tone variable per agent drives rails, initials and names. */
-.saloon-agent[data-agent="scout"] { --tone: var(--agent-scout); }
-.saloon-agent[data-agent="cartographer"] { --tone: var(--agent-cartographer); }
-.saloon-agent[data-agent="analyst"] { --tone: var(--agent-analyst); }
-.saloon-agent[data-agent="skeptic"] { --tone: var(--agent-skeptic); }
-.saloon-agent[data-agent="marshal"] { --tone: var(--agent-marshal); }
-.saloon-agent[data-agent="trader"] { --tone: var(--agent-trader); }
+.saloon-agent[data-agent="portfolio-manager"] { --tone: var(--agent-portfolio-manager); }
+.saloon-agent[data-agent="fundamental-analyst"] { --tone: var(--agent-fundamental-analyst); }
+.saloon-agent[data-agent="market-context"] { --tone: var(--agent-market-context); }
+.saloon-agent[data-agent="risk-officer"] { --tone: var(--agent-risk-officer); }
+.saloon-agent[data-agent="bear-critic"] { --tone: var(--agent-bear-critic); }
+.saloon-agent[data-agent="report-writer"] { --tone: var(--agent-report-writer); }
 
 .saloon-result[data-result="pass"] { --tone: var(--check-pass); }
 .saloon-result[data-result="resize"] { --tone: var(--check-resize); }

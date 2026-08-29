@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 
+import { ApplicationShell1 } from "@/components/application-shell1"
 import { Saloon } from "@/features/saloon/saloon"
 
 import "@/features/saloon/saloon.css"
@@ -10,5 +11,9 @@ export const metadata: Metadata = {
 }
 
 export default function SaloonPage() {
-  return <Saloon />
+  return (
+    <ApplicationShell1>
+      <Saloon />
+    </ApplicationShell1>
+  )
 }

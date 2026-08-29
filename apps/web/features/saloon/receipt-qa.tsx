@@ -17,7 +17,7 @@ type Exchange = {
 }
 
 /**
- * A question resolves from decision receipt SR-042 only. There is no chat
+ * A question resolves from the synthetic decision receipt only. There is no chat
  * history to answer from, and a question the receipt does not cover is refused.
  */
 export function ReceiptQuestions({ enabled }: { enabled: boolean }) {

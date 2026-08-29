@@ -1,18 +1,16 @@
-/**
- * The Saloon fixture runs one prepared event end to end.
- *
- * Everything here is fixture data. The trace is an execution log: an entry
- * exists only because something observable happened. There are no filler
- * messages and no agent small talk.
- */
+import { committeeDemo } from "@/fixtures/committee-demo"
 
+/**
+ * Saloon adapter for the validated synthetic committee run. The six spheres
+ * map one-to-one to the five decision agents and post-decision Report Writer.
+ */
 export type AgentId =
-  | "scout"
-  | "cartographer"
-  | "analyst"
-  | "skeptic"
-  | "marshal"
-  | "trader"
+  | "portfolio-manager"
+  | "fundamental-analyst"
+  | "market-context"
+  | "risk-officer"
+  | "bear-critic"
+  | "report-writer"
 
 export type AgentState =
   | "idle"
@@ -20,6 +18,7 @@ export type AgentState =
   | "tracing"
   | "debating"
   | "checking-risk"
+  | "awaiting-approval"
   | "executing"
   | "blocked"
   | "complete"
@@ -34,8 +33,7 @@ export type TraceKind =
   | "trade"
   | "checkpoint"
 
-export type PathNodeId = "event" | "edge" | "position"
-
+export type PathNodeId = "event" | "nvidia" | "siemens" | "portfolio"
 export type CheckResult = "pass" | "resize" | "reject"
 
 export type Agent = {
@@ -44,9 +42,7 @@ export type Agent = {
   initials: string
   role: string
   idleTask: string
-  /** Seat index around the table, clockwise from the far side. */
   seat: number
-  /** Orb material colour. Mirrors --agent-<id> in saloon.css; keep both in step. */
   color: string
 }
 
@@ -76,410 +72,378 @@ export type RiskCheck = {
 
 export type TraceEntry = {
   id: string
-  /** Milliseconds from the start of the run. Drives playback pacing. */
   at: number
   clock: string
-  agent: AgentId
+  /** Omitted for deterministic system events such as approval and paper orders. */
+  agent?: AgentId
   kind: TraceKind
   text: string
-  /** Id of a Source. Renders a clickable source badge. */
   source?: string
-  /** Label for a system badge, used when no external source backs the entry. */
   system?: string
-  /** Agent states this entry sets. Folded forward to give live roster state. */
   states?: Partial<Record<AgentId, AgentState>>
-  /** Task line shown on the roster for the acting agent. */
+  tasks?: Partial<Record<AgentId, string>>
   task?: string
-  /** Relationship path node this entry reveals. */
   reveals?: PathNodeId
-  /** Deterministic check this entry records. */
   check?: RiskCheck
 }
 
 export const agents: readonly Agent[] = [
   {
-    id: "scout",
-    name: "Scout",
-    initials: "SC",
-    role: "Reads the event",
-    idleTask: "Waiting for the event to open",
+    id: "portfolio-manager",
+    name: "Portfolio Manager",
+    initials: "PM",
+    role: "Owns allocation and revision",
+    idleTask: "Waiting for research and risk outputs",
     seat: 0,
     color: "#69b9d6",
   },
   {
-    id: "cartographer",
-    name: "Cartographer",
-    initials: "CA",
-    role: "Traces relationships",
-    idleTask: "Waiting for the event brief",
+    id: "fundamental-analyst",
+    name: "Fundamental Analyst",
+    initials: "FA",
+    role: "Tests quality, valuation and catalysts",
+    idleTask: "Waiting for an isolated company evidence pack",
     seat: 1,
     color: "#c99b62",
   },
   {
-    id: "analyst",
-    name: "Analyst",
-    initials: "AN",
-    role: "Builds the bull case",
-    idleTask: "Waiting for a sourced path",
+    id: "market-context",
+    name: "Market Context Analyst",
+    initials: "MC",
+    role: "Traces news, sector and macro context",
+    idleTask: "Waiting for the material event",
     seat: 2,
     color: "#9da99f",
   },
   {
-    id: "skeptic",
-    name: "Skeptic",
-    initials: "SK",
-    role: "Attacks the bull case",
-    idleTask: "Waiting for a claim to test",
+    id: "risk-officer",
+    name: "Risk Officer",
+    initials: "RO",
+    role: "Enforces deterministic mandate limits",
+    idleTask: "Waiting for a proposed allocation",
     seat: 3,
     color: "#a6a39d",
   },
   {
-    id: "marshal",
-    name: "Marshal",
-    initials: "MA",
-    role: "Enforces risk limits",
-    idleTask: "Waiting for a proposed order",
+    id: "bear-critic",
+    name: "Bear / Critic",
+    initials: "BC",
+    role: "Attacks assumptions and failure scenarios",
+    idleTask: "Waiting for a risk-checked recommendation",
     seat: 4,
     color: "#ded1b8",
   },
   {
-    id: "trader",
-    name: "Trader",
-    initials: "TR",
-    role: "Applies paper orders",
-    idleTask: "Waiting for an approved order",
+    id: "report-writer",
+    name: "Report Writer",
+    initials: "RW",
+    role: "Documents the decision after human review",
+    idleTask: "Blocked until a human decision exists",
     seat: 5,
     color: "#c3a47b",
   },
 ]
 
+const evidenceById = Object.fromEntries(
+  committeeDemo.evidence.map((evidence) => [evidence.id, evidence])
+)
+
 export const sources: Record<string, Source> = {
-  "SRC-01": {
-    id: "SRC-01",
-    title: "Export-control notice EV-104",
-    publisher: "Official journal replay fixture",
-    url: "https://fixtures.sonar.local/events/ev-104",
-    observedAt: "2026-08-29 09:41 UTC",
-    edge: "EV-104 restricts the low-power radio component line",
-    note: "Prepared historical replay. The notice is dated, not live.",
+  ev_capex: {
+    id: "ev_capex",
+    title: evidenceById.ev_capex.title,
+    publisher: evidenceById.ev_capex.sourceName,
+    url: evidenceById.ev_capex.sourceUrl ?? "https://fixtures.sonar.local/evidence/ev_capex",
+    observedAt: evidenceById.ev_capex.observedAt,
+    edge: "GlobalCloud's synthetic €40B AI datacenter event opens the research run.",
+    note: "Synthetic fixture evidence. The event is not live and is not investment advice.",
   },
-  "SRC-02": {
-    id: "SRC-02",
-    title: "Nordic Semiconductor 2025 annual report, supplier note",
-    publisher: "Company filing replay fixture",
-    url: "https://fixtures.sonar.local/filings/nod-ol-2025-ar",
-    observedAt: "2026-08-28 22:10 UTC",
-    edge: "ED-208 supplies low-power chips to two named integrators",
-    note: "The supplier note is 11 months old. No newer filing is in the fixture set.",
+  ev_nvda_supplier: {
+    id: "ev_nvda_supplier",
+    title: evidenceById.ev_nvda_supplier.title,
+    publisher: evidenceById.ev_nvda_supplier.sourceName,
+    url: "https://fixtures.sonar.local/evidence/ev_nvda_supplier",
+    observedAt: evidenceById.ev_nvda_supplier.observedAt,
+    edge: "GlobalCloud sources AI GPUs from Nvidia—the first-order relationship.",
+    note: "Synthetic Cala relationship fixture. Association is evidence, not proof of causation.",
   },
-  "SRC-03": {
-    id: "SRC-03",
-    title: "Cala relationship record ED-208",
-    publisher: "Cala fixture export",
-    url: "https://fixtures.sonar.local/cala/ed-208",
-    observedAt: "2026-08-28 22:14 UTC",
-    edge: "ED-208 connects EV-104 to paper position POS-02",
-    note: "Association observed in the graph. Causal certainty is not claimed.",
+  ev_asml_supplier: {
+    id: "ev_asml_supplier",
+    title: evidenceById.ev_asml_supplier.title,
+    publisher: evidenceById.ev_asml_supplier.sourceName,
+    url: "https://fixtures.sonar.local/evidence/ev_asml_supplier",
+    observedAt: evidenceById.ev_asml_supplier.observedAt,
+    edge: "Nvidia's advanced-node supply chain depends on ASML EUV lithography.",
+    note: "Synthetic inferred relationship with 0.85 fixture confidence.",
+  },
+  ev_power_demand: {
+    id: "ev_power_demand",
+    title: evidenceById.ev_power_demand.title,
+    publisher: evidenceById.ev_power_demand.sourceName,
+    url: "https://fixtures.sonar.local/evidence/ev_power_demand",
+    observedAt: evidenceById.ev_power_demand.observedAt,
+    edge: "Datacenter grid demand exposes Siemens Energy as a second-order beneficiary.",
+    note: "Synthetic inferred relationship with 0.75 fixture confidence.",
+  },
+  ev_nvda_fund: {
+    id: "ev_nvda_fund",
+    title: evidenceById.ev_nvda_fund.title,
+    publisher: evidenceById.ev_nvda_fund.sourceName,
+    url: "https://fixtures.sonar.local/evidence/ev_nvda_fund",
+    observedAt: evidenceById.ev_nvda_fund.observedAt,
+    edge: "Supports the Nvidia quality and demand thesis.",
+    note: "Synthetic filing fixture, not a real company filing.",
+  },
+  ev_siemens_fund: {
+    id: "ev_siemens_fund",
+    title: evidenceById.ev_siemens_fund.title,
+    publisher: evidenceById.ev_siemens_fund.sourceName,
+    url: "https://fixtures.sonar.local/evidence/ev_siemens_fund",
+    observedAt: evidenceById.ev_siemens_fund.observedAt,
+    edge: "Supports the Siemens Energy backlog and grid-demand thesis.",
+    note: "Synthetic filing fixture, not a real company filing.",
   },
 }
 
 export const pathNodes: readonly PathNode[] = [
   {
     id: "event",
-    kind: "Event",
-    label: "Export-control replay",
-    meta: "EV-104 · historical",
+    kind: "Synthetic event",
+    label: "GlobalCloud AI buildout",
+    meta: "€40B fixture · 2027 capacity",
   },
   {
-    id: "edge",
-    kind: "Relationship",
-    label: "Supplies low-power chips",
-    meta: "ED-208 · Cala fixture",
+    id: "nvidia",
+    kind: "First-order exposure",
+    label: "Nvidia",
+    meta: "GPU supplier · extracted",
   },
   {
-    id: "position",
-    kind: "Position",
-    label: "Nordic Semiconductor",
-    meta: "POS-02 · 18.6% paper weight",
+    id: "siemens",
+    kind: "Second-order exposure",
+    label: "Siemens Energy",
+    meta: "Grid demand · inferred 0.75",
+  },
+  {
+    id: "portfolio",
+    kind: "Approved paper allocation",
+    label: "30% NVDA · 20% SIEGY",
+    meta: "50% cash retained",
   },
 ]
 
 export const receipt = {
-  id: "SR-042",
-  writtenAt: "09:43:12 UTC",
+  id: committeeDemo.receipt?.id ?? "rcpt_main",
+  writtenAt: "14:06 UTC",
   thesis:
-    "The prepared event raises second-order demand risk for a current semiconductor exposure. The relationship is evidence, not proof of causation.",
-  acceptedOrder: "Sell €41,500 NOD.OL at fixture price 118.40",
-  rejectedAlternative: "Sell €62,000 NOD.OL. Rejected because it breached the turnover cap.",
-  conviction: "Reduced. The supporting filing is 11 months old.",
+    committeeDemo.report?.narrative ??
+    "The committee traced the event to first- and second-order exposures.",
+  acceptedOrder: "Buy €300 NVDA and €200 SIEGY in the paper ledger.",
+  rejectedAlternative: "NVDA at 35% was resized to the 30% maximum-position limit.",
+  conviction: "62% after risk resize and Bear / Critic review.",
 } as const
 
-/**
- * The run. Clock values are fixture timestamps; `at` drives playback pacing.
- */
 export const trace: readonly TraceEntry[] = [
   {
     id: "t01",
     at: 0,
-    clock: "09:42:04",
-    agent: "scout",
+    clock: "14:01:10",
+    agent: "market-context",
     kind: "source",
-    text: "Opened the prepared export-control notice and confirmed its publication timestamp.",
-    source: "SRC-01",
-    states: { scout: "reading" },
-    task: "Reading EV-104",
+    text: "Read the synthetic GlobalCloud €40B AI datacenter announcement and isolated the named GPU spend.",
+    source: "ev_capex",
+    states: { "market-context": "reading" },
+    task: "Mapping the material event to the candidate universe",
     reveals: "event",
   },
   {
     id: "t02",
-    at: 7000,
-    clock: "09:42:11",
-    agent: "scout",
-    kind: "source",
-    text: "Read the supplier note filed with the 2025 annual report of the position under review.",
-    source: "SRC-02",
-    task: "Reading supplier filings",
+    at: 4_000,
+    clock: "14:01:34",
+    agent: "market-context",
+    kind: "relationship",
+    text: "Traced Nvidia as the first-order GPU supplier and Siemens Energy as the less obvious grid-demand exposure.",
+    source: "ev_power_demand",
+    task: "Testing first- and second-order relationships",
+    reveals: "siemens",
   },
   {
     id: "t03",
-    at: 14000,
-    clock: "09:42:18",
-    agent: "scout",
-    kind: "checkpoint",
-    text: "Event brief ready. Two sources read, both dated before the run started.",
-    system: "brief",
-    states: { scout: "complete", cartographer: "tracing" },
-    task: "Brief handed over",
+    at: 8_000,
+    clock: "14:01:58",
+    agent: "market-context",
+    kind: "claim",
+    text: "Context hypothesis: semiconductors are extended while grid-equipment names are earlier in their re-rating.",
+    source: "ev_power_demand",
+    states: { "market-context": "complete", "fundamental-analyst": "reading" },
+    task: "Context report complete",
   },
   {
     id: "t04",
-    at: 18000,
-    clock: "09:42:22",
-    agent: "cartographer",
-    kind: "relationship",
-    text: "Added edge: the notice restricts the low-power radio component line.",
-    source: "SRC-01",
-    task: "Tracing entities in Cala",
+    at: 12_000,
+    clock: "14:02:08",
+    agent: "fundamental-analyst",
+    kind: "source",
+    text: "Reviewed the synthetic Nvidia filing for datacenter growth, margins and balance-sheet strength.",
+    source: "ev_nvda_fund",
+    task: "Reviewing Nvidia quality and valuation",
+    reveals: "nvidia",
   },
   {
     id: "t05",
-    at: 25000,
-    clock: "09:42:29",
-    agent: "cartographer",
-    kind: "relationship",
-    text: "Added edge: Nordic Semiconductor supplies that component line to two named integrators.",
-    source: "SRC-02",
-    task: "Tracing supplier edges",
-    reveals: "edge",
+    at: 16_000,
+    clock: "14:02:20",
+    agent: "fundamental-analyst",
+    kind: "source",
+    text: "Reviewed the synthetic Siemens Energy filing for grid-order backlog and execution risk.",
+    source: "ev_siemens_fund",
+    task: "Comparing direct and second-order candidates",
   },
   {
     id: "t06",
-    at: 31000,
-    clock: "09:42:35",
-    agent: "cartographer",
-    kind: "relationship",
-    text: "Linked the traced entity to paper position POS-02, currently 18.6% of the book.",
-    source: "SRC-03",
-    task: "Linking graph to the book",
-    reveals: "position",
+    at: 20_000,
+    clock: "14:02:44",
+    agent: "fundamental-analyst",
+    kind: "claim",
+    text: "Fundamental hypothesis: Nvidia has the stronger moat; Siemens Energy offers the more reasonably valued second-order exposure.",
+    source: "ev_siemens_fund",
+    states: { "fundamental-analyst": "complete", "portfolio-manager": "debating" },
+    task: "Fundamental reports complete",
   },
   {
     id: "t07",
-    at: 34000,
-    clock: "09:42:38",
-    agent: "cartographer",
-    kind: "checkpoint",
-    text: "Sourced path complete: EV-104 → ED-208 → POS-02. Every edge carries a source.",
-    system: "graph",
-    states: { cartographer: "complete", analyst: "debating", skeptic: "debating" },
-    task: "Path published",
+    at: 24_000,
+    clock: "14:04:20",
+    agent: "portfolio-manager",
+    kind: "claim",
+    text: "Proposed 35% Nvidia and 20% Siemens Energy, retaining 45% cash from the €1,000 paper baseline.",
+    system: "rec_proposal",
+    states: { "risk-officer": "checking-risk", "report-writer": "blocked" },
+    task: "Waiting for deterministic risk checks",
   },
   {
     id: "t08",
-    at: 39000,
-    clock: "09:42:43",
-    agent: "analyst",
-    kind: "claim",
-    text: "Claim: the demand risk is priced into the integrators but not into the component supplier.",
-    source: "SRC-03",
-    task: "Building the bull case",
+    at: 28_000,
+    clock: "14:04:38",
+    agent: "risk-officer",
+    kind: "risk",
+    text: "Passed Siemens Energy at 20%: inside both the 30% position limit and 45% sector limit.",
+    system: "rsk_sie",
+    task: "Checking the Core mandate",
+    check: {
+      id: "rsk_sie",
+      label: "Siemens Energy allocation",
+      result: "pass",
+      detail: "20% position and 20% Energy exposure remain inside the Core mandate.",
+    },
   },
   {
     id: "t09",
-    at: 45000,
-    clock: "09:42:49",
-    agent: "skeptic",
-    kind: "contradiction",
-    text: "Contradiction: the filing names two integrators, and neither appears on the restricted list in EV-104.",
-    source: "SRC-02",
-    task: "Testing the claim",
+    at: 32_000,
+    clock: "14:04:50",
+    agent: "risk-officer",
+    kind: "risk",
+    text: "Resized Nvidia from 35% to the Core mandate's 30% maximum-position limit (€300).",
+    system: "POSITION_LIMIT_BREACH",
+    states: { "risk-officer": "complete", "bear-critic": "debating" },
+    task: "Risk report complete; one action resized",
+    check: {
+      id: "rsk_nvda",
+      label: "Nvidia allocation",
+      result: "resize",
+      detail: "35% requested · 30% maximum · resized to €300.",
+    },
   },
   {
     id: "t10",
-    at: 50000,
-    clock: "09:42:54",
-    agent: "analyst",
-    kind: "claim",
-    text: "Conceded. Narrowed the claim to the shared component line rather than the integrator relationship.",
-    source: "SRC-02",
-    task: "Narrowing the claim",
+    at: 36_000,
+    clock: "14:04:56",
+    agent: "bear-critic",
+    kind: "contradiction",
+    text: "Challenged the Nvidia thesis: consensus already prices durable datacenter growth and ASML constraints can cap unit growth.",
+    source: "ev_asml_supplier",
+    task: "Testing the strongest assumptions",
   },
   {
     id: "t11",
-    at: 54000,
-    clock: "09:42:58",
-    agent: "skeptic",
+    at: 40_000,
+    clock: "14:05:02",
+    agent: "bear-critic",
     kind: "contradiction",
-    text: "Standing objection: the supporting filing is 11 months old and no newer filing exists in the fixture set.",
-    system: "no newer source",
-    task: "Objection recorded",
+    text: "Failure scenario: an AI capex slowdown compresses multiples across both approved names.",
+    source: "ev_nvda_fund",
+    states: { "bear-critic": "complete", "portfolio-manager": "debating" },
+    task: "Counter-case recorded; no veto authority",
   },
   {
     id: "t12",
-    at: 55000,
-    clock: "09:42:59",
-    agent: "trader",
-    kind: "gate",
-    text: "Execution is blocked. No order reaches the book before the Marshal passes every deterministic check.",
-    system: "gate",
-    states: { trader: "blocked" },
-    task: "Blocked at the risk gate",
+    at: 44_000,
+    clock: "14:05:10",
+    agent: "portfolio-manager",
+    kind: "claim",
+    text: "Revised the allocation to 30% Nvidia, 20% Siemens Energy and 50% cash, with 62% confidence and explicit invalidation conditions.",
+    system: "rec_final",
+    states: { "portfolio-manager": "awaiting-approval" },
+    task: "Awaiting explicit human approval",
+    reveals: "portfolio",
   },
   {
     id: "t13",
-    at: 58000,
-    clock: "09:43:02",
-    agent: "analyst",
-    kind: "checkpoint",
-    text: "Thesis accepted with reduced conviction. Proposed paper order: sell €62,000 NOD.OL.",
-    system: "decision",
-    states: { analyst: "complete", skeptic: "complete", marshal: "checking-risk" },
-    task: "Thesis accepted",
+    at: 48_000,
+    clock: "14:05:20",
+    kind: "gate",
+    text: "Human approved the resized recommendation. The deterministic paper ledger gate opened.",
+    system: "approved",
+    states: { "portfolio-manager": "complete", "report-writer": "executing" },
+    tasks: {
+      "portfolio-manager": "Final allocation approved and handed to the paper ledger",
+      "report-writer": "Writing the post-decision internal report",
+    },
   },
   {
     id: "t14",
-    at: 61000,
-    clock: "09:43:05",
-    agent: "marshal",
-    kind: "risk",
-    text: "Position exposure after the sale would be 12.4%, inside the 30% limit.",
-    system: "limit",
-    task: "Checking exposure",
-    check: {
-      id: "RC-01",
-      label: "Position exposure",
-      result: "pass",
-      detail: "12.4% after sale · limit 30%",
-    },
+    at: 52_000,
+    clock: "14:05:25",
+    kind: "trade",
+    text: "Paper ledger applied two approved orders: €300 NVDA and €200 SIEGY. No real-money order was placed.",
+    system: "paper only",
   },
   {
     id: "t15",
-    at: 63000,
-    clock: "09:43:07",
-    agent: "marshal",
-    kind: "risk",
-    text: "Cash after the sale would be €148,200, above the €120,000 floor.",
-    system: "limit",
-    task: "Checking cash floor",
-    check: {
-      id: "RC-02",
-      label: "Minimum cash",
-      result: "pass",
-      detail: "€148,200 after sale · floor €120,000",
-    },
-  },
-  {
-    id: "t16",
-    at: 65000,
-    clock: "09:43:09",
-    agent: "marshal",
-    kind: "risk",
-    text: "Turnover for this event would reach 7.1% against a 5.0% cap. Resized the sell from €62,000 to €41,500.",
-    system: "limit",
-    task: "Resizing the order",
-    check: {
-      id: "RC-03",
-      label: "Turnover per event",
-      result: "resize",
-      detail: "7.1% requested · cap 5.0% · sell cut to €41,500",
-    },
-  },
-  {
-    id: "t17",
-    at: 66000,
-    clock: "09:43:10",
-    agent: "marshal",
-    kind: "risk",
-    text: "Recorded the unresized €62,000 order as the rejected alternative.",
-    system: "limit",
-    task: "Recording the alternative",
-    check: {
-      id: "RC-04",
-      label: "Unresized alternative",
-      result: "reject",
-      detail: "€62,000 sell rejected · breached turnover cap",
-    },
-  },
-  {
-    id: "t18",
-    at: 67000,
-    clock: "09:43:11",
-    agent: "marshal",
+    at: 56_000,
+    clock: "14:06:00",
+    agent: "report-writer",
     kind: "checkpoint",
-    text: "A risk rule changed the order. The gate is now open for the resized sell only.",
-    system: "risk",
-    states: { marshal: "complete", trader: "executing" },
-    task: "Gate opened",
-  },
-  {
-    id: "t19",
-    at: 68000,
-    clock: "09:43:12",
-    agent: "trader",
-    kind: "trade",
-    text: "Applied paper order: sell €41,500 NOD.OL at fixture price 118.40. No real-money order was placed.",
-    system: "paper only",
-    task: "Applying the paper order",
-  },
-  {
-    id: "t20",
-    at: 69000,
-    clock: "09:43:12",
-    agent: "trader",
-    kind: "checkpoint",
-    text: "Decision receipt SR-042 written with the accepted thesis, the evidence path, and the rejected alternative.",
-    system: "receipt",
-    states: { trader: "complete" },
-    task: "Receipt written",
+    text: "Generated the internal report from the final decision, evidence set, risk resize and human approval record.",
+    system: "rpt_main",
+    states: { "report-writer": "complete" },
+    task: "Post-decision report complete",
   },
 ]
 
 export const kindLabels: Record<TraceKind, string> = {
-  source: "read",
-  relationship: "traced",
-  claim: "claim",
+  source: "source read",
+  relationship: "relationship traced",
+  claim: "model hypothesis",
   contradiction: "challenge",
-  risk: "risk check",
-  gate: "blocked",
+  risk: "deterministic check",
+  gate: "approval gate",
   trade: "paper order",
-  checkpoint: "checkpoint",
+  checkpoint: "stage output",
 }
 
 export const stateLabels: Record<AgentState, string> = {
   idle: "Idle",
   reading: "Reading",
   tracing: "Tracing",
-  debating: "Debating",
+  debating: "Reviewing",
   "checking-risk": "Checking risk",
-  executing: "Executing",
+  "awaiting-approval": "Awaiting approval",
+  executing: "Writing",
   blocked: "Blocked",
   complete: "Complete",
 }
 
-/**
- * Answers to the human question box come from the decision receipt, never from
- * unbounded chat history. A question the receipt does not cover is refused.
- */
 export type ReceiptAnswer = {
   id: string
   keywords: readonly string[]
@@ -490,54 +454,47 @@ export type ReceiptAnswer = {
 export const receiptAnswers: readonly ReceiptAnswer[] = [
   {
     id: "resize",
-    keywords: ["resize", "resized", "reduce", "reduced", "smaller", "cut", "41,500", "41500"],
-    text: "Turnover for this event would have reached 7.1% against a 5.0% cap, so the Marshal resized the sell from €62,000 to €41,500. The unresized order is on file as the rejected alternative.",
-    cites: "RC-03",
-  },
-  {
-    id: "alternative",
-    keywords: ["alternative", "reject", "rejected", "62,000", "62000", "instead"],
-    text: "The rejected alternative was a €62,000 sell of NOD.OL. It was rejected for one reason: it breached the turnover cap. It is recorded in full so the order that did not happen stays inspectable.",
-    cites: "RC-04",
+    keywords: ["resize", "resized", "reduce", "reduced", "smaller", "cut", "30%", "35%"],
+    text: "The Risk Officer found that Nvidia at 35% breached the Core mandate's 30% maximum-position limit, so deterministic code resized it to €300. The Portfolio Manager accepted the limit in revision 1.",
+    cites: "rsk_nvda",
   },
   {
     id: "evidence",
     keywords: ["evidence", "path", "source", "sources", "why", "graph", "relationship", "cala"],
-    text: "The path is EV-104 → ED-208 → POS-02. The export-control notice restricts a component line, the Cala record connects that line to Nordic Semiconductor, and the position is 18.6% of the paper book. Each edge carries a source you can open.",
-    cites: "SRC-03",
+    text: "The synthetic path runs from GlobalCloud's AI buildout to Nvidia as its first-order GPU supplier and Siemens Energy as a second-order grid-demand exposure. Every relationship carries an evidence ID and confidence label.",
+    cites: "ev_power_demand",
   },
   {
-    id: "limits",
-    keywords: ["limit", "limits", "risk", "check", "checks", "rule", "rules", "exposure", "cash"],
-    text: "Three deterministic checks ran: position exposure at 12.4% against a 30% limit, cash at €148,200 against a €120,000 floor, and turnover at 7.1% against a 5.0% cap. The first two passed. The third resized the order.",
-    cites: "SR-042",
+    id: "risk",
+    keywords: ["limit", "limits", "risk", "check", "checks", "rule", "cash", "mandate"],
+    text: "The Core mandate allows 30% per position, 45% per sector, requires 10% cash, and caps sell-side turnover at 20% per event. The accepted plan holds 50% cash; Siemens passed and Nvidia was resized.",
+    cites: "rrp_main",
   },
   {
-    id: "blocked",
-    keywords: ["block", "blocked", "gate", "stopped", "wait"],
-    text: "The Trader was blocked from 09:42:59 until 09:43:11. No order reaches the book until every deterministic check has run, so a failing check stops execution rather than warning about it afterwards.",
-    cites: "SR-042",
+    id: "critic",
+    keywords: ["critic", "bear", "weakness", "failure", "challenge", "confidence"],
+    text: "The Bear / Critic flagged rich Nvidia expectations, ASML supply constraints and a shared AI-capex slowdown scenario. It could challenge the proposal but not veto it; the final confidence was 62%.",
+    cites: "bear_main",
   },
   {
-    id: "conviction",
-    keywords: ["conviction", "confidence", "old", "stale", "age", "objection", "skeptic"],
-    text: "Conviction was reduced because the supporting filing is 11 months old and no newer filing exists in the fixture set. The Skeptic's objection stands in the receipt rather than being resolved away.",
-    cites: "SRC-02",
+    id: "approval",
+    keywords: ["approve", "approved", "human", "order", "trade", "paper"],
+    text: "A human approved the resized allocation at 14:05:20. Only then did the paper ledger apply €300 NVDA and €200 SIEGY. Report Writer ran after that decision.",
+    cites: "rcpt_main",
   },
 ]
 
 export const suggestedQuestions: readonly string[] = [
-  "Why did you reduce this position?",
-  "What evidence supports it?",
-  "What order was rejected?",
+  "Why was Nvidia resized?",
+  "What evidence supports Siemens Energy?",
+  "What did the Bear / Critic challenge?",
 ]
 
 export function answerFromReceipt(question: string): ReceiptAnswer | null {
-  const normalised = question.toLowerCase()
-  for (const answer of receiptAnswers) {
-    if (answer.keywords.some((keyword) => normalised.includes(keyword))) {
-      return answer
-    }
-  }
-  return null
+  const normalized = question.toLowerCase()
+  return (
+    receiptAnswers.find((answer) =>
+      answer.keywords.some((keyword) => normalized.includes(keyword))
+    ) ?? null
+  )
 }

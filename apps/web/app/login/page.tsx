@@ -39,24 +39,24 @@ export default function LoginPage() {
             <div className="flex h-full flex-col justify-between p-8 font-mono text-[11px] tracking-[0.14em] text-white uppercase">
               <div className="flex items-center justify-between">
                 <span>Sonar paper fund</span>
-                <span>Historical replay</span>
+                <span>Synthetic fixture</span>
               </div>
               <div className="grid grid-cols-2 gap-x-14 gap-y-8">
                 <div>
                   <p className="text-white/55">Paper NAV</p>
-                  <p className="mt-1 text-base tracking-normal">€1,018,420</p>
+                  <p className="mt-1 text-base tracking-normal">€1,000</p>
                 </div>
                 <div className="text-right">
                   <p className="text-white/55">Gross exposure</p>
-                  <p className="mt-1 text-base tracking-normal">82.4%</p>
+                  <p className="mt-1 text-base tracking-normal">50%</p>
                 </div>
                 <div>
                   <p className="text-white/55">Available cash</p>
-                  <p className="mt-1 text-base tracking-normal">€179,210</p>
+                  <p className="mt-1 text-base tracking-normal">€500</p>
                 </div>
                 <div className="text-right">
                   <p className="text-white/55">Risk status</p>
-                  <p className="mt-1 text-base tracking-normal">Within limits</p>
+                  <p className="mt-1 text-base tracking-normal">Within Core mandate</p>
                 </div>
               </div>
               <div className="flex items-center justify-between text-white/65">

@@ -2,8 +2,15 @@
 
 import { Cell, Pie, PieChart } from "recharts"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart"
+import { committeeDemo } from "@/fixtures/committee-demo"
 import { cn } from "@/lib/utils"
 
 interface MandateBoundary {
@@ -14,34 +21,57 @@ interface MandateBoundary {
   ariaLabel: string
 }
 
+const percentFormatter = new Intl.NumberFormat("en-IE", {
+  style: "percent",
+  maximumFractionDigits: 0,
+})
+
+const limits = committeeDemo.mandate.limits
+const metrics = committeeDemo.riskReport?.metrics
+const largestSector = Math.max(0, ...Object.values(metrics?.sectorExposure ?? {}))
+const concentration = metrics?.concentration ?? 0
+const cashRatio = metrics?.cashRatio ?? 1
+const turnover = metrics?.turnover ?? 0
+
+function maximumProximity(current: number, limit: number) {
+  return limit > 0 ? Math.min(100, (current / limit) * 100) : 100
+}
+
+function minimumProximity(current: number, limit: number) {
+  return current > 0 ? Math.min(100, (limit / current) * 100) : 100
+}
+
 const mandateBoundaries: MandateBoundary[] = [
   {
     name: "Largest position",
-    current: "24.8%",
-    limit: "30% max",
-    proximity: 82.7,
-    ariaLabel: "Largest position: current 24.8 percent, limit 30 percent maximum, 82.7 percent proximity to the mandate boundary.",
+    current: percentFormatter.format(concentration),
+    limit: `${percentFormatter.format(limits.maxGrossExposurePerPosition)} max`,
+    proximity: maximumProximity(
+      concentration,
+      limits.maxGrossExposurePerPosition
+    ),
+    ariaLabel: `Largest position is ${percentFormatter.format(concentration)} against a ${percentFormatter.format(limits.maxGrossExposurePerPosition)} maximum.`,
   },
   {
     name: "Largest sector",
-    current: "43.4%",
-    limit: "45% max",
-    proximity: 96.4,
-    ariaLabel: "Largest sector: current 43.4 percent, limit 45 percent maximum, 96.4 percent proximity to the mandate boundary.",
+    current: percentFormatter.format(largestSector),
+    limit: `${percentFormatter.format(limits.maxSectorExposure)} max`,
+    proximity: maximumProximity(largestSector, limits.maxSectorExposure),
+    ariaLabel: `Largest sector is ${percentFormatter.format(largestSector)} against a ${percentFormatter.format(limits.maxSectorExposure)} maximum.`,
   },
   {
     name: "Cash minimum",
-    current: "17.6%",
-    limit: "10% min",
-    proximity: 56.8,
-    ariaLabel: "Cash minimum: current 17.6 percent, limit 10 percent minimum, 56.8 percent proximity to the mandate boundary.",
+    current: percentFormatter.format(cashRatio),
+    limit: `${percentFormatter.format(limits.minCashRatio)} min`,
+    proximity: minimumProximity(cashRatio, limits.minCashRatio),
+    ariaLabel: `Cash is ${percentFormatter.format(cashRatio)} against a ${percentFormatter.format(limits.minCashRatio)} minimum.`,
   },
   {
-    name: "Turnover this event",
-    current: "€203.7K total",
-    limit: "€203.7K max (20% NAV)",
-    proximity: 100,
-    ariaLabel: "Turnover this event: current total 203.7 thousand euros, limit 203.7 thousand euros maximum, equal to 20 percent of paper NAV, 100 percent proximity to the mandate boundary.",
+    name: "Sell-side turnover",
+    current: percentFormatter.format(turnover),
+    limit: `${percentFormatter.format(limits.maxTurnoverPerEvent)} max`,
+    proximity: maximumProximity(turnover, limits.maxTurnoverPerEvent),
+    ariaLabel: `Sell-side turnover is ${percentFormatter.format(turnover)} against a ${percentFormatter.format(limits.maxTurnoverPerEvent)} maximum.`,
   },
 ]
 
@@ -95,8 +125,8 @@ export function MandateUtilization() {
   return (
     <Card className="w-full gap-3 py-5">
       <CardHeader className="px-5">
-        <CardTitle>Mandate boundary proximity</CardTitle>
-        <CardDescription>Higher is closer to the limit</CardDescription>
+        <CardTitle>Core mandate boundaries</CardTitle>
+        <CardDescription>Defaults selected during onboarding</CardDescription>
       </CardHeader>
       <CardContent className="px-3 pt-0">
         <div>
@@ -104,7 +134,7 @@ export function MandateUtilization() {
             <div
               className={cn(
                 "flex items-center gap-3 rounded-sm p-2 transition-colors hover:bg-muted/50",
-                index % 2 === 1 && "bg-muted/40",
+                index % 2 === 1 && "bg-muted/40"
               )}
               key={item.name}
             >

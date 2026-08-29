@@ -69,8 +69,8 @@ const idleRuntime = (): Record<AgentId, AgentRuntime> =>
  * scrubbing backwards rebuilds the whole room from the log.
  */
 export function useSaloonRun(entries: readonly TraceEntry[] = trace): SaloonRun {
-  const [cursor, setCursor] = React.useState(0)
-  const [requestedPlaying, setPlaying] = React.useState(true)
+  const [cursor, setCursor] = React.useState(entries.length)
+  const [requestedPlaying, setPlaying] = React.useState(false)
   const [speed, setSpeed] = React.useState<Speed>(1)
 
   const total = entries.length
@@ -99,19 +99,24 @@ export function useSaloonRun(entries: readonly TraceEntry[] = trace): SaloonRun 
     const readSources: string[] = []
 
     for (const entry of visible) {
-      if (entry.states) {
-        for (const [id, state] of Object.entries(entry.states)) {
-          runtime[id as AgentId].state = state as AgentState
+      if (entry.states || entry.tasks) {
+        for (const agent of agents) {
+          const state = entry.states?.[agent.id]
+          const task = entry.tasks?.[agent.id]
+          if (state) runtime[agent.id].state = state
+          if (task) runtime[agent.id].task = task
         }
       }
-      if (entry.task) runtime[entry.agent].task = entry.task
 
-      const counters = runtime[entry.agent]
-      if (entry.kind === "source") counters.sources += 1
-      if (entry.kind === "relationship") counters.edges += 1
-      if (entry.kind === "claim" || entry.kind === "contradiction") counters.claims += 1
-      if (entry.kind === "risk") counters.checks += 1
-      if (entry.kind === "trade") counters.orders += 1
+      if (entry.agent) {
+        if (entry.task) runtime[entry.agent].task = entry.task
+
+        const counters = runtime[entry.agent]
+        if (entry.kind === "source") counters.sources += 1
+        if (entry.kind === "relationship") counters.edges += 1
+        if (entry.kind === "claim" || entry.kind === "contradiction") counters.claims += 1
+        if (entry.kind === "risk") counters.checks += 1
+      }
 
       if (entry.reveals && !revealed.includes(entry.reveals)) revealed.push(entry.reveals)
       if (entry.check) checks.push(entry.check)

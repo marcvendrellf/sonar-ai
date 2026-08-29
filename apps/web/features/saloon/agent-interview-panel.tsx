@@ -47,34 +47,38 @@ function RecordList({
 }) {
   return (
     <ol className="space-y-1.5">
-      {records.map((record) => (
-        <li key={record.id} className="rounded-xl border p-2.5">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[11px] text-muted-foreground">{kindLabels[record.kind]}</span>
-            <time className="font-mono text-[10px] text-muted-foreground">{record.clock}</time>
-          </div>
-          <p className="mt-1 text-xs leading-5">{record.text}</p>
-          {record.source || record.system ? (
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              {record.source ? (
-                <button
-                  type="button"
-                  onClick={() => onOpenSource(record.source as string)}
-                  className="inline-flex h-5 items-center gap-1 rounded-full border px-2 font-mono text-[10px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-                >
-                  <Search className="size-2.5" aria-hidden="true" />
-                  {record.source}
-                </button>
-              ) : null}
-              {record.system ? (
-                <span className="inline-flex h-5 items-center rounded-full bg-muted px-2 font-mono text-[10px] text-muted-foreground">
-                  {record.system}
-                </span>
-              ) : null}
+      {records.map((record) => {
+        const sourceId = record.source
+
+        return (
+          <li key={record.id} className="rounded-xl border p-2.5">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-[11px] text-muted-foreground">{kindLabels[record.kind]}</span>
+              <time className="font-mono text-[10px] text-muted-foreground">{record.clock}</time>
             </div>
-          ) : null}
-        </li>
-      ))}
+            <p className="mt-1 text-xs leading-5">{record.text}</p>
+            {sourceId || record.system ? (
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {sourceId ? (
+                  <button
+                    type="button"
+                    onClick={() => onOpenSource(sourceId)}
+                    className="inline-flex h-5 items-center gap-1 rounded-full border px-2 font-mono text-[10px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+                  >
+                    <Search className="size-2.5" aria-hidden="true" />
+                    {sourceId}
+                  </button>
+                ) : null}
+                {record.system ? (
+                  <span className="inline-flex h-5 items-center rounded-full bg-muted px-2 font-mono text-[10px] text-muted-foreground">
+                    {record.system}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+          </li>
+        )
+      })}
     </ol>
   )
 }

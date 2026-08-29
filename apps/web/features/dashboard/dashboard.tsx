@@ -28,115 +28,181 @@ import {
 } from "@/components/ui/table"
 import { MandateUtilization } from "@/features/dashboard/mandate-utilization"
 import { PortfolioStats } from "@/features/dashboard/portfolio-stats"
+import { committeeDemo, getDemoInstrument } from "@/fixtures/committee-demo"
 
-const navSeries = [
-  { time: "09:00", nav: 1000000 },
-  { time: "09:05", nav: 1001800 },
-  { time: "09:10", nav: 1004200 },
-  { time: "09:15", nav: 1003100 },
-  { time: "09:20", nav: 1006700 },
-  { time: "09:25", nav: 1001800 },
-  { time: "09:30", nav: 1005900 },
-  { time: "09:35", nav: 1008700 },
-  { time: "09:40", nav: 1007200 },
-  { time: "09:45", nav: 1010500 },
-  { time: "09:50", nav: 1013400 },
-  { time: "09:55", nav: 1011700 },
-  { time: "10:00", nav: 1008900 },
-  { time: "10:05", nav: 1014200 },
-  { time: "10:10", nav: 1016100 },
-  { time: "10:15", nav: 1018420 },
-] as const
+const euroFormatter = new Intl.NumberFormat("en-IE", {
+  style: "currency",
+  currency: "EUR",
+  maximumFractionDigits: 0,
+})
 
-const navChartConfig = {
-  nav: {
-    label: "Paper NAV",
+const allocationSeries = [
+  { time: "14:00", cash: 1_000, invested: 0 },
+  { time: "14:01", cash: 1_000, invested: 0 },
+  { time: "14:02", cash: 1_000, invested: 0 },
+  { time: "14:04", cash: 1_000, invested: 0 },
+  { time: "14:05", cash: 500, invested: 500 },
+  { time: "14:06", cash: 500, invested: 500 },
+]
+
+const allocationChartConfig = {
+  invested: {
+    label: "Invested exposure",
     color: "var(--sonar-blue)",
+  },
+  cash: {
+    label: "Cash",
+    color: "var(--chart-2)",
   },
 } satisfies ChartConfig
 
-const positions = [
-  { id: "asml", asset: "ASML", sector: "Semiconductors", weight: "24.8%", value: "€252,580", paperPnl: "+3.2%" },
-  { id: "nordic", asset: "NOD.OL", sector: "Semiconductors", weight: "18.6%", value: "€189,430", paperPnl: "+1.7%" },
-  { id: "siemens", asset: "SIE.DE", sector: "Industrials", weight: "16.4%", value: "€167,020", paperPnl: "+0.4%" },
-  { id: "sap", asset: "SAP.DE", sector: "Software", weight: "12.1%", value: "€123,230", paperPnl: "-0.8%" },
-  { id: "airbus", asset: "AIR.PA", sector: "Aerospace", weight: "10.5%", value: "€106,950", paperPnl: "+1.1%" },
-] as const
+const after = committeeDemo.portfolioAfter ?? committeeDemo.portfolioSnapshot
+const positions = after.positions.flatMap((position) => {
+  const instrument = getDemoInstrument(position.instrumentId)
+  if (!instrument) return []
+
+  return [
+    {
+      id: position.instrumentId,
+      asset: instrument.symbol,
+      name: instrument.name,
+      sector: instrument.sector,
+      weight: `${Math.round(position.weight * 100)}%`,
+      value: euroFormatter.format(position.marketValue.amount),
+      averagePrice: euroFormatter.format(position.avgPrice.amount),
+    },
+  ]
+})
+
+const orders = committeeDemo.appliedOrders.flatMap((order) => {
+  const instrument = getDemoInstrument(order.instrumentId)
+  if (!instrument) return []
+
+  return [
+    {
+      id: order.id,
+      time: order.appliedAt.slice(11, 16),
+      asset: instrument.symbol,
+      side: order.side,
+      quantity: order.quantity,
+      paperPrice: euroFormatter.format(order.price.amount),
+      notional: euroFormatter.format(order.notional.amount),
+      receipt: committeeDemo.receipt?.id ?? "rcpt_main",
+    },
+  ]
+})
 
 const agentWork = [
-  { id: "scout", title: "Scout", value: 18, className: "bg-[var(--agent-scout-soft)]", topBorderClassName: "border-[var(--agent-scout)]" },
-  { id: "cartographer", title: "Cartographer", value: 27, className: "bg-[var(--agent-cartographer-soft)]", topBorderClassName: "border-[var(--agent-cartographer)]" },
-  { id: "analyst", title: "Analyst", value: 13, className: "bg-[var(--agent-analyst-soft)]", topBorderClassName: "border-[var(--agent-analyst)]" },
-  { id: "skeptic", title: "Skeptic", value: 11, className: "bg-[var(--agent-skeptic-soft)]", topBorderClassName: "border-[var(--agent-skeptic)]" },
-  { id: "marshal", title: "Marshal", value: 8, className: "bg-[var(--agent-marshal-soft)]", topBorderClassName: "border-[var(--agent-marshal)]" },
-  { id: "trader", title: "Trader", value: 3, className: "bg-[var(--status-complete-soft)]", topBorderClassName: "border-[var(--status-complete)]" },
+  { id: "portfolio-manager", title: "Portfolio Manager", value: 2, className: "bg-[var(--agent-scout-soft)]", topBorderClassName: "border-[var(--agent-scout)]" },
+  { id: "fundamental-analyst", title: "Fundamental Analyst", value: 4, className: "bg-[var(--agent-cartographer-soft)]", topBorderClassName: "border-[var(--agent-cartographer)]" },
+  { id: "market-context", title: "Market Context", value: 3, className: "bg-[var(--agent-analyst-soft)]", topBorderClassName: "border-[var(--agent-analyst)]" },
+  { id: "risk-officer", title: "Risk Officer", value: 2, className: "bg-[var(--agent-skeptic-soft)]", topBorderClassName: "border-[var(--agent-skeptic)]" },
+  { id: "bear-critic", title: "Bear / Critic", value: 2, className: "bg-[var(--agent-marshal-soft)]", topBorderClassName: "border-[var(--agent-marshal)]" },
+  { id: "report-writer", title: "Report Writer", value: 1, className: "bg-[var(--status-complete-soft)]", topBorderClassName: "border-[var(--status-complete)]" },
 ] satisfies ColumnData[]
 
-function PaperNavChart() {
+const event = committeeDemo.materialEvents[0]
+const resizedCheck = committeeDemo.riskChecks.find((check) => check.result === "resize")
+
+function AllocationChart() {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Paper NAV</CardTitle>
-        <CardDescription>Today · EUR</CardDescription>
+        <CardTitle>Paper allocation through the committee run</CardTitle>
+        <CardDescription>€1,000 onboarding baseline · synthetic fixture</CardDescription>
         <CardAction>
-          <Badge className="text-[var(--status-complete)]" variant="outline">
-            +1.84%
-          </Badge>
+          <Badge variant="outline">Human approved</Badge>
         </CardAction>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <ChartContainer
           className="aspect-auto h-[250px] w-full"
-          config={navChartConfig}
+          config={allocationChartConfig}
         >
-          <AreaChart accessibilityLayer data={navSeries}>
+          <AreaChart accessibilityLayer data={allocationSeries}>
             <defs>
-              <linearGradient id="fillPaperNav" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-nav)" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="var(--color-nav)" stopOpacity={0.08} />
+              <linearGradient id="fillInvested" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-invested)" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="var(--color-invested)" stopOpacity={0.08} />
+              </linearGradient>
+              <linearGradient id="fillCash" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-cash)" stopOpacity={0.65} />
+                <stop offset="95%" stopColor="var(--color-cash)" stopOpacity={0.08} />
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} />
             <XAxis
               axisLine={false}
               dataKey="time"
-              minTickGap={32}
+              minTickGap={24}
               tickLine={false}
               tickMargin={8}
             />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  formatter={(value) => (
-                    <div className="flex min-w-36 items-center justify-between gap-4">
-                      <span className="text-muted-foreground">Paper NAV</span>
-                      <span className="font-mono font-medium tabular-nums text-foreground">
-                        {typeof value === "number"
-                          ? new Intl.NumberFormat("en-IE", {
-                              style: "currency",
-                              currency: "EUR",
-                              maximumFractionDigits: 0,
-                            }).format(value)
-                          : value}
-                      </span>
-                    </div>
-                  )}
-                  hideLabel={false}
-                  indicator="dot"
-                />
-              }
-              cursor={false}
+            <ChartTooltip content={<ChartTooltipContent indicator="dot" />} cursor={false} />
+            <Area
+              dataKey="cash"
+              fill="url(#fillCash)"
+              fillOpacity={0.6}
+              stackId="allocation"
+              stroke="var(--color-cash)"
+              strokeWidth={2}
+              type="stepAfter"
             />
             <Area
-              dataKey="nav"
-              fill="url(#fillPaperNav)"
+              dataKey="invested"
+              fill="url(#fillInvested)"
               fillOpacity={0.6}
-              stroke="var(--color-nav)"
+              stackId="allocation"
+              stroke="var(--color-invested)"
               strokeWidth={2}
-              type="natural"
+              type="stepAfter"
             />
           </AreaChart>
         </ChartContainer>
+      </CardContent>
+    </Card>
+  )
+}
+
+function DecisionReceipt() {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="mb-1 flex flex-wrap gap-2">
+          <Badge variant="secondary">Synthetic event</Badge>
+          <Badge variant="outline">Approved · paper only</Badge>
+        </div>
+        <CardTitle>{event?.headline ?? "Synthetic committee review"}</CardTitle>
+        <CardDescription>
+          {event?.summary ?? "A prepared event was reviewed by the investment committee."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-xl border p-3">
+          <p className="text-xs font-medium text-muted-foreground">Portfolio Manager</p>
+          <p className="mt-1 text-sm leading-6">
+            30% Nvidia, 20% Siemens Energy and 50% cash after revision.
+          </p>
+        </div>
+        <div className="rounded-xl border p-3">
+          <p className="text-xs font-medium text-muted-foreground">Risk Officer</p>
+          <p className="mt-1 text-sm leading-6">
+            {resizedCheck?.detail ?? "Core mandate checks passed."}
+          </p>
+        </div>
+        <div className="rounded-xl border p-3">
+          <p className="text-xs font-medium text-muted-foreground">Bear / Critic</p>
+          <p className="mt-1 text-sm leading-6">
+            {committeeDemo.bearCase?.failureScenarios[0] ??
+              "The counter-case remains attached to the decision."}
+          </p>
+        </div>
+        <div className="rounded-xl border p-3">
+          <p className="text-xs font-medium text-muted-foreground">Report Writer</p>
+          <p className="mt-1 text-sm leading-6">
+            {committeeDemo.report?.decisionSummary ?? "Decision report complete."}
+          </p>
+        </div>
       </CardContent>
     </Card>
   )
@@ -148,18 +214,26 @@ export function Dashboard() {
       className="@container/main mx-auto w-full max-w-[1600px] scroll-mt-[var(--header-height)] space-y-6 px-4 py-5 sm:px-6 lg:px-8 lg:py-6"
       id="dashboard"
     >
-      <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-        Paper fund overview
-      </h1>
+      <div>
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
+            Paper fund overview
+          </h1>
+          <Badge variant="outline">Synthetic fixture</Badge>
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Core mandate · U.S. stocks, ETFs and crypto enabled for research
+        </p>
+      </div>
 
       <PortfolioStats />
-
-      <PaperNavChart />
+      <AllocationChart />
 
       <section className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Current positions</CardTitle>
+            <CardTitle>Current paper positions</CardTitle>
+            <CardDescription>Applied only after deterministic checks and human approval</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -169,19 +243,31 @@ export function Dashboard() {
                   <TableHead>Sector</TableHead>
                   <TableHead className="text-right">Weight</TableHead>
                   <TableHead className="text-right">Paper value</TableHead>
-                  <TableHead className="text-right">Paper P&amp;L</TableHead>
+                  <TableHead className="text-right">Average price</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {positions.map((position) => (
                   <TableRow key={position.id}>
-                    <TableCell className="font-medium">{position.asset}</TableCell>
+                    <TableCell>
+                      <p className="font-medium">{position.asset}</p>
+                      <p className="text-xs text-muted-foreground">{position.name}</p>
+                    </TableCell>
                     <TableCell className="text-muted-foreground">{position.sector}</TableCell>
                     <TableCell className="text-right tabular-nums">{position.weight}</TableCell>
                     <TableCell className="text-right tabular-nums">{position.value}</TableCell>
-                    <TableCell className="text-right tabular-nums">{position.paperPnl}</TableCell>
+                    <TableCell className="text-right tabular-nums">{position.averagePrice}</TableCell>
                   </TableRow>
                 ))}
+                <TableRow>
+                  <TableCell className="font-medium">Cash</TableCell>
+                  <TableCell className="text-muted-foreground">Reserve</TableCell>
+                  <TableCell className="text-right tabular-nums">50%</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {euroFormatter.format(after.cash.amount)}
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground">—</TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </CardContent>
@@ -191,19 +277,65 @@ export function Dashboard() {
         </div>
       </section>
 
-      <Card className="scroll-mt-[var(--header-height)]" id="saloon">
-        <CardHeader>
-          <CardTitle>Agent work completed</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <AnimatedChart
-            className="h-64 overflow-hidden rounded-xl border-0"
-            columns={agentWork}
-            maxValue={30}
-            titleClassName="text-[10px] leading-tight [overflow-wrap:anywhere] sm:text-xs"
-          />
-        </CardContent>
-      </Card>
+      <DecisionReceipt />
+
+      <section className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
+        <Card className="scroll-mt-[var(--header-height)]" id="saloon">
+          <CardHeader>
+            <CardTitle>Committee work completed</CardTitle>
+            <CardDescription>Observable stage outputs—not agent chat volume</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AnimatedChart
+              className="h-64 overflow-hidden rounded-xl border-0"
+              columns={agentWork}
+              maxValue={4}
+              titleClassName="text-[10px] leading-tight [overflow-wrap:anywhere] sm:text-xs"
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent paper orders</CardTitle>
+            <CardDescription>Fixture prices · Alpaca paper path only</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Asset</TableHead>
+                  <TableHead>Side</TableHead>
+                  <TableHead className="text-right">Quantity</TableHead>
+                  <TableHead className="text-right">Paper price</TableHead>
+                  <TableHead className="text-right">Notional</TableHead>
+                  <TableHead>Receipt</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-mono text-xs text-muted-foreground">
+                      {order.time}
+                    </TableCell>
+                    <TableCell className="font-medium">{order.asset}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{order.side}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{order.quantity}</TableCell>
+                    <TableCell className="text-right tabular-nums">{order.paperPrice}</TableCell>
+                    <TableCell className="text-right tabular-nums">{order.notional}</TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">
+                      {order.receipt}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </section>
     </main>
   )
 }
