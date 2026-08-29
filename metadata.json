@@ -3,8 +3,19 @@
   "checkpoint_id": "01M16N14VB7T9PN44R8J02MXGV",
   "strategy": "manual-commit",
   "branch": "feat/core-contracts",
-  "checkpoints_count": 1,
-  "files_touched": null,
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/web/lib/server/README.md",
+    "apps/web/lib/server/analysis/agents/README.md",
+    "apps/web/lib/server/analysis/runner/stub-runner.ts",
+    "apps/web/lib/server/analysis/runner/types.ts",
+    "apps/web/lib/server/env.ts",
+    "apps/web/lib/server/tools/README.md",
+    "apps/web/lib/server/tools/types.ts",
+    "apps/web/next.config.ts",
+    "apps/web/package.json",
+    "pnpm-lock.yaml"
+  ],
   "sessions": [
     {
       "metadata": "/0/metadata.json",
@@ -12,13 +23,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 284,
-    "cache_creation_tokens": 1323419,
-    "cache_read_tokens": 29189187,
-    "output_tokens": 189381,
-    "api_call_count": 142
+    "input_tokens": 310,
+    "cache_creation_tokens": 1418811,
+    "cache_read_tokens": 30539742,
+    "output_tokens": 204689,
+    "api_call_count": 155
   }
 }

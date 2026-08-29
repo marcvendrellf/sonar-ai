@@ -1,0 +1,59 @@
+{
+  "cli_version": "0.10.3",
+  "checkpoint_id": "01M16N14VB7T9PN44R8J02MXGV",
+  "session_id": "865d56f0-b296-49ee-9ab0-365059d0ed4c",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-29T11:38:42.351013Z",
+  "branch": "feat/core-contracts",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "apps/web/lib/server/README.md",
+    "apps/web/lib/server/analysis/agents/README.md",
+    "apps/web/lib/server/analysis/runner/stub-runner.ts",
+    "apps/web/lib/server/analysis/runner/types.ts",
+    "apps/web/lib/server/env.ts",
+    "apps/web/lib/server/tools/README.md",
+    "apps/web/lib/server/tools/types.ts",
+    "apps/web/next.config.ts",
+    "apps/web/package.json",
+    "pnpm-lock.yaml"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8",
+  "turn_id": "2c2e59641e16",
+  "checkpoint_transcript_start": 105,
+  "transcript_lines_at_start": 105,
+  "compact_transcript_start": 25,
+  "token_usage": {
+    "input_tokens": 26,
+    "cache_creation_tokens": 95392,
+    "cache_read_tokens": 1350555,
+    "output_tokens": 15308,
+    "api_call_count": 13
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-29T11:38:42.323735Z",
+    "agent_lines": 355,
+    "agent_removed": 2,
+    "human_added": 88,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 443,
+    "total_lines_changed": 446,
+    "agent_percentage": 80.04484304932735,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
