@@ -39,6 +39,7 @@ Confirm the working tree is committed or otherwise recoverable, so each phase ca
 - Suggested model: small.
 - Delegate with the same wording as phase 1, substituting the plan path.
 - Gate: the metric row renders six cards on one line at 1440px, the new card reads `Market data / Fixture / Alpaca Paper`, and all three commands pass.
+- Gate: the metric row renders six cards on one line at 1440px, the new card reads `Market data / Fixture / Alpaca not connected`, and all three commands pass.
 - This phase must land before phase 3. Phase 3 strips the `icon` field from every `metrics` entry, including the one this phase adds.
 
 ## Phase 3 — Visual rank pass

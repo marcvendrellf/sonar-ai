@@ -1,36 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
-
-import {
-  ArrowDownRight,
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  ChevronRight,
-  CircleDollarSign,
-  ExternalLink,
-  FileCheck2,
-  Landmark,
-  Radar,
-  ReceiptText,
-  ShieldCheck,
-  TriangleAlert,
-  WalletCards,
-} from "lucide-react"
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 
 import { AnimatedChart, type ColumnData } from "@/components/animated-chart"
-import { AgentActivityFeed } from "@/components/blocks/activity-1"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardAction,
@@ -40,13 +13,11 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
 import {
   Table,
   TableBody,
@@ -55,53 +26,34 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-const metrics = [
-  {
-    id: "nav",
-    label: "Paper NAV",
-    value: "€1,018,420",
-    detail: "+1.84% since launch",
-    icon: Landmark,
-  },
-  {
-    id: "pnl",
-    label: "Daily paper P&L",
-    value: "+€6,240",
-    detail: "+0.62% today",
-    icon: ArrowUpRight,
-  },
-  {
-    id: "exposure",
-    label: "Gross exposure",
-    value: "82.4%",
-    detail: "Within 100% mandate",
-    icon: CircleDollarSign,
-  },
-  {
-    id: "cash",
-    label: "Available cash",
-    value: "€179,210",
-    detail: "17.6% of NAV",
-    icon: WalletCards,
-  },
-  {
-    id: "risk",
-    label: "Active risk flags",
-    value: "1",
-    detail: "Turnover order resized",
-    icon: TriangleAlert,
-  },
-] as const
+import { MandateUtilization } from "@/features/dashboard/mandate-utilization"
+import { PortfolioStats } from "@/features/dashboard/portfolio-stats"
 
 const navSeries = [
   { time: "09:00", nav: 1000000 },
-  { time: "09:15", nav: 1004200 },
-  { time: "09:30", nav: 1001800 },
+  { time: "09:05", nav: 1001800 },
+  { time: "09:10", nav: 1004200 },
+  { time: "09:15", nav: 1003100 },
+  { time: "09:20", nav: 1006700 },
+  { time: "09:25", nav: 1001800 },
+  { time: "09:30", nav: 1005900 },
+  { time: "09:35", nav: 1008700 },
+  { time: "09:40", nav: 1007200 },
   { time: "09:45", nav: 1010500 },
+  { time: "09:50", nav: 1013400 },
+  { time: "09:55", nav: 1011700 },
   { time: "10:00", nav: 1008900 },
+  { time: "10:05", nav: 1014200 },
+  { time: "10:10", nav: 1016100 },
   { time: "10:15", nav: 1018420 },
 ] as const
+
+const navChartConfig = {
+  nav: {
+    label: "Paper NAV",
+    color: "var(--sonar-blue)",
+  },
+} satisfies ChartConfig
 
 const positions = [
   { id: "asml", asset: "ASML", sector: "Semiconductors", weight: "24.8%", value: "€252,580", paperPnl: "+3.2%" },
@@ -111,327 +63,103 @@ const positions = [
   { id: "airbus", asset: "AIR.PA", sector: "Aerospace", weight: "10.5%", value: "€106,950", paperPnl: "+1.1%" },
 ] as const
 
-type AlpacaPortfolio = {
-  cashUsd: number
-  equityUsd: number
-  buyingPowerUsd: number
-  positions: { symbol: string; marketValueUsd: number; unrealizedPnlPct: number }[]
-}
-
-function formatUsd(value: number): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value)
-}
-
-function portfolioMetrics(portfolio: AlpacaPortfolio | null) {
-  if (!portfolio) return metrics
-  const cashRatio = portfolio.equityUsd === 0 ? 0 : portfolio.cashUsd / portfolio.equityUsd
-  return [
-    { id: "nav", label: "Paper NAV", value: formatUsd(portfolio.equityUsd), detail: "Alpaca Paper equity", icon: Landmark },
-    { id: "pnl", label: "Unrealized paper P&L", value: "Tracked", detail: `${portfolio.positions.length} open positions`, icon: ArrowUpRight },
-    { id: "exposure", label: "Gross exposure", value: `${Math.round((1 - cashRatio) * 1000) / 10}%`, detail: "From Alpaca account snapshot", icon: CircleDollarSign },
-    { id: "cash", label: "Available cash", value: formatUsd(portfolio.cashUsd), detail: `${Math.round(cashRatio * 1000) / 10}% of equity`, icon: WalletCards },
-    { id: "risk", label: "Buying power", value: formatUsd(portfolio.buyingPowerUsd), detail: "Paper account", icon: TriangleAlert },
-  ] as const
-}
-
 const agentWork = [
   { id: "scout", title: "Scout", value: 18, className: "bg-[var(--agent-scout-soft)]", topBorderClassName: "border-[var(--agent-scout)]" },
-  { id: "cartographer", title: "Map", value: 27, className: "bg-[var(--agent-cartographer-soft)]", topBorderClassName: "border-[var(--agent-cartographer)]" },
-  { id: "analyst", title: "Bull", value: 13, className: "bg-[var(--agent-analyst-soft)]", topBorderClassName: "border-[var(--agent-analyst)]" },
-  { id: "skeptic", title: "Bear", value: 11, className: "bg-[var(--agent-skeptic-soft)]", topBorderClassName: "border-[var(--agent-skeptic)]" },
-  { id: "marshal", title: "Risk", value: 8, className: "bg-[var(--agent-marshal-soft)]", topBorderClassName: "border-[var(--agent-marshal)]" },
+  { id: "cartographer", title: "Cartographer", value: 27, className: "bg-[var(--agent-cartographer-soft)]", topBorderClassName: "border-[var(--agent-cartographer)]" },
+  { id: "analyst", title: "Analyst", value: 13, className: "bg-[var(--agent-analyst-soft)]", topBorderClassName: "border-[var(--agent-analyst)]" },
+  { id: "skeptic", title: "Skeptic", value: 11, className: "bg-[var(--agent-skeptic-soft)]", topBorderClassName: "border-[var(--agent-skeptic)]" },
+  { id: "marshal", title: "Marshal", value: 8, className: "bg-[var(--agent-marshal-soft)]", topBorderClassName: "border-[var(--agent-marshal)]" },
+  { id: "trader", title: "Trader", value: 3, className: "bg-[var(--status-complete-soft)]", topBorderClassName: "border-[var(--status-complete)]" },
 ] satisfies ColumnData[]
 
-function ReceiptSheet() {
+function PaperNavChart() {
   return (
-    <Sheet>
-      <SheetTrigger render={<Button variant="outline" size="sm" />}>
-        View receipt
-        <ChevronRight data-icon="inline-end" />
-      </SheetTrigger>
-      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
-        <SheetHeader className="border-b">
-          <div className="mb-2 flex items-center gap-2">
-            <Badge variant="outline">Historical replay</Badge>
-            <Badge className="bg-[var(--status-complete-soft)] text-[var(--status-complete)]">Complete</Badge>
-          </div>
-          <SheetTitle>Decision receipt SR-042</SheetTitle>
-          <SheetDescription>Paper rebalance recorded at 09:43:12 UTC.</SheetDescription>
-        </SheetHeader>
-        <div className="space-y-6 p-4">
-          <section aria-labelledby="receipt-thesis">
-            <h3 id="receipt-thesis" className="mb-2 text-sm font-medium">Accepted thesis</h3>
-            <p className="text-sm leading-6 text-muted-foreground">
-              The prepared event raises second-order demand risk for a current semiconductor exposure. The relationship is evidence, not proof of causation.
-            </p>
-          </section>
-          <section aria-labelledby="receipt-path">
-            <h3 id="receipt-path" className="mb-3 text-sm font-medium">Evidence path</h3>
-            <ol className="space-y-2 text-sm">
-              <li className="rounded-lg border p-3">EV-104 · Prepared export-control event</li>
-              <li className="rounded-lg border p-3">ED-208 · Supplier relationship observed 2026-08-28</li>
-              <li className="rounded-lg border p-3">POS-02 · Nordic Semiconductor paper position</li>
-            </ol>
-          </section>
-          <section aria-labelledby="receipt-risk">
-            <h3 id="receipt-risk" className="mb-3 text-sm font-medium">Deterministic checks</h3>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 rounded-lg bg-muted p-3 text-sm">
-                <Check className="size-4 text-[var(--status-complete)]" aria-hidden="true" />
-                Position exposure remains below 30%
-              </div>
-              <div className="flex items-center gap-2 rounded-lg bg-[var(--status-review-soft)] p-3 text-sm">
-                <ArrowDownRight className="size-4 text-[var(--status-review)]" aria-hidden="true" />
-                Sell resized from €62,000 to €41,500 to cap turnover
-              </div>
-            </div>
-          </section>
-          <Button className="w-full" disabled>
-            <ExternalLink />
-            Full evidence record not connected
-          </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
-  )
-}
-
-function FundStateCard() {
-  return (
-    <Card className="overflow-hidden bg-[var(--sonar-navy)] text-white ring-0">
+    <Card className="@container/card">
       <CardHeader>
-        <div className="mb-8 flex items-center justify-between">
-          <Badge className="bg-white/10 text-white">Fund state · complete</Badge>
-          <Radar className="size-5 text-[var(--sonar-cyan)]" aria-hidden="true" />
-        </div>
-        <CardTitle className="max-w-md text-2xl text-white sm:text-3xl">The mandate held. One order was resized.</CardTitle>
-        <CardDescription className="max-w-xl text-white/60">
-          The agents traced a sourced relationship, challenged the thesis, and passed the final paper order through deterministic limits.
-        </CardDescription>
+        <CardTitle>Paper NAV</CardTitle>
+        <CardDescription>Today · EUR</CardDescription>
+        <CardAction>
+          <Badge className="text-[var(--status-complete)]" variant="outline">
+            +1.84%
+          </Badge>
+        </CardAction>
       </CardHeader>
-      <CardContent className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-          <p className="text-xs text-white/50">Current phase</p>
-          <p className="mt-1 text-sm font-medium">Complete</p>
-        </div>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-          <p className="text-xs text-white/50">Accepted paper order</p>
-          <p className="mt-1 text-sm font-medium">Sell €41,500 NOD.OL</p>
-        </div>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-          <p className="text-xs text-white/50">Decision receipt</p>
-          <p className="mt-1 text-sm font-medium">SR-042</p>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function RelationshipPath() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Active relationship path</CardTitle>
-        <CardDescription>Every edge opens to a source record.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid items-center gap-2 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
-          <div className="rounded-xl border bg-muted/40 p-3">
-            <Badge variant="outline" className="mb-4">Event</Badge>
-            <p className="text-sm font-medium">Export-control replay</p>
-            <p className="mt-1 text-xs text-muted-foreground">EV-104 · historical</p>
-          </div>
-          <ArrowRight className="mx-auto size-4 rotate-90 text-[var(--sonar-blue)] md:rotate-0" aria-hidden="true" />
-          <div className="rounded-xl border border-[var(--sonar-blue)]/30 bg-[var(--sonar-blue-soft)] p-3">
-            <Badge variant="outline" className="mb-4">Relationship</Badge>
-            <p className="text-sm font-medium">Supplies low-power chips</p>
-            <p className="mt-1 text-xs text-muted-foreground">ED-208 · Cala fixture</p>
-          </div>
-          <ArrowRight className="mx-auto size-4 rotate-90 text-[var(--sonar-blue)] md:rotate-0" aria-hidden="true" />
-          <div className="rounded-xl border bg-muted/40 p-3">
-            <Badge variant="outline" className="mb-4">Position</Badge>
-            <p className="text-sm font-medium">Nordic Semiconductor</p>
-            <p className="mt-1 text-xs text-muted-foreground">18.6% paper weight</p>
-          </div>
-        </div>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-          <p className="text-xs text-muted-foreground">Association shown as evidence. Causal certainty is not claimed.</p>
-          <ReceiptSheet />
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-type AnalysisState = {
-  run: { id: string }
-  phase: string
-  marketContext: { candidateOpportunities: { symbol: string; name: string; rationale: string }[] } | null
-  finalRecommendation: { actions: { instrumentId: string; side: string; targetWeight: number }[] } | null
-  userDecision: { decision: string } | null
-  error?: string
-}
-
-function AnalysisWorkflow() {
-  const [state, setState] = useState<AnalysisState | null>(null)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const load = async () => {
-    const response = await fetch("/api/analysis/run", { cache: "no-store" })
-    if (response.ok) setState(await response.json() as AnalysisState)
-  }
-
-  // Initial API hydration is intentional: dashboard synchronizes with server run state.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { void load() }, [])
-
-  const runAnalysis = async () => {
-    setBusy(true)
-    setError(null)
-    try {
-      const response = await fetch("/api/analysis/run", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" })
-      const payload = await response.json()
-      if (!response.ok) throw new Error(payload.error ?? "Analysis failed")
-      setState(payload)
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Analysis failed")
-    } finally { setBusy(false) }
-  }
-
-  const decide = async (decision: "approved" | "rejected") => {
-    if (!state) return
-    setBusy(true)
-    setError(null)
-    try {
-      const response = await fetch(`/api/analysis/run/${state.run.id}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ decision: { decision, decidedAt: new Date().toISOString(), note: `Dashboard ${decision}` } }) })
-      const payload = await response.json()
-      if (!response.ok) throw new Error(payload.error ?? "Decision failed")
-      setState(payload)
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Decision failed")
-    } finally { setBusy(false) }
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Agent decision workflow</CardTitle>
-        <CardDescription>{state ? `Run ${state.run.id} · ${state.phase}` : "No run loaded"}</CardDescription>
-        <CardAction><Button size="sm" onClick={() => void runAnalysis()} disabled={busy}>{busy ? "Working…" : "Run analysis"}</Button></CardAction>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {error && <p className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</p>}
-        {state?.marketContext?.candidateOpportunities?.length ? (
-          <div>
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Cala-discovered candidates</p>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {state.marketContext.candidateOpportunities.map((candidate) => <div key={candidate.symbol} className="rounded-lg border p-3"><p className="font-medium">{candidate.symbol}</p><p className="text-xs text-muted-foreground">{candidate.name}</p><p className="mt-2 text-xs">{candidate.rationale}</p></div>)}
-            </div>
-          </div>
-        ) : <p className="text-sm text-muted-foreground">Run agents to discover investments from risk preferences.</p>}
-        {state?.phase === "awaiting_approval" && <div className="flex gap-2"><Button onClick={() => void decide("approved")} disabled={busy}>Approve Paper Allocation</Button><Button variant="outline" onClick={() => void decide("rejected")} disabled={busy}>Reject</Button></div>}
-        {state?.userDecision && <p className="text-sm text-muted-foreground">Human decision: {state.userDecision.decision}. Receipt stored.</p>}
+      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+        <ChartContainer
+          className="aspect-auto h-[250px] w-full"
+          config={navChartConfig}
+        >
+          <AreaChart accessibilityLayer data={navSeries}>
+            <defs>
+              <linearGradient id="fillPaperNav" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-nav)" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="var(--color-nav)" stopOpacity={0.08} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              axisLine={false}
+              dataKey="time"
+              minTickGap={32}
+              tickLine={false}
+              tickMargin={8}
+            />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value) => (
+                    <div className="flex min-w-36 items-center justify-between gap-4">
+                      <span className="text-muted-foreground">Paper NAV</span>
+                      <span className="font-mono font-medium tabular-nums text-foreground">
+                        {typeof value === "number"
+                          ? new Intl.NumberFormat("en-IE", {
+                              style: "currency",
+                              currency: "EUR",
+                              maximumFractionDigits: 0,
+                            }).format(value)
+                          : value}
+                      </span>
+                    </div>
+                  )}
+                  hideLabel={false}
+                  indicator="dot"
+                />
+              }
+              cursor={false}
+            />
+            <Area
+              dataKey="nav"
+              fill="url(#fillPaperNav)"
+              fillOpacity={0.6}
+              stroke="var(--color-nav)"
+              strokeWidth={2}
+              type="natural"
+            />
+          </AreaChart>
+        </ChartContainer>
       </CardContent>
     </Card>
   )
 }
 
 export function Dashboard() {
-  const [portfolio, setPortfolio] = useState<AlpacaPortfolio | null>(null)
-  const [portfolioLoaded, setPortfolioLoaded] = useState(false)
-  const [navHistory, setNavHistory] = useState<{ time: string; nav: number }[] | null>(null)
-
-  // Initial portfolio hydration is intentional: this synchronizes the visual
-  // dashboard with the server-side Alpaca Paper snapshot.
-  useEffect(() => {
-    void fetch("/api/alpaca/portfolio", { cache: "no-store" })
-      .then(async (response) => response.ok ? await response.json() as AlpacaPortfolio : null)
-      .then((snapshot) => { if (snapshot) setPortfolio(snapshot); setPortfolioLoaded(true) })
-      .catch(() => setPortfolioLoaded(true))
-  }, [])
-  useEffect(() => {
-    void fetch("/api/analysis/history", { cache: "no-store" })
-      .then(async (response) => response.ok ? await response.json() as { time: string; nav: number }[] : null)
-      .then((history) => { if (history?.length) setNavHistory(history) })
-      .catch(() => undefined)
-  }, [])
-
-  const displayedPositions = portfolioLoaded
-    ? portfolio?.positions.map((position) => ({
-        id: position.symbol,
-        asset: position.symbol,
-        sector: "Alpaca Paper",
-        weight: portfolio.equityUsd === 0 ? "0%" : `${Math.round(position.marketValueUsd / portfolio.equityUsd * 1000) / 10}%`,
-        value: formatUsd(position.marketValueUsd),
-        paperPnl: `${Math.round(position.unrealizedPnlPct * 1000) / 10}%`,
-      })) ?? []
-    : positions
-
   return (
-    <main id="dashboard" className="mx-auto max-w-[1600px] space-y-5 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-          <div className="mb-2 flex items-center gap-2">
-            <Badge variant="outline">Mandate locked</Badge>
-            <Badge variant="outline">5 positions</Badge>
-          </div>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">Paper fund overview</h1>
-          <p className="mt-1 text-sm text-muted-foreground">One prepared event, six agents, and an inspectable decision trail.</p>
-        </div>
-        <Button render={<a href="#decisions" />}>
-          <ReceiptText />
-          Latest decision
-        </Button>
-      </div>
+    <main
+      className="@container/main mx-auto w-full max-w-[1600px] scroll-mt-[var(--header-height)] space-y-6 px-4 py-5 sm:px-6 lg:px-8 lg:py-6"
+      id="dashboard"
+    >
+      <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
+        Paper fund overview
+      </h1>
 
-      <section aria-label="Portfolio summary" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {portfolioMetrics(portfolio).map((metric) => {
-          const Icon = metric.icon
-          return (
-            <Card key={metric.id} size="sm">
-              <CardHeader>
-                <CardDescription>{metric.label}</CardDescription>
-                <CardAction>
-                  <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
-                </CardAction>
-                <CardTitle className="text-xl tabular-nums">{metric.value}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">{metric.detail}</CardContent>
-            </Card>
-          )
-        })}
-      </section>
+      <PortfolioStats />
 
-      <section className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
-        <FundStateCard />
-        <Card>
-          <CardHeader>
-            <CardTitle>Paper NAV</CardTitle>
-            <CardDescription>Session history · EUR</CardDescription>
-          </CardHeader>
-          <CardContent className="h-56">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={navHistory ?? navSeries} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} accessibilityLayer>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
-                <YAxis hide domain={[995000, 1025000]} />
-                <Line type="monotone" dataKey="nav" stroke="var(--sonar-blue)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} isAnimationActive />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </section>
+      <PaperNavChart />
 
-      <RelationshipPath />
-
-      <AnalysisWorkflow />
-
-      <section className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
+      <section className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
         <Card>
           <CardHeader>
             <CardTitle>Current positions</CardTitle>
-            <CardDescription>Internal paper portfolio. No brokerage orders are available.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -441,11 +169,11 @@ export function Dashboard() {
                   <TableHead>Sector</TableHead>
                   <TableHead className="text-right">Weight</TableHead>
                   <TableHead className="text-right">Paper value</TableHead>
-                  <TableHead className="text-right">Paper P&L</TableHead>
+                  <TableHead className="text-right">Paper P&amp;L</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayedPositions.map((position) => (
+                {positions.map((position) => (
                   <TableRow key={position.id}>
                     <TableCell className="font-medium">{position.asset}</TableCell>
                     <TableCell className="text-muted-foreground">{position.sector}</TableCell>
@@ -458,53 +186,24 @@ export function Dashboard() {
             </Table>
           </CardContent>
         </Card>
-        <AgentActivityFeed />
+        <div className="scroll-mt-[var(--header-height)]" id="mandate">
+          <MandateUtilization />
+        </div>
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]" id="saloon">
-        <Card>
-          <CardHeader>
-            <CardTitle>Agent work completed</CardTitle>
-            <CardDescription>Sources, relationships, claims, and risk checks.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AnimatedChart columns={agentWork} maxValue={30} className="h-64 overflow-hidden rounded-xl" />
-          </CardContent>
-        </Card>
-        <Card id="decisions">
-          <CardHeader>
-            <CardTitle>Latest paper decision</CardTitle>
-            <CardDescription>The Marshal resized one proposed order before execution.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start gap-3 rounded-xl border p-4">
-              <FileCheck2 className="mt-0.5 size-5 text-[var(--sonar-blue)]" aria-hidden="true" />
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-medium">Reduce NOD.OL paper exposure</p>
-                  <Badge className="bg-[var(--status-review-soft)] text-[var(--status-review)]">Resized</Badge>
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">Proposed €62,000 sell. Accepted €41,500 sell after turnover and cash checks.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 rounded-xl border p-4">
-              <ShieldCheck className="mt-0.5 size-5 text-[var(--status-complete)]" aria-hidden="true" />
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-medium">Increase cash buffer</p>
-                  <Badge className="bg-[var(--status-complete-soft)] text-[var(--status-complete)]">Passed</Badge>
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">Resulting cash remains above the written 10% minimum.</p>
-              </div>
-            </div>
-            <div className="flex justify-end pt-1">
-              <ReceiptSheet />
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section id="mandate" className="sr-only" aria-label="Mandate anchor" />
+      <Card className="scroll-mt-[var(--header-height)]" id="saloon">
+        <CardHeader>
+          <CardTitle>Agent work completed</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AnimatedChart
+            className="h-64 overflow-hidden rounded-xl border-0"
+            columns={agentWork}
+            maxValue={30}
+            titleClassName="text-[10px] leading-tight [overflow-wrap:anywhere] sm:text-xs"
+          />
+        </CardContent>
+      </Card>
     </main>
   )
 }

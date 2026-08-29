@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -62,7 +61,6 @@ export function AgentActivityFeed() {
     <Card className="h-full">
       <CardHeader>
         <CardTitle>Agent activity</CardTitle>
-        <CardDescription>Only sourced work and system checkpoints appear here.</CardDescription>
       </CardHeader>
       <CardContent>
         <ol className="divide-y divide-border">

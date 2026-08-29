@@ -25,12 +25,16 @@ Only unresolved implementation and event questions remain. Concept selection is 
 | Which instruments fit Alpaca's supported universe? | Select U.S.-listed equities or supported crypto and validate with the assets endpoint. | Initial fixture has three tradable symbols with stable wire shapes; expand to final demo universe after live Paper validation. |
 | How should paper-account resets work during trials? | Reset by creating/deleting paper accounts in the Alpaca dashboard; add a local Sonar reset separately. | No reset action can reach a live account or silently delete broker state. |
 | Can any code path reach live trading? | Add an architectural test around the fixed Paper client and environment guard. | No live endpoint, live credential, deposit, withdrawal, or account-control path exists. |
+| Is Alpaca Paper available from Spain? | Use official Alpaca paper-trading documentation. | **Closed 2026-08-29:** Alpaca documents Paper Only accounts globally; paper endpoint and credentials are separate from live. |
+| Which assets can Alpaca Paper trade? | Choose five U.S.-listed or supported crypto candidates. | Official docs state listed U.S. stocks and select crypto; current EU tickers need replacement. |
+| Can Alpaca Paper reflect account, positions, and orders? | Run one sanitized paper test. | Save account, positions, order response, and normalized field map. |
+| Can any code path reach live trading? | Fix base URL and require paper config. | Client has no live base URL; config rejects `ALPACA_PAPER_TRADE !== true`; add architectural test. |
 
 ## Must close before UI implementation
 
 | Question | Next action | Closure condition |
 | --- | --- | --- |
-| Primary faceless sphere or minimal Live Orb? | Prototype the three required states on the presentation laptop. | Pick the option that stays smooth beside Shader Gradient and React Flow. |
+| How will ongoing searches deliver new findings? | Define the typed finding record and compare bounded polling with server-sent events behind the server boundary. | The bell receives deduplicated evidence-linked records with stable IDs and data-mode labels, and the same flow works from an offline fixture. |
 
 ## Must close before demo lock
 
@@ -49,7 +53,13 @@ Only unresolved implementation and event questions remain. Concept selection is 
 - **What is MVP agent topology?** Closed 2026-08-29 from the supplied architecture recommendation: one code-owned orchestrator, five decision agents (Portfolio Manager, Fundamental Analyst, Market Context Analyst, Risk Officer, Bear/Critic), human approval, then post-decision Communications/Report Writer. Cala relationship tracing is a research capability; Trader is deterministic paper-ledger code.
 - **Which model runtime and structured-output method do agents use?** Closed 2026-08-29: official OpenAI TypeScript SDK with Responses API `responses.parse()` and Zod-derived structured formats. `SONAR_AGENT_MODEL` selects the deployed model. Timeout, token cap, exact runner-owned retry count, stage-local tool allowlists, and total tool calls are bounded; SDK retries and model-controlled routing remain disabled.
 - **Should Sonar expose Cala MCP directly?** Closed 2026-08-29: no. Official Cala MCP capabilities are useful, but its dynamic schemas conflict with strict function tools. Sonar uses the fixed server-side REST API and exposes strict entity, query, search, profile, fundamentals, and bounded-traversal tools.
+- **Is trading real or simulated?** Closed 2026-08-29: Alpaca Paper only. Sonar never submits real-money orders.
+- **What are the primary team lanes?** Closed 2026-08-29: Marc owns frontend work; Josep and Axel focus mainly on agents and data.
+- **What is MVP agent topology?** Closed 2026-08-29 from the supplied architecture recommendation: one code-owned orchestrator, five decision agents (Portfolio Manager, Fundamental Analyst, Market Context Analyst, Risk Officer, Bear/Critic), human approval, then post-decision Communications/Report Writer. Cala relationship tracing is a research capability; Trader is deterministic paper-ledger code.
+- **How will the three UI surfaces continue in parallel?** Closed 2026-08-29: checkpoint the unified UI on `main`, then use `feat/onboarding-polish`, `feat/dashboard-polish`, and `feat/saloon-polish` with one writer and explicit shared-file coordination.
 - **Does Base UI `base-nova` work with the selected registries?** Closed 2026-08-29: the scaffold, application-shell block, selected third-party registry items, and required primitives compile with the Base UI preset.
+- **Which local clay-style shell and soft-light configuration meet the Saloon reference?** Closed 2026-08-29: the room is one original `saloon-shell.glb` of cutaway clay architecture with four flat matte materials, one broad warm key, a weak hemisphere fill, one subdued local environment, and a shadow accumulated over 60 frames. It loads offline, keeps all six orbs selectable in both camera modes, and passes the production build. Presentation-laptop confirmation is still outstanding. See the [asset provenance](../raw-sources/saloon-asset-provenance-2026-08-29.md).
+- **Custom faceless spheres or Live Orb for the Saloon?** Closed 2026-08-29: retain the six custom shared-canvas agent orbs and their current state behavior. Replace the room shell and lighting instead. Live Orb remains limited to a single onboarding fallback.
 - **Will `@abui/animated-chart` force an incompatible Motion version?** Closed 2026-08-29: the workspace has one Motion 12 dependency, the adapted chart supports reduced motion and stable agent IDs, and the production build passes.
 
 ## Current blockers
@@ -59,5 +69,7 @@ Only unresolved implementation and event questions remain. Concept selection is 
 - No final event or asset universe is recorded.
 - No final Alpaca-supported five-asset universe or sanitized order fixture is recorded.
 - Alpaca Paper execution requires USD portfolio currency; live route now rejects missing/non-USD mandates. Account/position-to-core mapping remains open.
+- No sanitized Alpaca account, positions, or order fixture is recorded.
 - The Josep and Axel issue split and owners for Cala, Alpaca, contracts, risk, fixtures, deployment, and pitch are not recorded.
 - No organizer-provided judging rubric is recorded.
+- The clay Saloon room has not been judged on the presentation laptop.

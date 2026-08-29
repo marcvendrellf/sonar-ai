@@ -4,6 +4,7 @@ Sources:
 
 - [Luma event capture](../raw-sources/event-luma-2026-08-28.md)
 - [Alpaca Paper Trading verification](../raw-sources/alpaca-paper-trading-verification-2026-08-29.md)
+- [Alpaca paper-trading verification](../raw-sources/alpaca-paper-trading-verification-2026-08-29.md)
 
 ## Facts
 

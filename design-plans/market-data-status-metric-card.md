@@ -7,6 +7,7 @@ Written against: 4a42f65ce108fe9875c93c7ac7f978e33ed15960
 - Surface: `apps/web/features/dashboard/dashboard.tsx`, the "Portfolio summary" section rendered at `dashboard.tsx:259-275`, on route `/`.
 - Problem: the metric row renders five cards — Paper NAV, Daily paper P&L, Gross exposure, Available cash, Active risk flags (`dashboard.tsx:57-93`). The documented top row has six, and the missing one is the market-data status card. Every number in that row is a fixture value, and the row itself says nothing about that. The only statements of data provenance on the whole surface sit outside the row and outside the reading path for the numbers: a sidebar footer label "Fixture mode / Historical replay" (`components/application-shell1.tsx:113-114`) and a header note "All orders simulated" (`application-shell1.tsx:159`), which speaks to orders, not to data.
 - Design evidence: `llm-wiki/interface-plan.md:274-282` specifies the top row as cards for paper NAV; **Alpaca Paper account status, clearly labeled live or fixture**; daily paper P&L; gross exposure; available cash; active risk flags. `llm-wiki/index.md:12` lists the interface plan as current. `llm-wiki/log.md` records the current dashboard as fixture-driven; no entry supersedes the six-card row.
+- Design evidence: `llm-wiki/interface-plan.md:274-282` specifies the top row as cards for paper NAV; **Alpaca paper-data status, clearly labeled live or fixture**; daily paper P&L; gross exposure; available cash; active risk flags. `llm-wiki/index.md:12` lists the interface plan as current. `llm-wiki/log.md` records Alpaca Paper as the provider, and records the current dashboard as fixture-driven; no entry supersedes the six-card row.
 - Owner: the `metrics` constant at `apps/web/features/dashboard/dashboard.tsx:57-93` and its renderer at `dashboard.tsx:259-275`.
 - Scope and affected surfaces: `apps/web/features/dashboard/dashboard.tsx` only.
 - Uncertainty: none for the value. The repository states the current state is a historical replay in `llm-wiki/overview.md:77` and on the surface itself at `application-shell1.tsx:113-114`, so `Fixture` is the correct current label.
@@ -28,6 +29,7 @@ No new primitive is required.
 
 1. `apps/web/features/dashboard/dashboard.tsx:57-93`
    - Change: insert a second entry in `metrics`, directly after `nav`, matching the documented order: `{ id: "data", label: "Market data", value: "Fixture", detail: "Alpaca Paper", icon: RadioTower }`. Add `RadioTower` to the `lucide-react` import at `dashboard.tsx:3-18`, keeping the import list alphabetical as it currently is.
+   - Change: insert a second entry in `metrics`, directly after `nav`, matching the documented order: `{ id: "data", label: "Market data", value: "Fixture", detail: "Alpaca not connected", icon: RadioTower }`. Add `RadioTower` to the `lucide-react` import at `dashboard.tsx:3-18`, keeping the import list alphabetical as it currently is.
    - Preserve: the `as const` annotation, the existing five entries and their order relative to each other, and the `icon` field shape.
    - Verify: the row reads Paper NAV, Market data, Daily paper P&L, Gross exposure, Available cash, Active risk flags.
 
@@ -46,6 +48,7 @@ No new primitive is required.
 - Inherit: the Portfolio summary section on `/`.
 - Verify: `components/application-shell1.tsx:113-114` and `:159`. Those statements stay, but after this change the row is the primary statement of provenance; if they later contradict it, the row is authoritative.
 - Exclude: wiring live market-data status. The interface plan requires only that the label be clear about which state applies. Exclude changing the copy in the shell. Exclude the other dashboard sections.
+- Exclude: wiring a real Alpaca status. No Alpaca client exists in this repository, and the interface plan requires only that the label be clear about which state applies. Exclude changing the copy in the shell. Exclude the other dashboard sections.
 
 ## Validation
 
@@ -57,8 +60,10 @@ No new primitive is required.
 ## Stop conditions
 
 - Stop if live Alpaca Market Data has landed by implementation time; the value must then reflect the live connection state rather than the literal `Fixture`, and the source of that state needs to be agreed first.
+- Stop if a real Alpaca connection has landed by implementation time; the value must then reflect the paper connection state rather than the literal `Fixture`, and the source of that state needs to be agreed first.
 - Stop if six cards cannot hold one row at 1440px without truncating a label. The fallback is not to shorten the documented labels but to raise the row treatment with the design owner.
 
 ## Design documentation
 
 - After acceptance and validation: append an entry to `llm-wiki/log.md` recording that the metric row now carries the documented market-data status card and that its value is a literal `Fixture` until live Alpaca Market Data is wired. Update `llm-wiki/overview.md:77` so the described dashboard state matches.
+- After acceptance and validation: append an entry to `llm-wiki/log.md` recording that the metric row now carries the documented market-data status card and that its value is a literal `Fixture` until an Alpaca status source exists. Update `llm-wiki/overview.md:77` so the described dashboard state matches.
