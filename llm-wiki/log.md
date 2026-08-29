@@ -81,3 +81,11 @@ Adapted the shell to the compact navigation required by the interface plan. Buil
 ## [2026-08-29] correction | Application-shell sidebar restored
 
 Restored the collapsible sidebar, inset header, sidebar rail, and responsive trigger from `@shadcnblocks/application-shell1` after the first adaptation replaced the block with top navigation. Fixed the shadcn font token so Geist renders through `--font-geist-sans`.
+
+## [2026-08-29] implementation | Shared contracts, risk engine, and agent-backend scaffold
+
+Built `@sonar-ai/core` (the cross-lane Zod contract, stable-ID helpers, evidence-integrity gate, and one golden `InvestmentCommitteeState` fixture) and `@sonar-ai/risk-engine` (the pure deterministic Risk Officer: metrics, stress, compare, and pass/resize/reject rules with reproducible numbers). Both are React/Next-free and fully unit-tested; a purity guard forbids IO imports in the risk engine. Turnover is defined sell-side, so the cash-only baseline deploys without a false breach.
+
+Addressed a contract review: stored the revision-0 proposal so every `riskChecks[].actionId` resolves, added action- and receipt-scoped integrity gates, surfaced all four mandate limits in `RiskMetrics`, and tightened the turnover doc.
+
+Wired both packages plus Zod into `apps/web` (workspace deps + `transpilePackages`) and scaffolded the agent backend under `apps/web/lib/server`: validated server `env.ts`, the `AgentRunner`/`AgentDef` seam with a deterministic `StubAgentRunner`, and the closed tool-name set. Documented the whole structure, conventions, and per-folder responsibilities in [`apps/web/lib/server/README.md`](../apps/web/lib/server/README.md) so both agent-lane owners can claim files without collision. Orchestrator, agents, tools, and adapters remain to be implemented (Phases 3–6).

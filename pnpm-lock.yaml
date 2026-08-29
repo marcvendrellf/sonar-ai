@@ -16,6 +16,12 @@ importers:
       '@shadcn/react':
         specifier: ^0.3.0
         version: 0.3.0(@types/react@19.2.18)(react@19.2.8)
+      '@sonar-ai/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@sonar-ai/risk-engine':
+        specifier: workspace:*
+        version: link:../../packages/risk-engine
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -55,6 +61,9 @@ importers:
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4

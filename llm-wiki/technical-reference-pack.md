@@ -350,7 +350,7 @@ Use `Instrument Sans`, `Geist`, or another available neutral grotesk. Pick one f
 
 The repository is a monorepo. Use feature folders inside `apps/web`, keep shadcn-managed primitives in `components/ui`, and keep external integrations under `lib/server`.
 
-The full proposed tree and ownership rules live in the [team workflow](team-workflow.md).
+The full proposed tree and ownership rules live in the [team workflow](team-workflow.md). The agent backend's live structure, conventions, and per-folder responsibilities are documented in code at [`apps/web/lib/server/README.md`](../apps/web/lib/server/README.md) — the authoritative map for the agents and data lane.
 
 Workspace rules:
 
