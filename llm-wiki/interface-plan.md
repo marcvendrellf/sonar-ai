@@ -3,7 +3,7 @@
 Sources:
 
 - [User-selected UI components](../raw-sources/user-selected-ui-components-2026-08-28.md)
-- [Sonar AI, eToro, and paper-trading decision](../raw-sources/sonar-etoro-paper-decision-2026-08-29.md)
+- [Alpaca paper-trading verification](../raw-sources/alpaca-paper-trading-verification-2026-08-29.md)
 
 ## Product structure
 
@@ -183,7 +183,7 @@ Do not use raw Tailwind green or red classes in components.
 Use shadcn Cards for:
 
 - paper NAV;
-- eToro market-data status, clearly labeled live or fixture;
+- Alpaca paper-data status, clearly labeled live or fixture;
 - daily paper P&L;
 - gross exposure;
 - available cash;

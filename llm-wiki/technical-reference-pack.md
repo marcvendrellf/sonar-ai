@@ -4,7 +4,7 @@ Sources:
 
 - [React technical references](../raw-sources/react-technical-references-2026-08-28.md)
 - [User-selected shadcn components](../raw-sources/user-selected-ui-components-2026-08-28.md)
-- [Sonar AI, eToro, and paper-trading decision](../raw-sources/sonar-etoro-paper-decision-2026-08-29.md)
+- [Alpaca paper-trading verification](../raw-sources/alpaca-paper-trading-verification-2026-08-29.md)
 
 Detailed composition: [interface plan](interface-plan.md)
 
@@ -22,7 +22,7 @@ Use one application, Motion for DOM transitions, and one primary 3D sphere. The 
 - **React Flow and ELK.js** for a deterministic relationship graph.
 - **Zustand** for demo state and portfolio state.
 - **Zod** at every server boundary and fixture load.
-- **TanStack Query** for Cala and read-only eToro requests, retries, caching, and fixture fallbacks.
+- **TanStack Query** for Cala and Alpaca Paper requests, retries, caching, and fixture fallbacks.
 - **Recharts** only for one small portfolio or exposure chart.
 - **Lucide React** for interface icons.
 
@@ -82,9 +82,9 @@ Implementation split:
 - `Market Context Analyst` evaluates news, sector, macro, competitors, regulation, earnings calendar, and material events from an isolated context pack.
 - `Risk Officer` calls deterministic analytics and can hard-block `POSITION_LIMIT_BREACH`, `RISK_MANDATE_BREACH`, or `DATA_INVALID`. It cannot be overridden by Portfolio Manager.
 - `Bear/Critic` receives proposal, evidence, research summaries, context, and risk report. It flags uncertainty and failure scenarios but cannot veto.
-- `Communications/Report Writer` runs only after human decision. It formats decision record, internal report, and permitted eToro-facing copy. It cannot mutate allocation.
+- `Communications/Report Writer` runs only after human decision. It formats decision record and internal report. It cannot mutate allocation.
 
-Cala relationship tracing is a sourced tool/data capability used by research stages, not a separate agent. eToro remains read-only. Trader is deterministic paper-ledger code, not an agent and not a broker client.
+Cala relationship tracing is a sourced tool/data capability used by research stages, not a separate agent. Alpaca Paper is the execution adapter after approval. Trader remains deterministic paper-ledger receipt code, not an autonomous agent.
 
 For MVP, use plain TypeScript orchestration rather than LangGraph, AutoGen, a queue, distributed services, or autonomous background loops. Persist one `InvestmentCommitteeState` per run. Permit fixture replay and one bounded retry at external/model stages. Keep stage boundaries replaceable for future workers without changing UI contracts.
 
@@ -131,7 +131,7 @@ get_existing_thesis(instrument)
 save_recommendation(recommendation)
 ```
 
-`search_company_information` and relationship tracing use Cala or sanitized fixtures. Price data uses read-only eToro adapter or fixture. `save_recommendation` writes internal state only. No tool submits orders, changes brokerage accounts, or lets one agent call another directly.
+`search_company_information` and relationship tracing use Cala or sanitized fixtures. Market and portfolio data use Alpaca Paper or fixture. `save_recommendation` writes internal state only. Alpaca order submission requires explicit human approval and deterministic risk pass; no tool can reach a live endpoint.
 
 ## Core packages
 
@@ -193,12 +193,12 @@ Server
     RiskEngine
     FixtureFallback
   /api/market-data
-    EtoroReadOnlyClient
-    MarketDataNormalizer
+    AlpacaPaperClient
+    AlpacaNormalizer
     MarketDataFixtureFallback
 ```
 
-The browser never receives Cala or eToro credentials. The eToro adapter is read-only and cannot submit orders. The model never receives uncited graph prose as fact. The risk engine remains a pure deterministic module.
+The browser never receives Cala or Alpaca credentials. Alpaca client is server-only and fixed to `https://paper-api.alpaca.markets/v2`; it cannot reach a live endpoint. The model never receives uncited graph prose as fact. The risk engine remains a pure deterministic module.
 
 ## Shared data contract
 
@@ -357,7 +357,7 @@ Workspace rules:
 - `packages/core` and `packages/risk-engine` never import React or Next.js.
 - `packages/core` owns cross-lane Zod schemas and stable IDs for events, evidence, graph records, theses, market snapshots, orders, risk results, and receipts.
 - Cala stays in `apps/web/lib/server/cala`.
-- eToro stays in `apps/web/lib/server/etoro` and exposes read-only normalized data only.
+- Alpaca stays in `apps/web/lib/server/alpaca` and exposes paper-only normalized data and approved-order methods.
 - UI code imports shared types from `packages/core` and never infers agent or risk state by parsing prose.
 - The risk engine consumes plain data from `packages/core` and returns plain results.
 - A contract change updates its schema, fixture, parser, and consuming test in the same pull request.
@@ -372,7 +372,7 @@ Workspace rules:
 6. Render one fixed relationship graph from a fixture and animate the active path.
 7. Implement deterministic portfolio metrics, Risk Officer hard blocks, and human approval gate.
 8. Connect the Saloon trace, recommendation comparison, approval control, and decision receipt to typed records.
-9. Add server-side Cala and read-only eToro adapters behind fixture fallbacks.
+9. Add server-side Cala and Alpaca Paper adapter behind fixture fallbacks.
 10. Add Shader Gradient, the active-agent chart, and final polish only after the full three-minute sequence works.
 
 ## Cut list if time runs short

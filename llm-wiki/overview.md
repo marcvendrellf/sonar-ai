@@ -2,7 +2,7 @@
 
 ## Final decision
 
-Build [Sonar AI](concepts/sonar-ai.md), an agentic paper hedge fund that uses Cala to trace relationships behind an event before proposing a simulated portfolio change for human approval. The concept was codenamed "Agent Fund" during selection; the product name is now Sonar AI (see the [naming and monorepo decision](../raw-sources/naming-monorepo-decision-2026-08-29.md)). The user reconfirmed this direction and added a read-only eToro connection while keeping all trading simulated (see the [eToro paper-trading decision](../raw-sources/sonar-etoro-paper-decision-2026-08-29.md)).
+Build [Sonar AI](concepts/sonar-ai.md), an agentic paper hedge fund that uses Cala to trace relationships behind an event before proposing a paper-portfolio change for human approval. The concept was codenamed "Agent Fund" during selection; the product name is now Sonar AI (see the [naming and monorepo decision](../raw-sources/naming-monorepo-decision-2026-08-29.md)). Alpaca is the paper-trading provider and all orders stay on its paper endpoint (see the [Alpaca paper-trading verification](../raw-sources/alpaca-paper-trading-verification-2026-08-29.md)).
 
 > The agent does not trade the headline. It trades the relationships behind it.
 
@@ -16,8 +16,8 @@ The event message is broad: `Build whatever you want, you might just leave with 
 4. Risk Officer runs deterministic portfolio analytics and hard-blocks invalid proposals.
 5. Bear/Critic attacks surviving recommendation and identifies failure scenarios.
 6. Portfolio Manager revises recommendation using critique and risk report.
-7. Human reviews and approves or rejects paper action; Trader applies approved changes only to internal paper portfolio.
-8. Communications/Report Writer turns final decision into internal report and permitted eToro-facing copy after decision, never before.
+7. Human reviews and approves or rejects paper action; Alpaca Paper adapter submits approved orders and local ledger records receipt.
+8. Communications/Report Writer turns final decision into internal report after decision, never before.
 9. Dashboard stores decision receipt with evidence, risk comparison, approval, and generated report.
 
 MVP uses one typed orchestrator, five decision agents, one post-decision writer, isolated contexts, bounded model calls, deterministic analytics, and fixture replay. No agent swarm, agent-to-agent filler chat, autonomous loops, workflow framework, or automatic execution.
@@ -45,7 +45,7 @@ Use the [interface plan](interface-plan.md) as the UI contract.
 - `@23rd/live-orb` only as a minimal fallback or onboarding host
 - React Flow and ELK.js for deterministic relationship layout
 - Zustand, TanStack Query, Zod, Recharts, and Lucide
-- server-only Cala and read-only eToro adapters with sanitized fixture fallbacks
+- server-only Cala and Alpaca Paper adapter with sanitized fixture fallbacks
 
 Selected shadcn registry components:
 
@@ -61,7 +61,7 @@ Use the [technical reference pack](technical-reference-pack.md) for installation
 ## Non-negotiable boundaries
 
 - Paper trading only
-- eToro is read-only unless an official paper-trading interface is verified
+- Alpaca paper endpoint only; live endpoint and credentials forbidden
 - No real-money orders, deposits, withdrawals, or brokerage-account control
 - No customer funds
 - No return claims
@@ -79,7 +79,9 @@ The repository is a pnpm workspace monorepo at `github.com/marcvendrellf/sonar-a
 
 shadcn is initialized with the Base UI `base-nova` preset. The application-shell block, selected third-party registry components, and required shadcn primitives are installed. The first fixture-driven dashboard uses the `application-shell1` collapsible sidebar and includes paper-fund metrics, a NAV chart, sourced relationship path, positions table, adapted agent activity feed, agent-work chart, risk outcome, and inspectable decision receipt. `pnpm typecheck`, `pnpm lint`, and `pnpm build` pass.
 
-The dashboard data is presentational fixture data, not a reviewed shared contract or Cala/eToro fixture. The MVP runtime remains a plain server-side typed orchestrator with five decision agents plus a post-decision Report Writer; exact prompts and schemas remain implementation work. The Saloon and onboarding remain separate implementation epics. Team direction is recorded: Marc leads the frontend, while Josep and Axel focus mainly on agents and data. The split between Josep and Axel and ownership of Cala, eToro, shared contracts, risk, fixtures, deployment, and pitch remain open.
+The dashboard data is presentational fixture data, not a reviewed shared contract or Cala/Alpaca fixture. The MVP runtime remains a plain server-side typed orchestrator with five decision agents plus a post-decision Report Writer; exact prompts and schemas remain implementation work. The Saloon and onboarding remain separate implementation epics. Team direction is recorded: Marc leads the frontend, while Josep and Axel focus mainly on agents and data. The split between Josep and Axel and ownership of Cala, Alpaca, shared contracts, risk, fixtures, deployment, and pitch remain open.
+
+The first Alpaca integration slice adds a Zod-validated Paper account/positions contract, server-only paper client, `/api/alpaca/portfolio` route, fixed paper endpoint, paper-order method, and sanitized fixture fallback. Live paper response capture and U.S.-asset selection remain open.
 
 ## Immediate next actions
 
@@ -91,8 +93,8 @@ The dashboard data is presentational fixture data, not a reviewed shared contrac
 6. Implement the typed orchestrator/state store and deterministic portfolio analytics/risk engine.
 7. Build one fixed portfolio decision with sourced relationships and a human approval step.
 8. Test Cala and save a sanitized response fixture.
-9. Verify the official eToro interface and save a read-only sanitized market-data fixture.
-10. Add Report Writer output only after final decision; connect live Cala and eToro only after the full fixture-driven demo works.
+9. Run one Alpaca Paper account/positions/order test and save sanitized response fixtures.
+10. Add Report Writer output only after final decision; connect live Cala and Alpaca Paper only after the full fixture-driven demo works.
 
 ## Success condition
 

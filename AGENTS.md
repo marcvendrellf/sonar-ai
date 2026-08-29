@@ -26,7 +26,7 @@ Before planning or implementation, read:
 6. `llm-wiki/team-workflow.md`
 7. `llm-wiki/open-questions.md`
 
-Read `llm-wiki/cala-finance.md` before making Cala assumptions. Treat eToro capabilities as unverified until official documentation or a sanitized fixture confirms them.
+Read `llm-wiki/cala-finance.md` before making Cala assumptions. Treat Alpaca capabilities as verified only where official documentation or a sanitized fixture confirms them.
 
 ## Current page types
 
@@ -59,7 +59,7 @@ Treat Cala product-page statements as vendor claims until an API fixture confirm
 ## Product boundaries
 
 - Paper trading only
-- eToro may provide read-only market or reference data after its interface is verified
+- Alpaca provides paper-account market, portfolio, and order data through its paper API
 - No real-money order submission, deposits, withdrawals, or brokerage-account control
 - No customer funds
 - No promised returns
@@ -82,13 +82,13 @@ Treat Cala product-page statements as vendor claims until an API fixture confirm
 - Never use `--overwrite` without reviewing the diff.
 - Use semantic shadcn tokens and component variants instead of raw status colors.
 - Preserve required shadcn composition and accessibility structure.
-- Keep Cala and eToro credentials and calls on the server.
-- Keep eToro behind a read-only adapter. Sonar simulates orders internally unless an official paper-trading interface is verified.
+- Keep Cala and Alpaca credentials and calls on the server.
+- Keep Alpaca fixed to its paper endpoint. Sonar submits orders only after human approval and deterministic risk checks.
 - Validate server responses and fixtures with Zod.
 - Keep the risk engine pure and independent from React.
 - For hackathon MVP, use one code-owned server-side `AnalysisOrchestrator` with five decision agents: Portfolio Manager, Fundamental Analyst, Market Context Analyst, Risk Officer, and Bear/Critic. Add Communications/Report Writer only after human decision. Do not add autonomous loops, agent-to-agent free-form chat, or a workflow framework before the fixture-driven demo works.
 - Portfolio Manager owns allocation and revision, not research or manual risk math. Fundamental and Market Context agents receive isolated evidence packs. Risk Officer calls deterministic analytics and can hard-block mandate, data, or concentration breaches. Bear/Critic flags uncertainty but cannot veto. Report Writer cannot influence allocation.
-- Cala relationship tracing is a sourced research capability, not a separate agent. eToro remains read-only; simulated orders require explicit human approval and internal paper-ledger application.
+- Cala relationship tracing is a sourced research capability, not a separate agent. Alpaca paper orders require explicit human approval and internal paper-ledger receipt.
 
 Selected registries:
 
@@ -103,7 +103,7 @@ Selected registries:
 
 - Link wiki facts to files in `raw-sources/` when a local capture exists.
 - Include original URL and retrieval date in each web capture.
-- For Cala and eToro experiments, save sanitized request shape, response shape, date, and result in a new raw source.
+- For Cala and Alpaca experiments, save sanitized request shape, response shape, date, and result in a new raw source.
 - Never save API keys, private attendee details, customer data, or personal financial data.
 - Separate source facts from agent analysis in data structures and UI.
 

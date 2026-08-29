@@ -50,11 +50,11 @@ Recorded Marc as the frontend owner and Josep and Axel as the shared agent and d
 
 Made onboarding a standalone epic. Proposed one issue or coherent feature per branch, cross-lane review for shared contract changes, and a feature-oriented `apps/web` layout. The branch naming policy and individual split between Josep and Axel remain open.
 
-## [2026-08-29] decision | Sonar reconfirmed with read-only eToro data
+## [2026-08-29] decision | Sonar reconfirmed with paper trading
 
 The user reconfirmed the Sonar AI hedge-fund direction. The maintained wiki now gives new clones one active product path.
 
-Added eToro as a read-only market or reference-data integration, subject to official capability verification. Paper money remains mandatory. Sonar simulates orders internally and cannot submit real-money orders, deposits, withdrawals, or brokerage-account instructions. Recorded the event's broad message: `Build whatever you want, you might just leave with the MVP from your next startup and some cool prizes!`
+Added paper trading through Alpaca's paper environment. Paper money remains mandatory. Sonar cannot submit real-money orders, deposits, withdrawals, or brokerage-account instructions. Recorded the event's broad message: `Build whatever you want, you might just leave with the MVP from your next startup and some cool prizes!`
 
 ## [2026-08-29] architecture | MVP agent structure provisionalized
 
@@ -66,7 +66,13 @@ Until that structure is supplied, the docs use the existing Scout, Cartographer,
 
 The user supplied a concrete hackathon architecture recommendation: one code-owned orchestrator, five decision agents (Portfolio Manager, Fundamental Analyst, Market Context Analyst, Risk Officer, and Bear/Critic), human approval, then a Communications/Report Writer. The prior Scout/Cartographer/Marshal/Trader stage model is superseded.
 
-Sonar adapts this structure to its existing boundaries. Cala relationship tracing is a sourced research capability, Risk Officer owns deterministic hard blocks, Trader is internal paper-ledger code, and eToro remains read-only. MVP cuts swarms, autonomous loops, distributed services, price forecasting, reinforcement learning, multiple MCP servers, and automatic execution.
+Sonar adapts this structure to its existing boundaries. Cala relationship tracing is a sourced research capability, Risk Officer owns deterministic hard blocks, Trader is internal paper-ledger receipt code, and Alpaca is paper-only. MVP cuts swarms, autonomous loops, distributed services, price forecasting, reinforcement learning, multiple MCP servers, and automatic execution.
+
+## [2026-08-29] integration | Alpaca Paper slice
+
+Verified official Alpaca documentation: Paper Only accounts are globally available, paper credentials and endpoint are separate from live, and the API exposes account, positions, and order endpoints. Alpaca is now active provider in project contract.
+
+Added Zod-validated Alpaca Paper account/positions contracts, a server-only client fixed to `https://paper-api.alpaca.markets/v2`, a paper portfolio route, paper-order method, and sanitized fixture. Live paper response capture and U.S.-listed candidate selection remain open.
 
 ## [2026-08-29] demo | Cash-only starting state
 
