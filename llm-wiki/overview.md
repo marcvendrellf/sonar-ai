@@ -72,19 +72,19 @@ Use the [technical reference pack](technical-reference-pack.md) for installation
 
 ## Current implementation state
 
-The repository exists as a private GitHub monorepo at `github.com/marcvendrellf/sonar-ai` with the wiki, the repository contract, and the supplied visual asset committed. No application has been scaffolded: there is no `package.json`, pnpm workspace file, or `components.json` yet.
+The repository is a pnpm workspace monorepo at `github.com/marcvendrellf/sonar-ai`. The Next.js application now lives in `apps/web`, with reserved workspace packages at `packages/core` and `packages/risk-engine`.
 
-The selected third-party registry components were inspected with `shadcn view`. They have not been installed.
+shadcn is initialized with the Base UI `base-nova` preset. The application-shell block, selected third-party registry components, and required shadcn primitives are installed. The first fixture-driven dashboard uses the `application-shell1` collapsible sidebar and includes paper-fund metrics, a NAV chart, sourced relationship path, positions table, adapted agent activity feed, agent-work chart, risk outcome, and inspectable decision receipt. `pnpm typecheck`, `pnpm lint`, and `pnpm build` pass.
 
-Team direction is recorded: Marc leads the frontend, while Josep and Axel focus mainly on agents and data. Onboarding remains a dedicated frontend epic. The split between Josep and Axel and ownership of Cala, eToro, shared contracts, risk, fixtures, deployment, and pitch remain open.
+The dashboard data is presentational fixture data, not a reviewed shared contract or Cala/eToro fixture. The Saloon and onboarding remain separate implementation epics. Team direction is recorded: Marc leads the frontend, while Josep and Axel focus mainly on agents and data. The split between Josep and Axel and ownership of Cala, eToro, shared contracts, risk, fixtures, deployment, and pitch remain open.
 
 ## Immediate next actions
 
 1. Agree on the branch policy and assign the remaining ownership areas in the [team workflow](team-workflow.md).
-2. Scaffold the pnpm workspace and initialize shadcn with the Base UI `base-nova` preset.
-3. Run `shadcn info`, preview selected registry items, and resolve the Animated Chart Motion-version warning.
-4. Define and fixture-test the shared contracts in `packages/core`.
-5. Build static onboarding, Saloon, and dashboard shells from fixtures.
+2. Define and fixture-test the shared contracts in `packages/core`.
+3. Replace the dashboard's presentational data with a reviewed validated fixture.
+4. Build the fixture-driven Saloon shell and execution trace.
+5. Build onboarding as its own frontend epic.
 6. Implement the typed agent event store and deterministic risk engine.
 7. Build one fixed event-to-position relationship reveal.
 8. Test Cala and save a sanitized response fixture.
