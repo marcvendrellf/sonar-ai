@@ -1,0 +1,55 @@
+okay this is a review about phase 1, evaluate the findings, whether they are correct or not, and fix them if necessary, Verdict
+Phase 1 is in good shape and delivers what the plan asked for: pure Zod + inferred types, zero React/Next/network imports, a reusable evidence gate with a negative test, and one complete golden run. The module boundaries and tsconfig strictness (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`) are better than the spec required. The findings below are coherence gaps in the fixture and doc contracts — not schema bugs — but they matter because this package is declared the single source of truth and the golden state drives the Phase 3 stub-runner and Phase 5 JSON schemas.
+Findings, most to least important
+1. `riskChecks[].actionId` point at actions that exist nowhere in the state. In golden-state.ts:165-166 the checks reference `acn_nvda_v0` / `acn_sie_v0` (the pre-resize revision-0 proposal), but the only actions actually stored — in both `proposedActions` (:211-214) and `finalRecommendation.actions` (:183-186) — are `acn_*_final`. So a UI trying to link "Nvidia was resized 35%→30%" from a risk check back to its action resolves nothing. The evidence gate catches dangling evidenceIds, but nothing guards actionId, so this passes silently. It's baked into the receipt too (:314-316). Fix: either store the revision-0 recommendation/actions in the state so the checks resolve, or repoint the checks at the final action IDs. The narrative wants to show the resize, so keeping the v0 actions is the more faithful option.
+2. The `maxTurnoverPerEvent` contract comment is ambiguous and, read plainly, contradicts the engine. mandate.ts:15-16 says "Maximum fraction of NAV that may turn over in response to one event" — which reads as gross traded notional (the fixture deploys €500 of €1,000 = 50%). But Phase 2's `checkTurnover` explicitly defines it as sell-side churn only (`sellNotional / nav`, all-cash deployment = 0 turnover). Both can't be the source of truth, and this package is supposed to be it. Tighten the doc comment here to state the precise definition (sell-notional / NAV) so the LLM generating structured output in Phase 5 doesn't compute it the naive way and hallucinate a breach.
+3. The receipt's internal evidence integrity is neither collected nor tested. `collectReferencedEvidenceIds` (integrity.ts:21-46) walks the top-level state but never descends into `state.receipt`, which carries its own `evidence[]` (6 records, omitting `ev_market`) and its own claim/event references. It happens to be internally sound, but by manual care, not by the gate. Since the receipt is the durable artifact, add a `findDanglingEvidenceIdsInReceipt(receipt)` (or fold the receipt into the collector) and assert it in the integrity test.
+Smaller notes
+
+* Derived views can silently drift. `proposedActions`/`riskChecks` (analysis.ts:72-73) duplicate `finalRecommendation.actions` and `riskReport.checks`. Fine as a UI convenience, but nothing asserts they stay in sync — worth an orchestrator-level consistency check in a later phase (and a one-line comment here saying they're derived, not authoritative).
+* The schema can't express the phase invariants the commit claims. "UserDecision required before mutation" is enforced only by the orchestrator; the schema lets `userDecision: null` coexist with a non-empty `appliedOrders`, and `phase: "complete"` with everything null. That's a deliberate progressive-enrichment design, but since the commit message states the invariant, consider a `.superRefine` or a documented invariant test so the guarantee lives with the contract.
+* Turnover has no home in `RiskMetrics` (agents.ts:83-90) — volatility/beta/concentration/sectorExposure are surfaced, but a turnover breach can only cite a number from the check's `numbers` map, not from metrics. Minor, but a turnover field would make the metrics panel symmetric with the four limits.
+* Nit: `ID_PREFIXES.stageOutput: "stg"` (ids.ts:33) is defined but unused — stage outputs use type-specific prefixes (`frp`, `mrp`…). Drop it or use it.
+* Nit: commit message cites zod 4.4.3; package.json:17 pins `^4.1.5`. Harmless, just inconsistent provenance.
+
+What's genuinely good
+Evidence gate is pure, reusable, and has a real negative test (`structuredClone` + injected dangling id). Every timestamped fact carries a `live|historical|synthetic` label and graph edges require ≥1 evidence id — the core "no uncited claims" invariant is structural. Fixture IDs are consistent with `ID_PREFIXES` throughout. `Money`/`Ratio`/`Confidence` primitives keep the rest of the tree dependency-light, and splitting out `primitives.ts` + `integrity.ts` (beyond the spec) was the right call.
+
+---
+
+okay now, create the general structure and document it on the repo so my partners have also this information
+
+---
+
+now i got a review also about phase 2, same as before, evaluate and fix if ok
+
+Verdict
+Phase 2 is solid and faithful to the plan. It's genuinely pure (`purity.test.ts` walks the source and blocks IO/framework/randomness imports) and genuinely deterministic (an explicit "identical input → identical output" test). The enforcement model is exactly the spec's: `DATA_INVALID` → reject+exclude, `POSITION_LIMIT_BREACH` → resize (run continues), sector/cash/turnover → `RISK_MANDATE_BREACH` hard block. Every check carries reproducible `numbers`, money is cent-rounded, comparisons and sector breaches are sorted for stable output, and float comparisons use an `EPS`. The weights/metrics/rules/stress/compare split is clean.
+Findings
+1. [Confirmed · Medium] The engine can emit a `RiskReport` that fails its own core schema. `metrics.cashRatio` is `1 - investedWeight` (engine.ts:159), but core types it as `Ratio` = `[0,1]` (agents.ts:97). On an over-invested proposal — precisely the cash-floor-breach case the engine is built to report — `cashRatio` goes negative. I verified it end-to-end: a 120%-invested proposal yields `cashRatio: -0.2` and `RiskReportSchema.safeParse(report)` fails with `too_small` on `metrics.cashRatio`. Today it's latent (no Phase 3 orchestrator validates stage outputs yet), but the whole point of the contract is that the risk stage output will be parsed — and it'll throw on the exact path that should produce a clean hard-block report. Fix is small and belongs in core: make `cashRatio` a signed `z.number()` (it's meaningfully negative), and add a test that an over-invested report round-trips through `RiskReportSchema`. (`turnover` is safe for long-only/unlevered — bounded by position value ≤ NAV — so this is specifically `cashRatio`.)
+2. [Medium · latent] Turnover counts the resulting position size, not the churn. `checkTurnover`'s doc says turnover is "the sell-side notional rotated out of current positions" (portfolio-limits.ts:49-54), but the engine accumulates `sellNotional += pl.amount` (engine.ts:105), where `pl.amount` is the action's absolute target notional (`validateAction` forces `amount ≈ targetWeight × NAV`, validate.ts:46-49). For a sell that trims 40%→30%, the true churn is 10% of NAV but the engine records 30%. It's correct in the MVP (all buys from an all-cash book → turnover 0, which the test asserts), but wrong for exactly the rebalance case the doc claims to handle. Since there's no existing-positions test, the divergence is invisible. Worth either (a) computing sell churn as `max(0, currentWeight − targetWeight) × NAV`, or (b) narrowing the doc comment to say the MVP only deploys cash and rebalance turnover is a Phase-N TODO.
+3. [Low] `stress.ts` and `compare.ts` are thinly/never covered. No engine test passes `stressScenarios`, so `runStressTest` has zero coverage, and `comparePortfolios` is only checked via two `proposedInvested`/`proposedCash` assertions. The spec called out `metrics.test.ts` (present) but stress is a first-class risk output feeding the receipt. Add a small deterministic stress case (per-instrument shock + a `marketShock`×beta case) and a compare case with a non-empty starting book.
+Nits
+
+* `reportId` defaults to the fixed string `"risk_report"` (engine.ts:56) — fine and documented, but two reports in one state would collide on `id`; the stage assigning one is the real path.
+* The "no randomness" guarantee leans on core discipline: `newId` uses global `crypto.randomUUID`, and the engine depends on core — the purity guard only scans engine source. That's correct (the engine never calls `newId`), just worth knowing the boundary is by convention, not enforcement across the dep.
+* `hardBlocks` dedupe via `Set` → array is good; order is deterministic (per-action DATA_INVALID first, then sector/cash/turnover), and the sector breaches are name-sorted. No action needed — noting it because the determinism test only exercises the no-block path.
+
+What's good
+The resize-not-reject position-limit behavior (position-limit.ts:14-18) with the override map flowing into the post-resize portfolio view is the right shape, and `computeMetrics` running on the resized weights means the sector check sees trimmed exposures — correct ordering. `validateAction`'s currency + `[0,1]` + `amount ≈ weight×NAV` triad is a good DATA_INVALID gate, and excluding invalid actions from the deployed portfolio is both tested and correct. The `Omit<RiskMetrics, "cashRatio" | "turnover">` return type on `computeMetrics` cleanly encodes "the engine fills the compliance figures last."
+
+---
+
+okay so take the new context of the modified files. In addition I will be in charge of making the agents and Josep of the orchestration so let's figure out what you and I are going to do in the agents prespective.
+
+---
+
+okay about the context-policy question I trust you with that, and about the prompt I will do them with another chat, so maybe it's time to do the next agent, if you think it's time
+
+---
+
+did you finish the context-policy decision for Fundamental
+
+---
+
+commit the two agents and do Portfolio Manager next
