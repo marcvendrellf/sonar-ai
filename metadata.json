@@ -3,9 +3,35 @@
   "checkpoint_id": "01M16RP4M6DEETTCQAX39BDKFA",
   "strategy": "manual-commit",
   "branch": "feat/core-contracts",
-  "checkpoints_count": 1,
+  "checkpoints_count": 2,
   "files_touched": [
-    ".env.example"
+    ".env.example",
+    "apps/web/lib/server/README.md",
+    "apps/web/lib/server/analysis/agents/README.md",
+    "apps/web/lib/server/analysis/agents/fundamental-analyst.ts",
+    "apps/web/lib/server/analysis/agents/market-context.ts",
+    "apps/web/lib/server/analysis/agents/report-writer.test.ts",
+    "apps/web/lib/server/analysis/agents/report-writer.ts",
+    "apps/web/lib/server/analysis/agents/risk-officer.ts",
+    "apps/web/lib/server/analysis/context.ts",
+    "apps/web/lib/server/analysis/gates.ts",
+    "apps/web/lib/server/analysis/orchestrator.ts",
+    "apps/web/lib/server/analysis/runner/openai-runner.test.ts",
+    "apps/web/lib/server/analysis/runner/openai-runner.ts",
+    "apps/web/lib/server/analysis/runner/stub-runner.ts",
+    "apps/web/lib/server/analysis/runner/types.ts",
+    "apps/web/lib/server/analysis/trader.ts",
+    "apps/web/lib/server/env.ts",
+    "apps/web/lib/server/llm/README.md",
+    "apps/web/lib/server/llm/openai-client.ts",
+    "apps/web/lib/server/llm/structured-output.ts",
+    "apps/web/package.json",
+    "llm-wiki/log.md",
+    "llm-wiki/open-questions.md",
+    "llm-wiki/overview.md",
+    "packages/core/src/integrity.ts",
+    "packages/risk-engine/src/__tests__/orchestrator.test.ts",
+    "pnpm-lock.yaml"
   ],
   "sessions": [
     {
@@ -14,13 +40,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 434,
-    "cache_creation_tokens": 1492651,
-    "cache_read_tokens": 60050556,
-    "output_tokens": 312672,
-    "api_call_count": 217
+    "input_tokens": 506,
+    "cache_creation_tokens": 1568766,
+    "cache_read_tokens": 62862927,
+    "output_tokens": 343458,
+    "api_call_count": 253
   }
 }
