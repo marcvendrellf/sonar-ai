@@ -20,6 +20,9 @@
 # production
 /build
 
+# reproducible Saloon geometry intermediate
+/.saloon-build/
+
 # misc
 .DS_Store
 *.pem
