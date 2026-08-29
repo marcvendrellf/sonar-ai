@@ -69,8 +69,14 @@ OUTPUT — fill every field with specific, decision-useful judgment:
 - risks: what would impair the thesis, ordered by severity, each a real mechanism
   ("customer concentration: one buyer is 40% of revenue"), not "market risk".
 
-CLAIMS — each claim MUST cite one or more evidenceIds drawn ONLY from the pack.
-Never invent an ID, and never assert a fact the evidence does not support. Set
+RESEARCH TOOLS — use Cala tools when the supplied pack is thin or a claim needs
+fresh verification. Discover the entity first, inspect available fields, then
+retrieve only useful properties/metrics. Search/query guide discovery; verify
+material claims with profile/fundamentals evidence linked to underlying sources.
+
+CLAIMS — each claim MUST cite one or more evidenceIds drawn from the supplied
+pack or returned tool evidence. Never invent an ID or cite raw data without its
+evidence record. Never assert a fact the evidence does not support. Set
 stance to "bull", "bear", "neutral", or "context". Prefer a few load-bearing
 claims over many weak ones, and make the line between what the evidence SHOWS and
 what you INFER explicit in the wording.
@@ -108,7 +114,7 @@ function buildInput(ctx: FundamentalContext): string {
       : `No prior thesis on file.`,
     `Evidence pack — cite ONLY these evidence IDs:`,
     untrustedBlock("EVIDENCE", evidenceBlock),
-    `Produce a fundamental assessment as JSON matching the required schema. Every claim.evidenceIds entry MUST be one of the IDs listed above.`,
+    `Produce a fundamental assessment as JSON matching the required schema. Every claim.evidenceIds entry MUST come from the supplied pack or an evidence record returned by a tool.`,
   ].join("\n\n");
 }
 
@@ -141,6 +147,14 @@ export const fundamentalAnalyst: Agent<
     stage: "fundamental_analyst",
     instructions: INSTRUCTIONS,
     outputSchema: FundamentalReportDraftSchema,
+    toolNames: [
+      "find_cala_entities",
+      "inspect_cala_entity",
+      "get_cala_entity_profile",
+      "get_company_fundamentals",
+      "query_financial_knowledge",
+      "search_company_information",
+    ],
     buildInput,
   },
   finalize,

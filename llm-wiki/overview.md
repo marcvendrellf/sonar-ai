@@ -79,7 +79,9 @@ The repository is a pnpm workspace monorepo at `github.com/marcvendrellf/sonar-a
 
 shadcn is initialized with the Base UI `base-nova` preset. The application-shell block, selected third-party registry components, and required shadcn primitives are installed. The first fixture-driven dashboard uses the `application-shell1` collapsible sidebar and includes paper-fund metrics, a NAV chart, sourced relationship path, positions table, adapted agent activity feed, agent-work chart, risk outcome, and inspectable decision receipt. `pnpm typecheck`, `pnpm lint`, and `pnpm build` pass.
 
-The dashboard data is presentational fixture data, not a reviewed Cala/Alpaca fixture. The MVP runtime now has a plain server-side typed orchestrator with isolated stage contexts, deterministic evidence/risk/human gates, a deterministic internal paper ledger, five decision-agent definitions, and a post-decision Report Writer seam. Fixture execution is serial and replayable from fixed timestamps; no model call is required. Live execution uses the official OpenAI TypeScript SDK, Responses API, and Zod structured outputs behind the same `AgentRunner` seam. SDK retries are disabled; code owns the exact bounded retry count, timeout, token cap, stage order, and gates. The runner exposes no tools or model-controlled routing. The Saloon and onboarding remain separate implementation epics. Team direction is recorded: Marc leads the frontend, while Josep and Axel focus mainly on agents and data. Alpaca Paper account and position reads are wired behind a server-only adapter; approved order submission remains outside this orchestration slice.
+The dashboard data remains presentational fixture data, not a reviewed live Cala/Alpaca fixture. The MVP runtime has a server-side typed orchestrator with isolated stage contexts, deterministic evidence/risk/human gates, a deterministic internal paper ledger, five decision-agent definitions, and a post-decision Report Writer seam. Fixture execution is serial and replayable. Live execution uses the official OpenAI TypeScript SDK, Responses API, Zod structured outputs, and a bounded function-call loop behind the same `AgentRunner` seam. SDK retries are disabled; code owns retry count, timeout, token cap, stage order, tool allowlists, and gates.
+
+Cala REST integration is implemented server-side with entity resolution, schema introspection, selective profile/metric retrieval, structured query, sourced search, and breadth-first relationship traversal bounded to depth 3 and 50 nodes. Fundamental Analyst and Market Context Analyst receive separate research tool subsets. Search/query guide discovery but produce no citable receipt; profile, fundamentals, and traversal normalize underlying-source evidence. Runner merges those evidence records and normalized traversal graph artifacts into committee state before gates run. `SONAR_OFFLINE=true` uses a deterministic synthetic Cala provider with an inspectable supplier/event path. No live Cala credential or event response was used, so coverage and freshness remain unverified. Portfolio Manager still receives research summaries rather than raw Cala access; Risk remains deterministic; no model can route stages or reach order execution.
 
 ## Immediate next actions
 
@@ -88,7 +90,7 @@ The dashboard data is presentational fixture data, not a reviewed Cala/Alpaca fi
 3. Replace the dashboard's presentational data with a reviewed validated fixture.
 4. Build the fixture-driven Saloon shell and execution trace.
 5. Build onboarding as its own frontend epic.
-6. Add typed fixture tools and Cala normalization behind existing isolated contexts.
+6. Run one credentialed Cala experiment; save sanitized query, entity, introspection, retrieval, and useful graph-path responses.
 7. Add Alpaca-supported U.S. candidate instruments and save sanitized account, position, and order fixtures.
 8. Connect the orchestrator to a thin API route only after the offline path remains intact.
 

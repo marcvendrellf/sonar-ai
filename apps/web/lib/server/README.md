@@ -16,8 +16,8 @@ them to the model and the outside world.
 portfolio + mandate + scenario
               │
       AnalysisOrchestrator            analysis/orchestrator.ts
-        ├─ Fundamental Analyst  ┐     analysis/agents/fundamental-analyst.ts
-        ├─ Market Context       ┘     analysis/agents/market-context.ts   (parallel)
+        ├─ Fundamental Analyst        analysis/agents/fundamental-analyst.ts
+        ├─ Market Context             analysis/agents/market-context.ts   (serial replay)
         → Portfolio Manager proposal  analysis/agents/portfolio-manager.ts
         ├─ Risk Officer               analysis/agents/risk-officer.ts  → risk-engine
         → Bear / Critic               analysis/agents/bear-critic.ts   (no veto)
@@ -40,10 +40,10 @@ portfolio + mandate + scenario
 | `analysis/runner/openai-runner.ts` | OpenAI Responses structured-output runner with exact bounded retries. | ✅ ready |
 | `analysis/agents/*.ts` | One `AgentDef` per committee stage. | ✅ Phase 3 |
 | `tools/types.ts` | The closed `ToolName` set + `Tool` / `ToolRegistry`. | ✅ ready |
-| `tools/*.ts` | One file per tool; resolves to risk-engine / Cala / Alpaca / fixture. | ☐ Phase 4 |
+| `tools/*.ts` | Closed registry; strict Cala research tools and fixture provider. | ✅ Cala slice |
 | `llm/openai-client.ts` | Server-only official OpenAI SDK client; timeout and SDK retries fixed. | ✅ ready |
-| `llm/structured-output.ts` | Zod structured format · Responses call · parse · validate. | ✅ ready |
-| `cala/*.ts` | The only Cala client; normalize + evidence-validate; fixture fallback. | ☐ Phase 4 |
+| `llm/structured-output.ts` | Zod output + bounded Responses function-call loop + evidence/graph capture. | ✅ ready |
+| `cala/*.ts` | Fixed REST client, wire schemas, bounded traversal, synthetic fixture provider. | ✅ Cala slice |
 | `alpaca/*.ts` | The only Alpaca client — **Paper-only**; normalize; fixture fallback. | ✅ portfolio slice |
 
 Fixtures live in [`apps/web/fixtures`](../../fixtures). Route handlers live in
@@ -57,8 +57,8 @@ Fixtures live in [`apps/web/fixtures`](../../fixtures). Route handlers live in
    `OpenAIAgentRunner` live. Nothing else changes when switching modes.
 2. **The tool list is closed.** Only the names in `tools/types.ts` are callable.
    No tool submits an order or touches an account. No agent calls another agent —
-   the orchestrator is the only sequencer. The current model runner exposes no
-   tools, so model output cannot alter workflow control flow.
+   the orchestrator is the only sequencer. Fundamental and Market Context get
+   separate read-only Cala subsets; model output cannot alter workflow control flow.
 3. **Isolated context.** Each agent receives only its slice of state
    (`analysis/context.ts`), never one giant prompt and never another agent's raw output.
 4. **Every output is validated.** A model output is invalid until its Zod schema
@@ -95,6 +95,6 @@ Fixtures live in [`apps/web/fixtures`](../../fixtures). Route handlers live in
 
 ## Build order (this lane)
 
-Phase 3 orchestrator + stub agents ✅ → OpenAI Responses runner ✅ → Phase 4
-typed tools + adapters → Phase 6 API routes. See the repository plan and
+Phase 3 orchestrator + stub agents ✅ → OpenAI Responses runner ✅ → Cala typed
+research tools + traversal ✅ → remaining risk/Alpaca tools → Phase 6 API routes. See the repository plan and
 `llm-wiki/team-workflow.md` for ownership and branch rules.

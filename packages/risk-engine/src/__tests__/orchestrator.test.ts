@@ -3,6 +3,7 @@ import type { InvestmentCommitteeState } from "@sonar-ai/core";
 import { goldenState } from "../../../../packages/core/src/__fixtures__/golden-state";
 import { AnalysisOrchestrator } from "../../../../apps/web/lib/server/analysis/orchestrator";
 import { StubAgentRunner } from "../../../../apps/web/lib/server/analysis/runner/stub-runner";
+import type { AgentRunner } from "../../../../apps/web/lib/server/analysis/runner/types";
 
 function initialState(): InvestmentCommitteeState {
   const state = structuredClone(goldenState);
@@ -27,21 +28,25 @@ function initialState(): InvestmentCommitteeState {
 }
 
 function orchestrator(): AnalysisOrchestrator {
-  const bearCase = structuredClone(goldenState.bearCase!);
-  bearCase.targetRecommendationId = goldenState.proposal!.id;
   return new AnalysisOrchestrator({
-    runner: new StubAgentRunner({
-      fundamental_analyst: goldenState.fundamentalReports,
-      market_context: goldenState.marketContext!,
-      portfolio_manager: [goldenState.proposal!, goldenState.finalRecommendation!],
-      bear_critic: bearCase,
-      report_writer: goldenState.report!,
-    }),
+    runner: fixtureRunner(),
     stressScenarios: [{ name: "AI capex slowdown", marketShock: -0.2 }],
     instrumentStats: {
       inst_nvidia: { volatility: 0.2, beta: 1.4 },
       inst_siemens: { volatility: 0.1, beta: 0.9 },
     },
+  });
+}
+
+function fixtureRunner(): AgentRunner {
+  const bearCase = structuredClone(goldenState.bearCase!);
+  bearCase.targetRecommendationId = goldenState.proposal!.id;
+  return new StubAgentRunner({
+    fundamental_analyst: goldenState.fundamentalReports,
+    market_context: goldenState.marketContext!,
+    portfolio_manager: [goldenState.proposal!, goldenState.finalRecommendation!],
+    bear_critic: bearCase,
+    report_writer: goldenState.report!,
   });
 }
 
@@ -96,6 +101,60 @@ describe("AnalysisOrchestrator", () => {
     const second = await orchestrator().run({ state: initialState(), ...input, userDecision: decision });
 
     expect(second).toEqual(first);
+  });
+
+  it("merges tool-discovered evidence before research gates", async () => {
+    const baseRunner = fixtureRunner();
+    const runner: AgentRunner = {
+      async run(definition, context) {
+        const result = await baseRunner.run(definition, context);
+        return {
+          ...result,
+          evidence: [
+            {
+              id: "ev_cala_discovered",
+              kind: "cala",
+              title: "Tool-discovered Cala evidence",
+              sourceName: "Cala fixture",
+              sourceUrl: "https://docs.cala.ai/",
+              observedAt: "2026-08-29T00:00:00Z",
+              label: "synthetic",
+              snippet: "Synthetic tool evidence.",
+            },
+          ],
+          ...(definition.stage === "market_context"
+            ? {
+                graph: {
+                  nodes: [
+                    {
+                      id: "cala_node_discovered",
+                      type: "company" as const,
+                      label: "Discovered Company",
+                      evidenceIds: ["ev_cala_discovered"],
+                    },
+                  ],
+                  edges: [],
+                },
+              }
+            : {}),
+        };
+      },
+    };
+    const state = await new AnalysisOrchestrator({
+      runner,
+      stressScenarios: [{ name: "AI capex slowdown", marketShock: -0.2 }],
+      instrumentStats: {
+        inst_nvidia: { volatility: 0.2, beta: 1.4 },
+        inst_siemens: { volatility: 0.1, beta: 0.9 },
+      },
+    }).run({
+      state: initialState(),
+      selectedInstrumentIds: ["inst_nvidia", "inst_siemens"],
+    });
+
+    expect(state.phase).toBe("awaiting_approval");
+    expect(state.evidence.filter((item) => item.id === "ev_cala_discovered")).toHaveLength(1);
+    expect(state.graph.nodes.some((item) => item.id === "cala_node_discovered")).toBe(true);
   });
 
   it("does not let a human decision override a deterministic hard block", async () => {

@@ -1,5 +1,6 @@
-import type { AgentStage } from "@sonar-ai/core";
+import type { AgentStage, Evidence, RelationshipGraph } from "@sonar-ai/core";
 import type { ZodType } from "zod";
+import type { ToolName } from "../../tools/types";
 
 /**
  * The seam between deterministic stubs and real OpenAI calls.
@@ -23,6 +24,8 @@ export interface AgentDef<TContext, TOutput> {
    * contract does not accept.
    */
   outputSchema: ZodType<TOutput>;
+  /** Stage-local read capabilities. Code owns this allowlist; model cannot expand it. */
+  toolNames?: readonly ToolName[];
   /** Build the model input from the isolated context pack. */
   buildInput(context: TContext): string;
 }
@@ -35,6 +38,10 @@ export interface AgentUsage {
 export interface AgentRunResult<TOutput> {
   output: TOutput;
   usage?: AgentUsage;
+  /** Source records discovered by tools during this stage. */
+  evidence?: Evidence[];
+  /** Normalized Cala graph artifacts discovered by traversal tools. */
+  graph?: RelationshipGraph;
 }
 
 /**
