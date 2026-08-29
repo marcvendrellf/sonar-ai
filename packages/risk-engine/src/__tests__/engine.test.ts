@@ -4,7 +4,7 @@ import type {
   PortfolioSnapshot,
   ProposedAction,
 } from "@sonar-ai/core";
-import { DEMO_RISK_LIMITS } from "@sonar-ai/core";
+import { DEMO_RISK_LIMITS, RiskReportSchema } from "@sonar-ai/core";
 import { describe, expect, it } from "vitest";
 import { evaluateProposal } from "../engine";
 
@@ -47,6 +47,31 @@ function buy(id: string, instrumentId: string, weight: number): ProposedAction {
   };
 }
 
+/** A €1,000 book already holding one position at `weight` of NAV. */
+function portfolioWithPosition(
+  instrumentId: string,
+  weight: number,
+): PortfolioSnapshot {
+  const invested = weight * 1000;
+  return {
+    id: "pf_reb",
+    asOf: "2026-08-29T14:00:00Z",
+    baseCurrency: "EUR",
+    cash: { amount: 1000 - invested, currency: "EUR" },
+    nav: { amount: 1000, currency: "EUR" },
+    positions: [
+      {
+        instrumentId,
+        quantity: 1,
+        avgPrice: { amount: invested, currency: "EUR" },
+        marketValue: { amount: invested, currency: "EUR" },
+        weight,
+      },
+    ],
+    label: "synthetic",
+  };
+}
+
 describe("evaluateProposal — happy path with a position-limit resize", () => {
   const report = evaluateProposal({
     portfolio: allCashPortfolio(),
@@ -84,6 +109,10 @@ describe("evaluateProposal — happy path with a position-limit resize", () => {
     expect(report.metrics.cashRatio).toBeCloseTo(0.5, 10);
     expect(report.metrics.turnover).toBe(0); // all-cash deploy → no sell-side churn
     expect(report.metrics.concentration).toBe(0.3);
+  });
+
+  it("produces a RiskReport that satisfies the core schema", () => {
+    expect(RiskReportSchema.safeParse(report).success).toBe(true);
   });
 
   it("is deterministic — identical input yields identical output", () => {
@@ -162,5 +191,82 @@ describe("evaluateProposal — deterministic hard blocks", () => {
     const cash = report.checks.find((c) => c.id === "rsk_cash_floor");
     expect(cash?.breachCode).toBe("RISK_MANDATE_BREACH");
     expect(cash?.numbers.cashRatio).toBeCloseTo(0, 10);
+  });
+
+  it("reports a negative cashRatio on an over-invested proposal and still round-trips the schema", () => {
+    const report = evaluateProposal({
+      portfolio: allCashPortfolio(),
+      mandate: demoMandate(),
+      instruments: INSTRUMENTS,
+      // 0.30 × 4 = 120% invested → cash ratio -0.20.
+      actions: [
+        buy("a", "inst_nvidia", 0.3),
+        buy("b", "inst_siemens", 0.3),
+        buy("c", "inst_vestas", 0.3),
+        buy("d", "inst_asml", 0.3),
+      ],
+    });
+    expect(report.metrics.cashRatio).toBeCloseTo(-0.2, 10);
+    // The exact path that should yield a clean hard-block report must validate.
+    expect(RiskReportSchema.safeParse(report).success).toBe(true);
+    expect(report.checks.find((c) => c.id === "rsk_cash_floor")?.breachCode).toBe(
+      "RISK_MANDATE_BREACH",
+    );
+  });
+
+  it("is deterministic on a hard-block path", () => {
+    const input = {
+      portfolio: allCashPortfolio(),
+      mandate: demoMandate(),
+      instruments: INSTRUMENTS,
+      actions: [buy("acn_nvda", "inst_nvidia", 0.3), buy("acn_asml", "inst_asml", 0.2)],
+    };
+    expect(evaluateProposal(input)).toEqual(evaluateProposal(input));
+  });
+});
+
+describe("evaluateProposal — turnover is churn, not resulting size", () => {
+  it("counts only the reduction when trimming an existing position", () => {
+    // Hold 40% Nvidia, trim to 30%: churn is 10% of NAV, not the 30% target.
+    const report = evaluateProposal({
+      portfolio: portfolioWithPosition("inst_nvidia", 0.4),
+      mandate: demoMandate(),
+      instruments: INSTRUMENTS,
+      actions: [
+        {
+          id: "acn_trim",
+          instrumentId: "inst_nvidia",
+          side: "sell",
+          targetWeight: 0.3,
+          amount: { amount: 300, currency: "EUR" },
+          evidenceIds: [],
+        },
+      ],
+    });
+    expect(report.metrics.turnover).toBeCloseTo(0.1, 10);
+    expect(report.hardBlocks).toEqual([]); // 10% < 20% turnover limit
+  });
+
+  it("hard-blocks when the reduction exceeds the turnover limit", () => {
+    // Hold 40% Nvidia, cut to 10%: churn is 30% of NAV > the 20% limit.
+    const report = evaluateProposal({
+      portfolio: portfolioWithPosition("inst_nvidia", 0.4),
+      mandate: demoMandate(),
+      instruments: INSTRUMENTS,
+      actions: [
+        {
+          id: "acn_cut",
+          instrumentId: "inst_nvidia",
+          side: "sell",
+          targetWeight: 0.1,
+          amount: { amount: 100, currency: "EUR" },
+          evidenceIds: [],
+        },
+      ],
+    });
+    expect(report.metrics.turnover).toBeCloseTo(0.3, 10);
+    expect(report.checks.find((c) => c.id === "rsk_turnover")?.breachCode).toBe(
+      "RISK_MANDATE_BREACH",
+    );
   });
 });

@@ -19,7 +19,7 @@ import {
 } from "./rules/portfolio-limits";
 import { validateAction } from "./rules/validate";
 import { runStressTest, type StressScenario } from "./stress";
-import { investedWeight, proposedWeights } from "./weights";
+import { currentWeights, investedWeight, proposedWeights } from "./weights";
 
 export interface EvaluateInput {
   portfolio: PortfolioSnapshot;
@@ -63,7 +63,6 @@ export function evaluateProposal(input: EvaluateInput): RiskReport {
   const hardBlocks = new Set<RiskBreachCode>();
   const overrides = new Map<string, number>();
   const appliedActions: ProposedAction[] = [];
-  let sellNotional = 0;
 
   // ── Per-action checks ──────────────────────────────────────────────────────
   for (const action of actions) {
@@ -102,7 +101,6 @@ export function evaluateProposal(input: EvaluateInput): RiskReport {
       check.numbers = pl.numbers;
     }
 
-    if (action.side === "sell") sellNotional += pl.amount;
     appliedActions.push(action);
     checks.push(check);
   }
@@ -112,6 +110,16 @@ export function evaluateProposal(input: EvaluateInput): RiskReport {
   const baseMetrics = computeMetrics(proposed, instruments, instrumentStats);
   const comparison = comparePortfolios(portfolio, proposed);
   const invested = investedWeight(proposed);
+
+  // Turnover = value rotated OUT of existing positions, computed from weight
+  // REDUCTIONS (current - proposed) so it captures trims and exits regardless of
+  // how action amounts are labeled. Deploying cash into new positions is not a
+  // reduction of anything, so an all-cash deployment has turnover 0.
+  let sellNotional = 0;
+  for (const [instrumentId, cw] of currentWeights(portfolio)) {
+    const pw = proposed.get(instrumentId) ?? 0;
+    if (cw > pw) sellNotional += (cw - pw) * nav;
+  }
 
   for (const breach of checkSectorLimits(baseMetrics.sectorExposure, mandate)) {
     checks.push({
