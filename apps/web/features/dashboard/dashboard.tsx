@@ -1,24 +1,23 @@
 "use client"
 
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 
 import { AnimatedChart, type ColumnData } from "@/components/animated-chart"
-import { MandateUtilization } from "@/features/dashboard/mandate-utilization"
-import { PortfolioStats } from "@/features/dashboard/portfolio-stats"
+import { Badge } from "@/components/ui/badge"
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
 import {
   Table,
   TableBody,
@@ -27,15 +26,34 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { MandateUtilization } from "@/features/dashboard/mandate-utilization"
+import { PortfolioStats } from "@/features/dashboard/portfolio-stats"
 
 const navSeries = [
   { time: "09:00", nav: 1000000 },
-  { time: "09:15", nav: 1004200 },
-  { time: "09:30", nav: 1001800 },
+  { time: "09:05", nav: 1001800 },
+  { time: "09:10", nav: 1004200 },
+  { time: "09:15", nav: 1003100 },
+  { time: "09:20", nav: 1006700 },
+  { time: "09:25", nav: 1001800 },
+  { time: "09:30", nav: 1005900 },
+  { time: "09:35", nav: 1008700 },
+  { time: "09:40", nav: 1007200 },
   { time: "09:45", nav: 1010500 },
+  { time: "09:50", nav: 1013400 },
+  { time: "09:55", nav: 1011700 },
   { time: "10:00", nav: 1008900 },
+  { time: "10:05", nav: 1014200 },
+  { time: "10:10", nav: 1016100 },
   { time: "10:15", nav: 1018420 },
 ] as const
+
+const navChartConfig = {
+  nav: {
+    label: "Paper NAV",
+    color: "var(--sonar-blue)",
+  },
+} satisfies ChartConfig
 
 const positions = [
   { id: "asml", asset: "ASML", sector: "Semiconductors", weight: "24.8%", value: "€252,580", paperPnl: "+3.2%" },
@@ -54,40 +72,94 @@ const agentWork = [
   { id: "trader", title: "Trader", value: 3, className: "bg-[var(--status-complete-soft)]", topBorderClassName: "border-[var(--status-complete)]" },
 ] satisfies ColumnData[]
 
+function PaperNavChart() {
+  return (
+    <Card className="@container/card">
+      <CardHeader>
+        <CardTitle>Paper NAV</CardTitle>
+        <CardDescription>Today · EUR</CardDescription>
+        <CardAction>
+          <Badge className="text-[var(--status-complete)]" variant="outline">
+            +1.84%
+          </Badge>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+        <ChartContainer
+          className="aspect-auto h-[250px] w-full"
+          config={navChartConfig}
+        >
+          <AreaChart accessibilityLayer data={navSeries}>
+            <defs>
+              <linearGradient id="fillPaperNav" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-nav)" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="var(--color-nav)" stopOpacity={0.08} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              axisLine={false}
+              dataKey="time"
+              minTickGap={32}
+              tickLine={false}
+              tickMargin={8}
+            />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value) => (
+                    <div className="flex min-w-36 items-center justify-between gap-4">
+                      <span className="text-muted-foreground">Paper NAV</span>
+                      <span className="font-mono font-medium tabular-nums text-foreground">
+                        {typeof value === "number"
+                          ? new Intl.NumberFormat("en-IE", {
+                              style: "currency",
+                              currency: "EUR",
+                              maximumFractionDigits: 0,
+                            }).format(value)
+                          : value}
+                      </span>
+                    </div>
+                  )}
+                  hideLabel={false}
+                  indicator="dot"
+                />
+              }
+              cursor={false}
+            />
+            <Area
+              dataKey="nav"
+              fill="url(#fillPaperNav)"
+              fillOpacity={0.6}
+              stroke="var(--color-nav)"
+              strokeWidth={2}
+              type="natural"
+            />
+          </AreaChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function Dashboard() {
   return (
-    <main id="dashboard" className="mx-auto max-w-[1600px] scroll-mt-[var(--header-height)] space-y-5 px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
-      <div className="space-y-3">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">Paper fund overview</h1>
-          <p className="mt-1 text-sm text-muted-foreground">One prepared event, six agents, and an inspectable decision trail.</p>
-        </div>
+    <main
+      className="@container/main mx-auto w-full max-w-[1600px] scroll-mt-[var(--header-height)] space-y-6 px-4 py-5 sm:px-6 lg:px-8 lg:py-6"
+      id="dashboard"
+    >
+      <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
+        Paper fund overview
+      </h1>
 
-        <PortfolioStats />
+      <PortfolioStats />
 
-        <Card className="border-0 shadow-none ring-0">
-          <CardHeader>
-            <CardTitle>Paper NAV</CardTitle>
-            <CardDescription>Session history · EUR</CardDescription>
-          </CardHeader>
-          <CardContent className="h-56">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={navSeries} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} accessibilityLayer>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
-                <YAxis hide domain={[995000, 1025000]} />
-                <Line type="monotone" dataKey="nav" stroke="var(--sonar-blue)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} isAnimationActive />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
+      <PaperNavChart />
 
-      <section className="grid gap-3 xl:grid-cols-[1.35fr_0.65fr]">
-        <Card className="border-0 shadow-none ring-0">
+      <section className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
+        <Card>
           <CardHeader>
             <CardTitle>Current positions</CardTitle>
-            <CardDescription>Internal paper portfolio. No brokerage orders are available.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -114,21 +186,21 @@ export function Dashboard() {
             </Table>
           </CardContent>
         </Card>
-        <div id="mandate" className="scroll-mt-[var(--header-height)]">
+        <div className="scroll-mt-[var(--header-height)]" id="mandate">
           <MandateUtilization />
         </div>
       </section>
 
-      <Card id="saloon" className="scroll-mt-[var(--header-height)] border-0 shadow-none ring-0">
+      <Card className="scroll-mt-[var(--header-height)]" id="saloon">
         <CardHeader>
           <CardTitle>Agent work completed</CardTitle>
         </CardHeader>
         <CardContent>
           <AnimatedChart
+            className="h-64 overflow-hidden rounded-xl border-0"
             columns={agentWork}
             maxValue={30}
             titleClassName="text-[10px] leading-tight [overflow-wrap:anywhere] sm:text-xs"
-            className="h-64 overflow-hidden rounded-xl border-0"
           />
         </CardContent>
       </Card>

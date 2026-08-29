@@ -210,3 +210,15 @@ Removed the cutaway room, walls, niches, HDR reflections, fake radial orb-shadow
 Rebuilt the Cycles asset with a 3,400 K overhead area source at `(-2.8, 10.0, 1.0)`, 6 m size, 800 W, and low warm World strength 0.22. At runtime, one matching warm overhead directional key casts VSM-filtered shadows from the orbs and furniture. A restrained warm hemisphere supplies bounce. The floor deliberately skips the lightmap to avoid the visible bright boundary behind Scout, while the table and plinth retain the EXR at intensity 0.35.
 
 Only the selected orb floats, with slower frame-rate-independent damping. Pointer hover scale is also damped rather than snapping. The regenerated GLB is 356,104 bytes and the EXR is 9,272,735 bytes.
+
+## [2026-08-29] implementation | Onboarding choices and glow refined
+
+Replaced the legacy variable budget step with the reviewed €1,000 all-cash paper baseline. The three mandate cards now lead with their four percentage limits and omit the longer descriptions. Added a research-class step for U.S. stocks, ETFs, and select crypto; all three start selected, at least one remains selected, and the choice is stored locally for the current presentational flow.
+
+Integrated a typed React Bits `BorderGlow` component around the submitted-name acknowledgement, onboarding selection cards, and primary actions. After submission, the greeting becomes `Hello, [name]!` inside an intro-sweep glow before the baseline appears. Onboarding question headings now reveal word by word with the existing blur-and-rise motion language and retain a static reduced-motion path. The locally stored mandate and research classes still need the reviewed shared fixture contract. `pnpm --filter web typecheck`, `lint`, and `build` pass, and the complete onboarding flow was exercised in the browser, including selection toggling and local-storage output.
+
+## [2026-08-29] implementation | Dashboard and demo access polished
+
+Restyled the fixture dashboard with outlined shadcn cards, dark and light themes, three concise top metrics, `slot-text` number animation, and a gradient-area NAV chart. Replaced the abstract logo with the orb's two thin eye bars and moved the demo-user control to the bottom of the sidebar.
+
+Added `/login` and `/signup` from the reviewed shadcn blocks, adapted both to one-click browser-local demo entry, and added sidebar sign-out. The login panel now shows a smaller white orb over a black, finance-themed React Bits `BorderGlow` background at reduced opacity. This remains demo session state rather than production authentication. `pnpm --filter web typecheck`, `lint`, and `build` pass.
