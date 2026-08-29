@@ -1,0 +1,54 @@
+{
+  "cli_version": "0.10.3",
+  "checkpoint_id": "01M16J99W8K31KS2WH9PSJPNFC",
+  "session_id": "7df9b9a8-0e39-45ee-993e-97b4e13104c7",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-29T10:50:44.280877Z",
+  "branch": "feat/core-contracts",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "packages/risk-engine/package.json",
+    "packages/risk-engine/src/__tests__/engine.test.ts",
+    "packages/risk-engine/src/__tests__/metrics.test.ts",
+    "packages/risk-engine/src/__tests__/purity.test.ts",
+    "packages/risk-engine/src/compare.ts",
+    "packages/risk-engine/src/engine.ts",
+    "packages/risk-engine/src/index.ts",
+    "packages/risk-engine/src/metrics.ts",
+    "packages/risk-engine/src/rules/portfolio-limits.ts",
+    "packages/risk-engine/src/rules/position-limit.ts",
+    "packages/risk-engine/src/rules/validate.ts",
+    "packages/risk-engine/src/stress.ts",
+    "packages/risk-engine/src/weights.ts",
+    "packages/risk-engine/tsconfig.json",
+    "pnpm-lock.yaml"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8",
+  "turn_id": "b87c3ab52d89",
+  "checkpoint_transcript_start": 454,
+  "transcript_lines_at_start": 454,
+  "compact_transcript_start": 91,
+  "token_usage": {
+    "input_tokens": 38,
+    "cache_creation_tokens": 31404,
+    "cache_read_tokens": 4709053,
+    "output_tokens": 29046,
+    "api_call_count": 19
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-29T10:50:44.220855Z",
+    "agent_lines": 833,
+    "agent_removed": 2,
+    "human_added": 47,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 880,
+    "total_lines_changed": 882,
+    "agent_percentage": 94.67120181405896,
+    "metric_version": 2
+  }
+}

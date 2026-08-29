@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.10.3",
+  "checkpoint_id": "01M16J99W8K31KS2WH9PSJPNFC",
+  "strategy": "manual-commit",
+  "branch": "feat/core-contracts",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "packages/risk-engine/package.json",
+    "packages/risk-engine/src/__tests__/engine.test.ts",
+    "packages/risk-engine/src/__tests__/metrics.test.ts",
+    "packages/risk-engine/src/__tests__/purity.test.ts",
+    "packages/risk-engine/src/compare.ts",
+    "packages/risk-engine/src/engine.ts",
+    "packages/risk-engine/src/index.ts",
+    "packages/risk-engine/src/metrics.ts",
+    "packages/risk-engine/src/rules/portfolio-limits.ts",
+    "packages/risk-engine/src/rules/position-limit.ts",
+    "packages/risk-engine/src/rules/validate.ts",
+    "packages/risk-engine/src/stress.ts",
+    "packages/risk-engine/src/weights.ts",
+    "packages/risk-engine/tsconfig.json",
+    "pnpm-lock.yaml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 38,
+    "cache_creation_tokens": 31404,
+    "cache_read_tokens": 4709053,
+    "output_tokens": 29046,
+    "api_call_count": 19
+  }
+}
