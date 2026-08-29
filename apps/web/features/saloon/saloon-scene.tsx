@@ -42,9 +42,14 @@ const TABLE_POSE = {
   fov: 27,
 }
 
-/** The selected orb fills a reliable portion of the interview frame. */
-const INTERVIEW_FRAMING = 1.3
+/**
+ * Keep the selected orb smaller and centered in the unobscured left half. The
+ * right details panel overlays the unchanged full-width canvas.
+ */
+const INTERVIEW_FRAMING = 2
 const INTERVIEW_LIFT = 1.85
+const INTERVIEW_SCREEN_X = -0.5
+const WORLD_UP = new Vector3(0, 1, 0)
 
 export function seatPosition(seat: number): [number, number, number] {
   const angle = (seat / agents.length) * Math.PI * 2 - Math.PI / 2
@@ -155,14 +160,28 @@ function CameraRig({
     if (!agent) return overview
 
     const [x, y, z] = seatPosition(agent.seat)
+    const subject = new Vector3(x, y, z)
     const outward = new Vector3(x, 0, z).normalize()
     const distance = INTERVIEW_FRAMING / Math.tan(MathUtils.degToRad(fov) / 2)
     const reach = Math.sqrt(Math.max(0.5, distance ** 2 - INTERVIEW_LIFT ** 2))
+    const position = new Vector3(x, y + INTERVIEW_LIFT, z).addScaledVector(
+      outward,
+      reach
+    )
+
+    // Aim camera-right of the subject so the orb projects at x = -0.5 NDC,
+    // the center of the visible left half rather than under the details panel.
+    const forward = subject.clone().sub(position).normalize()
+    const cameraRight = forward.clone().cross(WORLD_UP).normalize()
+    const halfWidthAtSubject =
+      distance * Math.tan(MathUtils.degToRad(fov) / 2) * aspect
+    const targetOffset = -INTERVIEW_SCREEN_X * halfWidthAtSubject
+
     return {
-      position: new Vector3(x, y + INTERVIEW_LIFT, z).addScaledVector(outward, reach),
-      target: new Vector3(x, y, z),
+      position,
+      target: subject.addScaledVector(cameraRight, targetOffset),
     }
-  }, [fov, selected, tableDistance])
+  }, [aspect, fov, selected, tableDistance])
 
   React.useEffect(() => {
     if (!reduceMotion) return
