@@ -1,0 +1,33 @@
+# Agent Fund wiki
+
+This wiki is the durable handoff for the selected {Tech: Europe} x Cala Summer Lock-In project.
+
+## Reading order
+
+1. [Overview](overview.md) for the final decision and current state.
+2. [Agent Fund](concepts/agent-fund.md) for the product, demo, risk rules, and visual direction.
+3. [Interface plan](interface-plan.md) for onboarding, the Saloon, dashboard, and selected shadcn components.
+4. [Technical reference pack](technical-reference-pack.md) for architecture, libraries, file layout, and build order.
+5. [Cala for finance](cala-finance.md) for claimed data capabilities and unverified API assumptions.
+6. [Event brief](event-brief.md) for the schedule and event constraints.
+7. [Hackathon winner patterns](hackathon-winner-patterns.md) for the research behind the demo principles.
+8. [Open questions](open-questions.md) for the remaining tests and decisions.
+9. [Log](log.md) for chronological history.
+
+## Current pages
+
+- [Overview](overview.md): final project decision, scope, implementation state, and next actions.
+- [Agent Fund](concepts/agent-fund.md): selected concept and three-minute demo.
+- [Interface plan](interface-plan.md): screen composition and selected registries.
+- [Technical reference pack](technical-reference-pack.md): Next.js, shadcn, animation, graph, data, and server architecture.
+- [Cala for finance](cala-finance.md): finance sources Cala claims to provide.
+- [Event brief](event-brief.md): confirmed event facts.
+- [Hackathon winner patterns](hackathon-winner-patterns.md): reusable lessons from OpenAI, Anthropic, and Google winners.
+- [Open questions](open-questions.md): blockers with closure conditions.
+- [Log](log.md): append-only project history.
+
+## Raw sources
+
+- [Raw-source index](../raw-sources/README.md)
+
+`index.md` is content-oriented. `log.md` is chronological.
