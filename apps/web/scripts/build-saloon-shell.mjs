@@ -1,20 +1,20 @@
 /**
- * Authors `public/models/saloon/saloon-shell.glb`: the static architecture and
- * furniture of the Saloon. Run it with `pnpm --filter web build:saloon-shell`.
+ * Authors `.saloon-build/saloon-shell-geometry.glb`: the geometry-only input
+ * for the Cycles bake. Run the complete pipeline with
+ * `pnpm --filter web build:saloon-shell`.
  *
- * The target is the supplied clay diorama, not a real interior: a cutaway room
- * of a few large rounded forms, a dark chocolate table, and six seat plinths.
- * See `raw-sources/saloon-clay-style-decision-2026-08-29.md`.
+ * The accepted scene is a dark open floor with no room shell: one broad ground,
+ * a dark clay table, and six U-shaped chairs facing it.
  *
- * The shell owns geometry only. Colour, roughness and lighting are bound at
- * runtime in `features/saloon/saloon-shell.tsx` by material name. There are no
- * textures and no UVs: bevels, silhouette and soft light describe the forms.
+ * This step owns geometry only. Blender creates the base and lightmap UV sets,
+ * bakes the static illumination, and exports the shipped GLB and EXR. Preview
+ * colours keep the four material identities intact between the two steps.
  *
- * Everything is built in world space and merged by material, so the whole room
- * costs three draw calls.
+ * Everything is built in world space and merged by material, so the complete
+ * static scene costs four draw calls.
  */
 
-import { writeFileSync } from "node:fs"
+import { mkdirSync, writeFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -39,48 +39,38 @@ if (typeof globalThis.FileReader === "undefined") {
 }
 
 const here = dirname(fileURLToPath(import.meta.url))
-const OUT = resolve(here, "../public/models/saloon/saloon-shell.glb")
+const OUT = resolve(here, "../.saloon-build/saloon-shell-geometry.glb")
 
-/**
- * The diorama. `inner` is the floor half-extent the camera rig clamps against;
- * the walls stand outside it. Keep in sync with ROOM in `saloon-shell.tsx`.
- */
+/** Open floor dimensions. Keep `inner` in sync with ROOM in `saloon-shell.tsx`. */
 const ROOM = {
-  inner: 6.2,
-  wall: 0.8,
-  height: 2.4,
-  frontHeight: 0.55,
-  sideFrontHeight: 0.9,
-  base: 0.6,
+  inner: 14,
+  topDepth: 0.26,
+  baseDepth: 0.18,
 }
-const OUTER = ROOM.inner + ROOM.wall
 
-/**
- * The room is offset behind the table, so the cutaway rim sits close to the
- * near seats and the camera is not looking across an empty foreground.
- */
-const ROOM_Z = -1.2
-
-const SEAT_RADIUS = 2.55
+const CHAIR_RADIUS = 3.15
 const SEATS = 6
 
-/** Table slab, and the height the orbs rest at. */
+/** Table slab and the shared height of every U-shaped chair rail. */
 const TABLE_TOP = 0.98
-const TABLE_BOTTOM = 0.6
+const TABLE_BOTTOM = 0.38
+const CHAIR_BOTTOM = 0.08
+const CHAIR_TOP = 0.88
 
 const parts = []
 
-function add(material, geometry, { x = 0, y = 0, z = 0 } = {}) {
+function add(material, geometry, { x = 0, y = 0, z = 0, rotationY = 0 } = {}) {
+  geometry.applyMatrix4(new Matrix4().makeRotationY(rotationY))
   geometry.applyMatrix4(new Matrix4().makeTranslation(x, y, z))
-  // Flat clay colours need no UVs, and dropping them keeps every merged
-  // geometry attribute-compatible as well as smaller. Rounded boxes come back
-  // non-indexed and lathes indexed, so everything is flattened before merging.
+  // Blender authors both UV sets after import. Dropping source UVs keeps every
+  // merged geometry attribute-compatible. Rounded boxes come back non-indexed
+  // and lathes indexed, so everything is flattened before merging.
   geometry.deleteAttribute("uv")
   geometry.deleteAttribute("uv1")
   parts.push({ material, geometry: geometry.index ? geometry.toNonIndexed() : geometry })
 }
 
-/** A rounded box, the diorama's only wall and floor primitive. */
+/** A rounded box for the floor, chair rails, and compact geometry. */
 const slab = (w, h, d, radius = 0.35) => new RoundedBoxGeometry(w, h, d, 2, radius)
 
 /**
@@ -105,66 +95,57 @@ function puck(radius, bottom, top, corner = 0.09, segments = 40) {
   return new LatheGeometry(points, segments)
 }
 
-// ---------------------------------------------------------------- architecture
+// ---------------------------------------------------------------------- floor
 
-// Base slab. Its top face is the floor, so the room sits on a visible plinth.
-add("Floor", slab(OUTER * 2, ROOM.base, OUTER * 2, 0.45), { y: -ROOM.base / 2, z: ROOM_Z })
-
-// Back wall, then side walls that step down towards the open front. The step is
-// what makes the room read as a cutaway rather than a box.
-add("Sand", slab(OUTER * 2, ROOM.height, ROOM.wall), {
-  y: ROOM.height / 2,
-  z: ROOM_Z - ROOM.inner - ROOM.wall / 2,
+// A broad top surface and a shallow lower slab are the only environment. The
+// camera never enters a room and no wall can create a bright patch behind an orb.
+add("Floor", slab(ROOM.inner * 2, ROOM.topDepth, ROOM.inner * 2, 0.5), {
+  y: -ROOM.topDepth / 2,
 })
-
-for (const side of [-1, 1]) {
-  add("Sand", slab(ROOM.wall, ROOM.height, 7.2), {
-    x: side * (ROOM.inner + ROOM.wall / 2),
-    y: ROOM.height / 2,
-    z: ROOM_Z - 2.6,
-  })
-  add("Sand", slab(ROOM.wall, ROOM.sideFrontHeight, 5.2, 0.3), {
-    x: side * (ROOM.inner + ROOM.wall / 2),
-    y: ROOM.sideFrontHeight / 2,
-    z: ROOM_Z + 3.6,
-  })
-}
-
-// Low front rim: the cutaway edge the camera looks over.
-add("Sand", slab(OUTER * 2, ROOM.frontHeight, ROOM.wall, 0.26), {
-  y: ROOM.frontHeight / 2,
-  z: ROOM_Z + ROOM.inner + ROOM.wall / 2,
+add("Sand", slab(ROOM.inner * 2 + 0.5, ROOM.baseDepth, ROOM.inner * 2 + 0.5, 0.58), {
+  y: -ROOM.topDepth - ROOM.baseDepth / 2,
 })
-
-// One niche and one slot, set almost flush into the wall faces. They give the
-// room a silhouette without becoming decoration.
-add("Plinth", slab(1.8, 1.5, 0.5, 0.2), { x: -3.4, y: 1.05, z: ROOM_Z - ROOM.inner - 0.22 })
-add("Sand", slab(1.62, 0.14, 0.34, 0.06), { x: -3.4, y: 0.37, z: ROOM_Z - ROOM.inner + 0.1 })
-add("Plinth", slab(0.5, 1.7, 0.45, 0.2), { x: ROOM.inner + 0.22, y: 1.35, z: ROOM_Z - 3.4 })
 
 // ------------------------------------------------------------------- furniture
 
-// One dark slab with a scalloped edge, lifted off the floor on plinths, exactly
-// as in the supplied reference.
+// One deep, dark-cream slab with a scalloped edge and a floor-reaching base.
 add("Table", puck(2.0, TABLE_BOTTOM, TABLE_TOP, 0.1, 64))
-add("Plinth", puck(0.85, 0, TABLE_BOTTOM + 0.02, 0.08, 40))
+add("Plinth", puck(1.45, 0, TABLE_BOTTOM + 0.02, 0.08, 48))
 
 for (let seat = 0; seat < SEATS; seat += 1) {
   const angle = (seat / SEATS) * Math.PI * 2 - Math.PI / 2
-  const x = Math.cos(angle) * SEAT_RADIUS
-  const z = Math.sin(angle) * SEAT_RADIUS
-  add("Table", puck(0.62, TABLE_BOTTOM, TABLE_TOP, 0.1, 36), { x, z })
-  add("Plinth", puck(0.5, 0, TABLE_BOTTOM + 0.02, 0.07, 28), { x, z })
+  const x = Math.cos(angle) * CHAIR_RADIUS
+  const z = Math.sin(angle) * CHAIR_RADIUS
+  const rotationY = Math.PI / 2 - angle
+  const height = CHAIR_TOP - CHAIR_BOTTOM
+  const y = CHAIR_BOTTOM + height / 2
+
+  // One open U per agent: equal-height back and arms, with the opening facing
+  // the table. There is no pedestal or circular seat, so the silhouette cannot
+  // read as a mushroom from the overview camera.
+  add("Plinth", slab(1.5, height, 0.28, 0.1), { x, y, z, rotationY })
+  for (const side of [-1, 1]) {
+    const localX = side * 0.61
+    const localZ = -0.52
+    const worldX = x + Math.cos(rotationY) * localX + Math.sin(rotationY) * localZ
+    const worldZ = z - Math.sin(rotationY) * localX + Math.cos(rotationY) * localZ
+    add("Plinth", slab(0.28, height, 0.78, 0.1), {
+      x: worldX,
+      y,
+      z: worldZ,
+      rotationY,
+    })
+  }
 }
 
 // ------------------------------------------------------------------ merge/write
 
 /** Preview colours only. `saloon-shell.tsx` owns the shipped material values. */
 const colours = {
-  Sand: 0xc3a482,
-  Floor: 0xb99a74,
-  Table: 0x6b5340,
-  Plinth: 0x574334,
+  Sand: 0x0d0f12,
+  Floor: 0x17191d,
+  Table: 0x403832,
+  Plinth: 0x2d2928,
 }
 
 const scene = new Scene()
@@ -193,10 +174,11 @@ for (const name of Object.keys(colours)) {
 
 const exporter = new GLTFExporter()
 const glb = await exporter.parseAsync(scene, { binary: true })
+mkdirSync(dirname(OUT), { recursive: true })
 writeFileSync(OUT, Buffer.from(glb))
 
 console.log(
-  `saloon-shell.glb: ${scene.children.length} meshes, ${triangles} triangles, ${(
+  `saloon-shell-geometry.glb: ${scene.children.length} meshes, ${triangles} triangles, ${(
     glb.byteLength / 1024
   ).toFixed(0)} kB`
 )

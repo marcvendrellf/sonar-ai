@@ -219,6 +219,42 @@ The checkpoint also integrates the newer €1,000 cash-only, Alpaca Paper, and i
 
 The next UI pass splits from this baseline into `feat/onboarding-polish`, `feat/dashboard-polish`, and `feat/saloon-polish`. Each branch has one writer; changes to global CSS, layout, application shell, dependencies, shared contracts, fixtures, or wiki pages require coordination.
 
+## [2026-08-29] implementation | Saloon lighting moved to a Cycles lightmap
+
+Replaced the Saloon's runtime key lights and 60-frame accumulated floor shadow with a reproducible Blender 5.2.1 LTS and Cycles asset pipeline. The Node geometry step now writes an ignored intermediate. The Blender step keeps the four named meshes, creates `UVMap` and `Lightmap`, verifies a global non-overlapping atlas and world-space bounds, bakes Diffuse Direct and Indirect without Color at 512 samples and four diffuse bounces, and exports one GLB plus one 2,048 px RGB half-float EXR.
+
+Three.js loads the EXR from the application origin, uses texture channel 1 and linear color space, and rejects any shell mesh without `uv` and `uv1`. Static shell materials no longer receive runtime lights, environment reflections, or shadow-map work. The six dynamic orbs retain their shared geometry and now reuse one procedural radial seat-contact texture that stays fixed while their visual groups bob.
+
+The final GLB is 438,904 bytes and the EXR is 8,802,593 bytes. Hardware-accelerated Chrome comparison at 1,440 x 900 covered the idle table, an active evidence path, and all six interview compositions. Keyboard roster selection and `Escape` still update and clear the `?agent=` URL state. Presentation-laptop DPR 1.5 performance remains open.
+
+## [2026-08-29] design | Saloon reframed around the agents
+
+Applied the user's darker reference as the accepted follow-up to the first Cycles bake. The room now uses a charcoal palette, the table and seat bases remain chocolate brown, and the six orbs use blue, tan, cream, sage, and gray tones. The overview camera moved closer so the table and agents dominate while most of the room shell is cropped.
+
+Removed the cyan WebGL evidence graph from the tabletop. Relationship progress, sources, and checks remain in the existing DOM evidence panel. Recalibrated the baked light to one soft 4,500 K overhead area source at `(0.0, 7.2, 0.0)`, 5.5 m size, 500 W energy, with neutral World strength 0.45. The regenerated GLB is 438,904 bytes and the EXR is 7,833,222 bytes.
+
+## [2026-08-29] correction | Saloon furniture made gray and scene light unified
+
+The user rejected the chocolate furniture and the first dark follow-up as too dim. The complete shell, table, seats, and plinths now use neutral dark grays. The baked light moved to 5,000 K with 650 W overhead energy and neutral World strength 0.85.
+
+Idle orbs no longer use a minimum emissive contribution. One shadowless runtime overhead directional light and hemisphere fill now illuminate the room and orbs together, which makes their blue, tan, cream, sage, and gray base colors read as lit materials. State-driven emission remains only for active and selected states. Runtime shadow maps remain disabled. The final GLB is 438,900 bytes and the EXR is 7,859,531 bytes.
+
+## [2026-08-29] refinement | Saloon chrome and orb motion reduced
+
+Removed the top scene header, run status, timeline controls, and bottom canvas instruction so the 3D table and agents remain primary. Fixture playback still starts automatically, and status remains available in the DOM roster and selected-agent panel.
+
+Only the selected orb now floats smoothly. Unselected orbs no longer bob, lift, or spin; all state rings are removed; and the redundant `Complete` text is hidden from the 3D orb label. The shared radial seat-contact shadow remains fixed beneath each orb.
+
+Deepened the table slab and widened its center base so the furniture visibly reaches the floor. The regenerated GLB is 444,964 bytes and the EXR is 7,734,438 bytes.
+
+## [2026-08-29] correction | Saloon opened to sunset light and real shadows
+
+Removed the cutaway room, walls, niches, HDR reflections, fake radial orb-shadow cards, and every label beneath the orbs. The static scene now contains only a broad unsaturated creamy floor, a deep dark-cream table, and matching plinths. The default right panel is limited to the agent roster and each agent's work; no timeline, evidence dashboard, receipt Q&A, or instruction remains.
+
+Rebuilt the Cycles asset with a 3,400 K overhead area source at `(-2.8, 10.0, 1.0)`, 6 m size, 800 W, and low warm World strength 0.22. At runtime, one matching warm overhead directional key casts VSM-filtered shadows from the orbs and furniture. A restrained warm hemisphere supplies bounce. The floor deliberately skips the lightmap to avoid the visible bright boundary behind Scout, while the table and plinth retain the EXR at intensity 0.35.
+
+Only the selected orb floats, with slower frame-rate-independent damping. Pointer hover scale is also damped rather than snapping. The regenerated GLB is 356,104 bytes and the EXR is 9,272,735 bytes.
+
 ## [2026-08-29] implementation | Onboarding choices and glow refined
 
 Replaced the legacy variable budget step with the reviewed €1,000 all-cash paper baseline. The three mandate cards now lead with their four percentage limits and omit the longer descriptions. Added a research-class step for U.S. stocks, ETFs, and select crypto; all three start selected, at least one remains selected, and the choice is stored locally for the current presentational flow.

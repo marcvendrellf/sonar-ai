@@ -153,7 +153,7 @@ The default camera uses a slightly elevated view that keeps the full table and e
 
 The first procedural lab reads as a bright product-photography cyclorama. Its materials already use moderate or high roughness, so increasing roughness alone will not solve the problem. The cold result comes from a strong apartment environment, hard point-light highlights, smooth white geometry without a clear authored silhouette, and studio-style reflections.
 
-The [user-supplied clay-style reference](../raw-sources/assets/saloon-clay-style-reference-2026-08-29.png) replaces photoreal interior materials as the target. Rebuild the room as a compact cutaway video-game diorama with rounded geometry, matte clay-like color blocks, broad soft light, and blurred low-contrast shadows. Keep the existing React Three Fiber canvas, custom agent orbs, selection state, table and interview camera modes, DOM labels, details panel, findings bell, fixture runtime, reduced-motion path, and keyboard fallback. Replace only the room shell, table, seats, and their lighting and material treatment.
+The [user-supplied clay-style reference](../raw-sources/assets/saloon-clay-style-reference-2026-08-29.png) replaces photoreal interior materials as the target. The accepted refinement removes the room entirely and keeps only an open unsaturated creamy floor, rounded dark-cream furniture, matte clay-like color blocks, warm sunset light, and soft natural shadows. Keep the existing React Three Fiber canvas, custom agent orbs, selection state, table and interview camera modes, selected-agent details, fixture runtime, reduced-motion path, and keyboard fallback. Do not render labels beneath the orbs.
 
 #### Tool decision
 
@@ -167,32 +167,36 @@ The [user-supplied clay-style reference](../raw-sources/assets/saloon-clay-style
 
 The Saloon should resemble a compact environment from a polished indie game, not a real interior, Western bar, luxury showroom, spaceship, or white studio.
 
-- Frame the default view as a slightly elevated three-quarter diorama with a visible cutaway room boundary.
-- Build the room from a few large rounded forms with generous bevels and clean silhouettes.
-- Use warm sand clay for the architecture, a dark chocolate-brown table, and simple rounded seat plinths.
+- Frame the default view as a slightly elevated table composition on an open floor; no room boundary is visible.
+- Build the floor and furniture from a few large rounded forms with generous bevels and clean silhouettes.
+- Use unsaturated creamy clay for the ground and darker cream/taupe for the table, seats, and plinths. Separate them through value and lighting.
 - Use flat or low-frequency tonal variation. Avoid visible wood grain, fabric weave, stone veins, photoreal normal maps, and decorative clutter.
 - Use high-roughness, zero-metalness room materials. Keep the orbs only slightly smoother, never glass or chrome.
-- Reserve cyan emission and the strongest contrast for the selected agent and active evidence path.
+- Reserve cyan emission and the strongest contrast for the selected agent. Keep relationship evidence in the DOM panel rather than drawing a graph on the table.
 - Keep the background quiet enough that names, state labels, and the interview panel remain readable.
 
 #### Implementation sequence
 
 1. **Freeze behavior before replacing visuals.** Record the current table and interview views, orb selection, empty-space return, label behavior, reduced-motion cut, and WebGL fallback. The rebuild must preserve these behaviors.
 2. **Choose and record the minimum source material.** Prefer original simple geometry. Store every runtime asset locally, add its original URL, retrieval date, and license to a provenance note, and reject assets with unclear redistribution rights. Do not add a photoreal material pack to solve this scene.
-3. **Create one clay-style room shell.** Build or adapt one optimized `saloon-shell.glb` containing the cutaway architecture, rounded table, and simple seat plinths. Keep the six orbs and their hit areas in React code. Do not create a second canvas or a second animation loop.
+3. **Create one clay-style static set.** Build one optimized `saloon-shell.glb` containing only the open floor, rounded table, and simple seat plinths. Keep the six orbs and their hit areas in React code. Do not create walls, a second canvas, or a second animation loop.
 4. **Integrate the shell.** Load the shell through Drei `useGLTF`, keep a single scene owner, and place it around the existing fixed seat and camera coordinate system. Add a static loading and failure state so the DOM controls never disappear.
 5. **Author simple matte materials.** Use restrained colors, high roughness, zero metalness, and only subtle low-frequency variation or ambient occlusion. Let bevels and soft light describe the forms. Do not use transmission, mirror reflections, clearcoat, realistic wood or textile maps, or emissive room materials.
-6. **Relight for a baked game look.** Use one very broad warm key, a weak hemispheric or neutral fill, little or no reflective environment contribution on the room, and broad blurred contact shadows. Keep the agent light local. Remove the current hard point lights and bright studio environment.
+6. **Relight for a sunset game look.** Blender 5.2.1 LTS and Cycles bake one 3,400 K overhead area key, low warm World fill at strength 0.22, direct diffuse light, four-bounce indirect light, and static contacts into a shared 2,048 px half-float EXR. The final GLB exports `UVMap` as `TEXCOORD_0` and the globally packed `Lightmap` atlas as `TEXCOORD_1`. Three.js attaches the EXR through texture channel 1 on the table and plinths; the floor uses runtime light directly to avoid a baked-light boundary. One warm overhead runtime directional key casts VSM-filtered shadows from the orbs and furniture, with restrained hemisphere bounce. The HDR, emissive orb floor, fake radial shadow cards, and accumulated convergence are absent.
 7. **Tune visually in Triplex.** Expose only the controls needed to compare camera framing, key-light spread and intensity, fill level, shadow opacity and blur, and the main material roughness values. Save accepted values back to source.
 8. **Optimize after the look is approved.** Prefer simple geometry and flat materials, use no real-time mirror, cap device pixel ratio at 1.5, and keep the local shell small enough for the offline demo. Judge the complete authored scene on the presentation laptop before removing details that support its silhouette.
 9. **Validate the complete Saloon.** Test the table and every interview pose, keyboard selection, `Escape`, narrow layout, reduced motion, fixture findings, WebGL failure, production build, and offline loading.
+
+#### Accepted lighting implementation
+
+The documented rebuild command is `pnpm --filter web build:saloon-shell`. It writes an ignored geometry intermediate, then runs the factory-clean Blender script that validates the four named meshes, both UV sets, global lightmap overlap, world-space bounds, final assets, and sizes. The shipped GLB is 356,104 bytes. The shipped EXR is 9,272,735 bytes. Both are original repository work and load from the application origin. The accepted palette uses an unsaturated creamy floor, dark cream/taupe furniture, and blue, tan, cream, sage, and gray orbs. The table has a deep slab and broad center base that reaches the floor; no room geometry remains. A warm top key casts soft runtime shadows from every orb and static object. There is no WebGL graph or timeline. Only the selected orb floats, pointer scaling is damped, unselected orbs do not bob, lift, or spin, state rings are absent, and no labels render beneath the orbs. The default right panel shows the agents and their work only. Hardware-accelerated Chrome comparison at 1,440 x 900 covered the table and interview compositions. Presentation-laptop performance remains an explicit final check.
 
 #### Rebuild acceptance
 
 The rebuild is done when:
 
 - the room reads as a warm, minimal clay-style game diorama before any agent becomes active;
-- the cutaway shell, rounded table, seat plinths, and soft light match the supplied visual direction;
+- the open creamy floor, rounded dark-cream table, seat plinths, and warm shadow-casting top light match the supplied visual direction;
 - no photographic texture, hard point-light highlight, or luxury-interior detail competes with the agents;
 - the agent orbs remain the only intentionally smoother objects, without becoming glassy;
 - all six agents remain visible and selectable in the table view;
@@ -279,7 +283,7 @@ Use the existing semantic states:
 - blocked;
 - complete.
 
-Map state to orb motion, material, light, a text label, and an icon where needed. Color alone cannot carry status. Do not use raw Tailwind green or red classes in components.
+Keep status in the accessible DOM roster and selected-agent panel. In the 3D scene, only selection drives a smooth float and mild emphasis; unselected orbs remain still, state rings are not rendered, and color alone does not carry status. Do not use raw Tailwind green or red classes in components.
 
 ### Motion and fallback
 

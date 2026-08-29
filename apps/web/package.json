@@ -10,13 +10,14 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "record:run": "tsx --conditions=react-server scripts/record-run.ts",
-    "build:saloon-shell": "node scripts/build-saloon-shell.mjs"
+    "build:saloon-shell": "node scripts/build-saloon-shell.mjs && blender --background --factory-startup --python scripts/bake-saloon-lightmap.py"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
     "@pmndrs/assets": "^1.7.0",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
+    "@react-three/postprocessing": "^3.1.1",
     "@shadcn/react": "^0.3.0",
     "@sonar-ai/core": "workspace:*",
     "@sonar-ai/risk-engine": "workspace:*",
@@ -27,6 +28,7 @@
     "next": "16.3.3",
     "next-themes": "^0.4.6",
     "openai": "^7.8.0",
+    "postprocessing": "^6.39.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "recharts": "^3.10.1",
