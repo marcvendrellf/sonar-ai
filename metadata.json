@@ -3,19 +3,38 @@
   "checkpoint_id": "01M16VWQ4HWCJ94XGY6YWV50PZ",
   "strategy": "manual-commit",
   "branch": "feat/core-contracts",
-  "checkpoints_count": 2,
+  "checkpoints_count": 3,
   "files_touched": [
     ".env.example",
     "apps/web/lib/server/README.md",
+    "apps/web/lib/server/analysis/agents/fundamental-analyst.ts",
+    "apps/web/lib/server/analysis/agents/market-context.ts",
     "apps/web/lib/server/analysis/orchestrator.ts",
+    "apps/web/lib/server/analysis/runner/openai-runner.test.ts",
+    "apps/web/lib/server/analysis/runner/openai-runner.ts",
     "apps/web/lib/server/analysis/runner/types.ts",
     "apps/web/lib/server/cala/README.md",
+    "apps/web/lib/server/cala/client.test.ts",
+    "apps/web/lib/server/cala/client.ts",
+    "apps/web/lib/server/cala/fixture-provider.ts",
+    "apps/web/lib/server/cala/schemas.test.ts",
+    "apps/web/lib/server/cala/schemas.ts",
+    "apps/web/lib/server/cala/traversal.test.ts",
+    "apps/web/lib/server/cala/traversal.ts",
     "apps/web/lib/server/env.ts",
+    "apps/web/lib/server/llm/structured-output.ts",
     "apps/web/lib/server/tools/README.md",
+    "apps/web/lib/server/tools/cala-tools.test.ts",
+    "apps/web/lib/server/tools/cala-tools.ts",
+    "apps/web/lib/server/tools/registry.ts",
     "apps/web/lib/server/tools/types.ts",
+    "llm-wiki/cala-finance.md",
     "llm-wiki/log.md",
+    "llm-wiki/open-questions.md",
+    "llm-wiki/overview.md",
     "llm-wiki/technical-reference-pack.md",
-    "packages/risk-engine/src/__tests__/orchestrator.test.ts"
+    "packages/risk-engine/src/__tests__/orchestrator.test.ts",
+    "raw-sources/cala-api-reference-2026-08-29.md"
   ],
   "sessions": [
     {
@@ -24,13 +43,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 500,
-    "cache_creation_tokens": 2561929,
-    "cache_read_tokens": 77056966,
-    "output_tokens": 367856,
-    "api_call_count": 250
+    "input_tokens": 514,
+    "cache_creation_tokens": 2575528,
+    "cache_read_tokens": 78019202,
+    "output_tokens": 372930,
+    "api_call_count": 257
   }
 }
