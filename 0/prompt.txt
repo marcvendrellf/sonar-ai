@@ -1,1 +1,5 @@
 so it's everything involving agents done?
+
+---
+
+okay do it then The highest-value thing I can do next in our lane is #1 — verify each agent's draft schema converts to an OpenAI-valid strict JSON schema
