@@ -174,3 +174,15 @@ Removed an unused registry demo, its unused alert primitive, the temporary regis
 The checkpoint also integrates the newer €1,000 cash-only, Alpaca Paper, and investment-committee direction already on `main`. The current onboarding budget range and Scout/Cartographer UI fixtures predate that decision and remain explicit polish-branch migration work rather than reviewed contracts.
 
 The next UI pass splits from this baseline into `feat/onboarding-polish`, `feat/dashboard-polish`, and `feat/saloon-polish`. Each branch has one writer; changes to global CSS, layout, application shell, dependencies, shared contracts, fixtures, or wiki pages require coordination.
+
+## [2026-08-29] implementation | Onboarding choices and glow refined
+
+Replaced the legacy variable budget step with the reviewed €1,000 all-cash paper baseline. The three mandate cards now lead with their four percentage limits and omit the longer descriptions. Added a research-class step for U.S. stocks, ETFs, and select crypto; all three start selected, at least one remains selected, and the choice is stored locally for the current presentational flow.
+
+Integrated a typed React Bits `BorderGlow` component around the submitted-name acknowledgement, onboarding selection cards, and primary actions. After submission, the greeting becomes `Hello, [name]!` inside an intro-sweep glow before the baseline appears. Onboarding question headings now reveal word by word with the existing blur-and-rise motion language and retain a static reduced-motion path. The locally stored mandate and research classes still need the reviewed shared fixture contract. `pnpm --filter web typecheck`, `lint`, and `build` pass, and the complete onboarding flow was exercised in the browser, including selection toggling and local-storage output.
+
+## [2026-08-29] implementation | Dashboard and demo access polished
+
+Restyled the fixture dashboard with outlined shadcn cards, dark and light themes, three concise top metrics, `slot-text` number animation, and a gradient-area NAV chart. Replaced the abstract logo with the orb's two thin eye bars and moved the demo-user control to the bottom of the sidebar.
+
+Added `/login` and `/signup` from the reviewed shadcn blocks, adapted both to one-click browser-local demo entry, and added sidebar sign-out. The login panel now shows a smaller white orb over a black, finance-themed React Bits `BorderGlow` background at reduced opacity. This remains demo session state rather than production authentication. `pnpm --filter web typecheck`, `lint`, and `build` pass.

@@ -93,10 +93,10 @@ function BoundaryDonut({ proximity, ariaLabel }: { proximity: number; ariaLabel:
 
 export function MandateUtilization() {
   return (
-    <Card className="w-full gap-3 border-0 py-5 shadow-none ring-0">
+    <Card className="w-full gap-3 py-5">
       <CardHeader className="px-5">
         <CardTitle>Mandate boundary proximity</CardTitle>
-        <CardDescription>Illustrative presentational fixture · higher means closer to breach</CardDescription>
+        <CardDescription>Higher is closer to the limit</CardDescription>
       </CardHeader>
       <CardContent className="px-3 pt-0">
         <div>

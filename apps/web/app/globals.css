@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "slot-text/style.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -139,6 +140,24 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
   --success: oklch(0.765 0.177 163.223);
+  --sonar-navy: #d9e8ef;
+  --sonar-blue: #39bdd1;
+  --sonar-blue-soft: color-mix(in oklab, var(--sonar-blue) 16%, var(--card));
+  --sonar-cyan: #75d4e2;
+  --status-complete: #74c79a;
+  --status-complete-soft: color-mix(in oklab, var(--status-complete) 16%, var(--card));
+  --status-review: #e0b341;
+  --status-review-soft: color-mix(in oklab, var(--status-review) 16%, var(--card));
+  --agent-scout: #8fbdd3;
+  --agent-scout-soft: color-mix(in oklab, var(--agent-scout) 18%, var(--card));
+  --agent-cartographer: #57c8da;
+  --agent-cartographer-soft: color-mix(in oklab, var(--agent-cartographer) 18%, var(--card));
+  --agent-analyst: #74c79a;
+  --agent-analyst-soft: color-mix(in oklab, var(--agent-analyst) 18%, var(--card));
+  --agent-skeptic: #e0b341;
+  --agent-skeptic-soft: color-mix(in oklab, var(--agent-skeptic) 18%, var(--card));
+  --agent-marshal: #aaa2c7;
+  --agent-marshal-soft: color-mix(in oklab, var(--agent-marshal) 18%, var(--card));
 }
 
 @layer base {

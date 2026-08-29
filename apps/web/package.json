@@ -11,12 +11,12 @@
     "build:saloon-shell": "node scripts/build-saloon-shell.mjs"
   },
   "dependencies": {
-    "@sonar-ai/core": "workspace:*",
     "@base-ui/react": "^1.7.0",
     "@pmndrs/assets": "^1.7.0",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
     "@shadcn/react": "^0.3.0",
+    "@sonar-ai/core": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.35.0",
@@ -28,6 +28,7 @@
     "recharts": "^3.10.1",
     "server-only": "^0.0.1",
     "shadcn": "^4.19.0",
+    "slot-text": "^0.3.4",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "three": "^0.185.1",
