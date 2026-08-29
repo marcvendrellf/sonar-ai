@@ -3,8 +3,13 @@
   "checkpoint_id": "01M16VSDHJBZ23VJBW53CM7JBV",
   "strategy": "manual-commit",
   "branch": "feat/core-contracts",
-  "checkpoints_count": 2,
+  "checkpoints_count": 3,
   "files_touched": [
+    "apps/web/lib/server/analysis/agents/bear-critic.ts",
+    "apps/web/lib/server/analysis/agents/fundamental-analyst.ts",
+    "apps/web/lib/server/analysis/agents/market-context.ts",
+    "apps/web/lib/server/analysis/agents/portfolio-manager.ts",
+    "apps/web/lib/server/analysis/agents/report-writer.ts",
     "apps/web/lib/server/analysis/agents/types.ts"
   ],
   "sessions": [
@@ -14,13 +19,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 500,
-    "cache_creation_tokens": 2561929,
-    "cache_read_tokens": 77056966,
-    "output_tokens": 367856,
-    "api_call_count": 250
+    "input_tokens": 514,
+    "cache_creation_tokens": 2605831,
+    "cache_read_tokens": 77858023,
+    "output_tokens": 378538,
+    "api_call_count": 257
   }
 }
