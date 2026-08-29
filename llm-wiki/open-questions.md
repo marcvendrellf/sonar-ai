@@ -8,7 +8,7 @@ Only unresolved implementation and event questions remain. Concept selection is 
 | --- | --- | --- |
 | Which deterministic portfolio metrics are required for first demo? | Implement volatility, beta, sector exposure, concentration, stress test, and current-versus-proposed comparison against one fixture. | Risk Officer can explain one hard block with reproducible numbers. |
 
-## Must close before Cala integration
+## Must close before live Cala demo
 
 | Question | Next action | Closure condition |
 | --- | --- | --- |
@@ -47,14 +47,15 @@ Only unresolved implementation and event questions remain. Concept selection is 
 - **Is trading real or simulated?** Closed 2026-08-29: paper money only. Alpaca is restricted to its Paper endpoint. Sonar never submits real-money orders.
 - **What are the primary team lanes?** Closed 2026-08-29: Marc owns frontend work; Josep and Axel focus mainly on agents and data.
 - **What is MVP agent topology?** Closed 2026-08-29 from the supplied architecture recommendation: one code-owned orchestrator, five decision agents (Portfolio Manager, Fundamental Analyst, Market Context Analyst, Risk Officer, Bear/Critic), human approval, then post-decision Communications/Report Writer. Cala relationship tracing is a research capability; Trader is deterministic paper-ledger code.
-- **Which model runtime and structured-output method do agents use?** Closed 2026-08-29: official OpenAI TypeScript SDK with Responses API `responses.parse()` and Zod-derived structured formats. `SONAR_AGENT_MODEL` selects the deployed model. Timeout, token cap, and exact runner-owned retry count are bounded; SDK retries, model tools, and model-controlled routing are disabled.
+- **Which model runtime and structured-output method do agents use?** Closed 2026-08-29: official OpenAI TypeScript SDK with Responses API `responses.parse()` and Zod-derived structured formats. `SONAR_AGENT_MODEL` selects the deployed model. Timeout, token cap, exact runner-owned retry count, stage-local tool allowlists, and total tool calls are bounded; SDK retries and model-controlled routing remain disabled.
+- **Should Sonar expose Cala MCP directly?** Closed 2026-08-29: no. Official Cala MCP capabilities are useful, but its dynamic schemas conflict with strict function tools. Sonar uses the fixed server-side REST API and exposes strict entity, query, search, profile, fundamentals, and bounded-traversal tools.
 - **Does Base UI `base-nova` work with the selected registries?** Closed 2026-08-29: the scaffold, application-shell block, selected third-party registry items, and required primitives compile with the Base UI preset.
 - **Will `@abui/animated-chart` force an incompatible Motion version?** Closed 2026-08-29: the workspace has one Motion 12 dependency, the adapted chart supports reduced motion and stable agent IDs, and the production build passes.
 
 ## Current blockers
 
-- No Cala credential or API fixture exists.
-- No verified event-to-company graph exists.
+- No Cala event credential or sanitized live API fixture exists; current fallback is synthetic.
+- No verified live event-to-company graph exists; current second-order path is synthetic.
 - No final event or asset universe is recorded.
 - No final Alpaca-supported five-asset universe or sanitized order fixture is recorded.
 - The Josep and Axel issue split and owners for Cala, Alpaca, contracts, risk, fixtures, deployment, and pitch are not recorded.

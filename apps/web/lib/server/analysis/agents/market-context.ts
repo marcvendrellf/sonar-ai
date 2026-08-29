@@ -70,8 +70,15 @@ OUTPUT:
   next move is more likely to break.
 - macroView: the macro and regulatory backdrop that frames the above.
 
-CLAIMS — each MUST cite one or more evidenceIds drawn ONLY from the pack. Never
-invent an ID or a fact. Set stance to "bull", "bear", "neutral", or "context".
+RESEARCH TOOLS — use Cala search/query for missing external context. Use entity
+introspection and bounded relationship traversal to verify second-order paths.
+Profile/traversal results include source evidence; relationships remain evidence-linked
+hypotheses, never unqualified proof of causation. Search/query guide discovery;
+verify material claims through source-linked profile or traversal evidence.
+
+CLAIMS — each MUST cite one or more evidenceIds drawn from the supplied pack or
+returned tool evidence. Never invent an ID or a fact. Set stance to "bull",
+"bear", "neutral", or "context".
 Avoid recency bias: one alarming headline is not a regime change. Prefer a few
 load-bearing claims over a long list of weak ones.
 
@@ -119,7 +126,7 @@ function buildInput(ctx: MarketContextContext): string {
     `Current holdings:\n${holdings}`,
     `Material events:\n${events}`,
     `Evidence pack — cite ONLY these evidence IDs:\n${evidenceBlock}`,
-    `Produce a market-context assessment as JSON matching the required schema. Every claim.evidenceIds entry MUST be one of the IDs listed above.`,
+    `Produce a market-context assessment as JSON matching the required schema. Every claim.evidenceIds entry MUST come from the supplied pack or an evidence record returned by a tool.`,
   ].join("\n\n");
 }
 
@@ -147,6 +154,14 @@ export const marketContextAnalyst: Agent<
     stage: "market_context",
     instructions: INSTRUCTIONS,
     outputSchema: MarketContextReportDraftSchema,
+    toolNames: [
+      "find_cala_entities",
+      "inspect_cala_entity",
+      "get_cala_entity_profile",
+      "traverse_cala_relationships",
+      "query_financial_knowledge",
+      "search_company_information",
+    ],
     buildInput,
   },
   finalize: (draft) => finalize(draft),

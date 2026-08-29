@@ -2,6 +2,8 @@ import type OpenAI from "openai";
 import { getServerEnv, type ServerEnv } from "../../env";
 import { createOpenAIClient } from "../../llm/openai-client";
 import { requestStructuredOutput } from "../../llm/structured-output";
+import { createToolRegistryFromEnv } from "../../tools/registry";
+import type { ToolContext, ToolRegistry } from "../../tools/types";
 import type { AgentDef, AgentRunner, AgentRunResult } from "./types";
 
 export interface OpenAIAgentRunnerOptions {
@@ -9,6 +11,10 @@ export interface OpenAIAgentRunnerOptions {
   model: string;
   maxOutputTokens: number;
   maxRetries: number;
+  maxToolCalls?: number;
+  maxToolOutputChars?: number;
+  toolRegistry?: ToolRegistry;
+  toolContext?: ToolContext;
 }
 
 /**
@@ -40,6 +46,11 @@ export class OpenAIAgentRunner implements AgentRunner {
           schema: def.outputSchema,
           schemaName: `sonar_${def.stage}`,
           maxOutputTokens: this.options.maxOutputTokens,
+          toolNames: def.toolNames,
+          toolRegistry: this.options.toolRegistry,
+          toolContext: this.options.toolContext,
+          maxToolCalls: this.options.maxToolCalls,
+          maxToolOutputChars: this.options.maxToolOutputChars,
         });
       } catch {
         if (attempt === maxAttempts) {
@@ -63,5 +74,9 @@ export function createOpenAIAgentRunner(
     model: env.SONAR_AGENT_MODEL,
     maxOutputTokens: env.SONAR_AGENT_MAX_TOKENS,
     maxRetries: env.SONAR_AGENT_MAX_RETRIES,
+    maxToolCalls: env.SONAR_AGENT_MAX_TOOL_CALLS,
+    maxToolOutputChars: env.SONAR_AGENT_MAX_TOOL_OUTPUT_CHARS,
+    toolRegistry: createToolRegistryFromEnv(env),
+    toolContext: { offline: env.SONAR_OFFLINE },
   });
 }

@@ -4,6 +4,7 @@ import {
   UserDecisionSchema,
   type ActivityEvent,
   type AgentStage,
+  type Evidence,
   type FundamentalReport,
   type InvestmentCommitteeState,
   type RiskReport,
@@ -75,6 +76,7 @@ export class AnalysisOrchestrator {
 
   async run(input: AnalysisRunInput): Promise<InvestmentCommitteeState> {
     const state = InvestmentCommitteeStateSchema.parse(structuredClone(input.state));
+    const researchRunner = withEvidenceLedger(this.options.runner, state);
     if (state.phase !== "idle") {
       throw new Error(`AnalysisOrchestrator.run requires idle phase, got "${state.phase}".`);
     }
@@ -122,7 +124,7 @@ export class AnalysisOrchestrator {
           () => runFinalizedAgent(
             fundamentalAnalyst,
             buildFundamentalContext(state, instrument),
-            this.options.runner,
+            researchRunner,
           ),
           (output) => output.id,
         );
@@ -135,7 +137,7 @@ export class AnalysisOrchestrator {
         () => runFinalizedAgent(
           marketContextAnalyst,
           buildMarketContext(state, selectedInstruments),
-          this.options.runner,
+          researchRunner,
         ),
         (output) => output.id,
       );
@@ -155,7 +157,7 @@ export class AnalysisOrchestrator {
         () => runFinalizedAgent(
           portfolioManager,
           buildPortfolioManagerContext(state, selectedInstruments, fundamentalReports, marketContext, { mode: "proposal" }),
-          this.options.runner,
+          researchRunner,
         ),
         (output) => output.id,
       );
@@ -196,7 +198,7 @@ export class AnalysisOrchestrator {
         () => runFinalizedAgent(
           bearCritic,
           buildBearCriticContext(proposal, fundamentalReports, marketContext, proposalRisk, state.evidence),
-          this.options.runner,
+          researchRunner,
         ),
         (output) => output.id,
       );
@@ -215,7 +217,7 @@ export class AnalysisOrchestrator {
             riskReport: proposalRisk,
             bearCase,
           }),
-          this.options.runner,
+          researchRunner,
         ),
         (output) => output.id,
       );
@@ -445,4 +447,55 @@ function isoAfter(value: string, seconds: number): string {
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function withEvidenceLedger(
+  runner: AgentRunner,
+  state: InvestmentCommitteeState,
+): AgentRunner {
+  return {
+    async run<TContext, TOutput>(
+      definition: AgentDef<TContext, TOutput>,
+      context: TContext,
+    ) {
+      const result = await runner.run(definition, context);
+      mergeEvidence(state.evidence, result.evidence ?? []);
+      if (result.graph) mergeGraph(state.graph, result.graph);
+      return result;
+    },
+  };
+}
+
+function mergeGraph(
+  target: InvestmentCommitteeState["graph"],
+  additions: InvestmentCommitteeState["graph"],
+): void {
+  const nodes = new Map(target.nodes.map((item) => [item.id, item]));
+  const edges = new Map(target.edges.map((item) => [item.id, item]));
+  for (const item of additions.nodes) mergeGraphRecord(nodes, item);
+  for (const item of additions.edges) mergeGraphRecord(edges, item);
+  target.nodes = [...nodes.values()];
+  target.edges = [...edges.values()];
+}
+
+function mergeGraphRecord<T extends { id: string }>(target: Map<string, T>, item: T): void {
+  const existing = target.get(item.id);
+  if (existing && JSON.stringify(existing) !== JSON.stringify(item)) {
+    throw new Error(`Conflicting graph record "${item.id}".`);
+  }
+  target.set(item.id, item);
+}
+
+function mergeEvidence(target: Evidence[], additions: readonly Evidence[]): void {
+  const byId = new Map(target.map((item) => [item.id, item]));
+  for (const item of additions) {
+    const existing = byId.get(item.id);
+    if (existing && JSON.stringify(existing) !== JSON.stringify(item)) {
+      throw new Error(`Conflicting evidence record "${item.id}".`);
+    }
+    if (!existing) {
+      target.push(item);
+      byId.set(item.id, item);
+    }
+  }
 }

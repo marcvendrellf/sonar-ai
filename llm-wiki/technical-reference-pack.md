@@ -123,6 +123,11 @@ get_portfolio_snapshot()
 get_price_history(instrument)
 get_company_fundamentals(instrument)
 search_company_information(query)
+query_financial_knowledge(query)
+find_cala_entities(name, entity_types, limit)
+inspect_cala_entity(entity_id)
+get_cala_entity_profile(entity_id, selected_fields)
+traverse_cala_relationships(root_entity_id, depth, relation_filter, limits)
 calculate_portfolio_metrics(portfolio)
 calculate_asset_exposure(portfolio, instrument)
 run_stress_test(portfolio, scenario)
@@ -131,7 +136,7 @@ get_existing_thesis(instrument)
 save_recommendation(recommendation)
 ```
 
-`search_company_information` and relationship tracing use Cala or sanitized fixtures. Price data uses Alpaca Market Data or fixture. `save_recommendation` writes internal state only. Alpaca order submission, when enabled, requires evidence, risk, and human-approval gates. No agent changes brokerage accounts or calls another agent directly.
+Fundamental Analyst receives Cala entity/fundamental/query/search tools. Market Context receives Cala entity/query/search/traversal tools. Cala introspection exposes newly available properties, relationship types, and numerical observations without widening model authority; metric definitions are filtered/pageable in batches of at most 100 and retrieval uses introspected metric IDs grouped by Cala entity type. Traversal is breadth-first and capped at depth 3, 50 nodes, and 20 results per relationship. Unsourced relationships are omitted. Search/query are discovery-only; profile, fundamentals, and traversal produce underlying-source evidence. Runner merges evidence and normalized traversal graph artifacts into committee state before evidence gates. Function calls are sequential, default to eight per stage, share one total stage output-token budget, and reject tool payloads above 60,000 characters. Price data uses Alpaca Market Data or fixture. `save_recommendation` writes internal state only. Alpaca order submission, when enabled, requires evidence, risk, and human-approval gates. No agent changes brokerage accounts or calls another agent directly.
 
 ## Core packages
 
@@ -187,8 +192,10 @@ Server
       BearCritic
       PortfolioManager
       ReportWriter
-    CalaClient
-    ResponseNormalizer
+    CalaRestClient
+    CalaFixtureProvider
+    BoundedRelationshipTraversal
+    ToolEvidenceLedger
     EvidenceValidator
     RiskEngine
     FixtureFallback

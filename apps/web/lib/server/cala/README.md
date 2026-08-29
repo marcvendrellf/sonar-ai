@@ -1,21 +1,25 @@
 # `cala` — evidence knowledge graph (server-only)
 
-The **only** place Cala is called. Turns Cala responses into `@sonar-ai/core`
-`nodes` / `edges` / `evidence`, and validates that every material claim resolves
-to an evidence id.
+The **only** place Cala is called. Uses Cala's fixed server-side REST API and
+turns dynamic responses into validated, source-linked tool results. Raw Cala MCP
+tools are not model-facing because their dynamic schemas cannot satisfy strict
+function-tool contracts.
 
-Planned files:
+Implemented files:
 
-- `client.ts` — MCP client. Sends `X-API-KEY` (`CALA_API_KEY`), endpoint
-  `CALA_MCP_ENDPOINT`, honors `CALA_TIMEOUT_MS`. Falls back to the fixture on
-  timeout/error or when `isOffline()`.
-- `normalize.ts` — raw Cala → core `GraphNode[]` / `GraphEdge[]` / `Evidence[]`.
-  Every edge carries ≥1 evidence id (relationships are evidence, not proof).
-- `evidence-validator.ts` — reject any claim whose evidence ids do not resolve.
+- `client.ts` — REST client fixed to `https://api.cala.ai/v1`. Sends
+  `X-API-KEY`, honors `CALA_TIMEOUT_MS`, validates every response with Zod, and
+  sanitizes errors.
+- `schemas.ts` — tolerant validation for Cala's dynamic entities, properties,
+  relationships, numerical observations, query rows, and search responses.
+- `traversal.ts` — bounded breadth-first traversal: depth ≤3, nodes ≤50,
+  per-relationship results ≤20. Every returned edge carries evidence IDs.
+- `fixture-provider.ts` — deterministic synthetic provider with a second-order
+  supplier/event path. Used whenever `SONAR_OFFLINE=true`.
 
 Rules:
 
 - Credentials never leave the server; the browser gets normalized records only.
 - Treat Cala product-page claims as vendor claims until a fixture proves them.
-- Save one sanitized request/response fixture — it closes the Cala go/no-go and
-  is the offline demo path. Never commit a real API key.
+- Synthetic fixture proves adapter behavior only. Save one sanitized live
+  request/response capture before claiming coverage or freshness.
