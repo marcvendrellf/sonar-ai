@@ -31,8 +31,6 @@ Only unresolved implementation and event questions remain. Concept selection is 
 
 | Question | Next action | Closure condition |
 | --- | --- | --- |
-| Does the project use the Base UI `base-nova` preset cleanly with all registries? | Scaffold, run `shadcn info`, and dry-run all selected additions. | No unresolved Base versus Radix API mismatch remains. |
-| Will `@abui/animated-chart` force Motion 12? | Inspect the dry-run dependency diff. | Keep one tested Motion version and record it in the lockfile. |
 | Primary faceless sphere or minimal Live Orb? | Prototype the three required states on the presentation laptop. | Pick the option that stays smooth beside Shader Gradient and React Flow. |
 
 ## Must close before demo lock
@@ -50,10 +48,11 @@ Only unresolved implementation and event questions remain. Concept selection is 
 - **Is trading real or simulated?** Closed 2026-08-29: paper money only. eToro is read-only unless an official paper-trading interface is verified. Sonar never submits real-money orders.
 - **What are the primary team lanes?** Closed 2026-08-29: Marc owns frontend work; Josep and Axel focus mainly on agents and data.
 - **What is MVP agent topology?** Closed 2026-08-29 from the supplied architecture recommendation: one code-owned orchestrator, five decision agents (Portfolio Manager, Fundamental Analyst, Market Context Analyst, Risk Officer, Bear/Critic), human approval, then post-decision Communications/Report Writer. Cala relationship tracing is a research capability; Trader is deterministic paper-ledger code.
+- **Does Base UI `base-nova` work with the selected registries?** Closed 2026-08-29: the scaffold, application-shell block, selected third-party registry items, and required primitives compile with the Base UI preset.
+- **Will `@abui/animated-chart` force an incompatible Motion version?** Closed 2026-08-29: the workspace has one Motion 12 dependency, the adapted chart supports reduced motion and stable agent IDs, and the production build passes.
 
 ## Current blockers
 
-- No project scaffold exists.
 - No Cala credential or API fixture exists.
 - No verified event-to-company graph exists.
 - No final event or asset universe is recorded.

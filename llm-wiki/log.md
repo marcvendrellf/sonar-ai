@@ -71,3 +71,13 @@ Sonar adapts this structure to its existing boundaries. Cala relationship tracin
 ## [2026-08-29] demo | Cash-only starting state
 
 The user changed the demo setup: start with €1,000 cash and ask Sonar AI to allocate it, instead of showing an already-invested portfolio with €1,000 spare cash. The MVP now uses zero invested exposure, a separate five-asset candidate universe, current-versus-proposed comparison, human approval, and internal paper actions.
+
+## [2026-08-29] implementation | App shell and first dashboard built
+
+Scaffolded the pnpm workspace with a Next.js app in `apps/web` and reserved `packages/core` and `packages/risk-engine`. Initialized shadcn with the Base UI `base-nova` preset, previewed the registry changes, and installed the application-shell block, the selected third-party components, and the required shadcn primitives.
+
+Adapted the shell to the compact navigation required by the interface plan. Built a fixture-driven dashboard with paper-fund metrics, a Recharts NAV series, positions, a sourced relationship path, agent activity, the categorical agent-work chart, risk results, and a decision-receipt Sheet. The registry chart now uses stable agent IDs and respects reduced motion. Typecheck, lint, and the production build pass.
+
+## [2026-08-29] correction | Application-shell sidebar restored
+
+Restored the collapsible sidebar, inset header, sidebar rail, and responsive trigger from `@shadcnblocks/application-shell1` after the first adaptation replaced the block with top navigation. Fixed the shadcn font token so Geist renders through `--font-geist-sans`.
