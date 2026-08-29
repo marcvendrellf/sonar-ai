@@ -53,3 +53,7 @@ did you finish the context-policy decision for Fundamental
 ---
 
 commit the two agents and do Portfolio Manager next
+
+---
+
+commit it and do Bear/Critic next
