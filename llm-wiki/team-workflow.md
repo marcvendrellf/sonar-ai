@@ -64,7 +64,7 @@ Owner: Marc.
 
 Status: the opening interaction is implemented at `/` and `/onboarding`; completion enters `/saloon`, while the dashboard remains available at `/dashboard`.
 
-Preserve the light custom eye orb, light Sonar-blue Shader Gradient, editorial heading font, and inline `Hi, [name]!` interaction as Scene 1. Keep the opening wash clear and pale; exclude navy, deep-water, and near-black tones. The implemented continuation currently asks for a broad simulated paper-budget range and one of three mandate profiles, with smooth state-driven transitions and reduced-motion behavior. `feat/onboarding-polish` must replace that legacy budget range with the reviewed €1,000 all-cash fixture, connect the remaining mandate input to the shared contract, then add the fund explanation, committee introduction, and entry into the Saloon without adding chrome to the opening scene.
+Preserve the light custom eye orb, light Sonar-blue Shader Gradient, editorial heading font, and inline `Hi, [name]!` interaction as Scene 1. Keep the opening wash clear and pale; exclude navy, deep-water, and near-black tones. The implemented continuation now confirms the €1,000 all-cash baseline, offers the three deterministic mandate profiles as compact percentage cards, and lets the user toggle U.S. stocks, ETFs, and select crypto as presentational research classes. All three classes start selected. Question copy uses the same reduced-motion-safe blur-and-rise language as the opening greeting, and React Bits `BorderGlow` frames selection cards and primary actions. A follow-up must connect these locally stored choices to the reviewed shared fixture, then add the fund explanation, committee introduction, and entry into the Saloon without adding chrome to the opening scene.
 
 Done means the flow works with keyboard and pointer input, supports replay and reduced motion, handles WebGL failure, and runs smoothly on the presentation laptop.
 
@@ -81,6 +81,8 @@ Marc owns the single-table 3D scene, local clay-style cutaway shell and asset pr
 ### Epic 4: market data, mandate, risk, portfolio, and receipt
 
 The data lane owns the Alpaca Paper adapter and market-data fixtures. The risk-engine owner owns deterministic pass, resize, and reject results. Marc owns portfolio and receipt presentation.
+
+Status: the fixture dashboard now uses outlined shadcn cards, dark and light themes, three animated headline metrics, and a gradient-area NAV chart. Browser-local demo sign-in and sign-up routes feed the sidebar account menu and sign-out control; they are not production authentication. The dashboard still needs reviewed shared fixtures and the committee-role mapping.
 
 Done means one recommendation is approved by a human, one action is accepted, and another is resized or rejected by deterministic checks. No path can submit a live order.
 
