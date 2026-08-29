@@ -3,7 +3,7 @@
   "checkpoint_id": "01M16S42C9FYF5RBH02Y1EVNAF",
   "strategy": "manual-commit",
   "branch": "feat/core-contracts",
-  "checkpoints_count": 1,
+  "checkpoints_count": 2,
   "files_touched": [
     "apps/web/lib/server/analysis/agents/bear-critic.ts",
     "apps/web/lib/server/analysis/agents/fundamental-analyst.ts",
@@ -18,13 +18,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 442,
-    "cache_creation_tokens": 1985682,
-    "cache_read_tokens": 61590831,
-    "output_tokens": 319679,
-    "api_call_count": 221
+    "input_tokens": 456,
+    "cache_creation_tokens": 2021343,
+    "cache_read_tokens": 62251310,
+    "output_tokens": 336937,
+    "api_call_count": 228
   }
 }

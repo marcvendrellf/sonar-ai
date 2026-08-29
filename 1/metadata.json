@@ -1,0 +1,54 @@
+{
+  "cli_version": "0.10.3",
+  "checkpoint_id": "01M16S42C9FYF5RBH02Y1EVNAF",
+  "session_id": "712ace44-ba01-4000-92d0-bd3c814d62ae",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-29T12:50:13.297811Z",
+  "branch": "feat/core-contracts",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "apps/web/lib/server/analysis/agents/bear-critic.ts",
+    "apps/web/lib/server/analysis/agents/fundamental-analyst.ts",
+    "apps/web/lib/server/analysis/agents/market-context.ts",
+    "apps/web/lib/server/analysis/agents/portfolio-manager.ts",
+    "apps/web/lib/server/analysis/agents/report-writer.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8",
+  "turn_id": "822d16380100",
+  "checkpoint_transcript_start": 73,
+  "transcript_lines_at_start": 73,
+  "compact_transcript_start": 16,
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 35661,
+    "cache_read_tokens": 660479,
+    "output_tokens": 17258,
+    "api_call_count": 7
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-29T12:50:13.272094Z",
+    "agent_lines": 290,
+    "agent_removed": 53,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 290,
+    "total_lines_changed": 343,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
