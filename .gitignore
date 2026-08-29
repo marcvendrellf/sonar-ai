@@ -19,3 +19,6 @@ graphify-out
 .claude
 .entire
 .codex
+
+# Local paper-run persistence
+data/

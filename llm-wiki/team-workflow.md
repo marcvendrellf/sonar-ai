@@ -3,6 +3,7 @@
 Sources:
 
 - [Team ownership and delivery direction](../raw-sources/team-ownership-and-delivery-2026-08-29.md)
+- [Alpaca Paper Trading verification](../raw-sources/alpaca-paper-trading-verification-2026-08-29.md)
 - [Alpaca paper-trading verification](../raw-sources/alpaca-paper-trading-verification-2026-08-29.md)
 - [UI consolidation and parallel branch decision](../raw-sources/ui-consolidation-branch-decision-2026-08-29.md)
 
@@ -32,6 +33,8 @@ Ownership still needed: `packages/core`, `packages/risk-engine`, Cala integratio
 - Fundamental/Market Context reports can support different conclusions while citing the same evidence; Bear/Critic challenges proposal without veto power.
 - Risk Officer calls the pure deterministic risk engine. A model cannot approve its own exception.
 - Cala and Alpaca credentials remain on the server.
+- Alpaca is fixed to Paper Trading; live credentials and endpoints are forbidden.
+- Sonar simulates orders internally and never submits real-money orders.
 - Alpaca is fixed to paper trading; live endpoint and credentials are forbidden.
 - Sonar submits only human-approved, deterministic-risk-passed paper orders and never submits real-money orders.
 - Zod validates every external response and fixture.
@@ -80,6 +83,7 @@ Marc owns the single-table 3D scene, local clay-style cutaway shell and asset pr
 
 ### Epic 4: market data, mandate, risk, portfolio, and receipt
 
+The data lane owns the Alpaca Paper adapter and price/account fixtures. The risk-engine owner owns deterministic pass, resize, and reject results. Marc owns portfolio and receipt presentation.
 The data lane owns the Alpaca Paper adapter and market-data fixtures. The risk-engine owner owns deterministic pass, resize, and reject results. Marc owns portfolio and receipt presentation.
 
 Status: the fixture dashboard now uses outlined shadcn cards, dark and light themes, three animated headline metrics, and a gradient-area NAV chart. Browser-local demo sign-in and sign-up routes feed the sidebar account menu and sign-out control; they are not production authentication. The dashboard still needs reviewed shared fixtures and the committee-role mapping.
@@ -88,6 +92,7 @@ Done means one recommendation is approved by a human, one action is accepted, an
 
 ### Epic 5: demo integration and lock
 
+Freeze the €1,000 all-cash baseline, five-asset candidate universe, Cala fixture, Alpaca Paper fixture, three-minute script, and offline mode. Run the production build on the presentation laptop.
 Freeze the €1,000 all-cash baseline, five-asset U.S. candidate universe, Cala fixture, Alpaca Paper fixture, three-minute script, and offline mode. Run the production build on the presentation laptop.
 
 ## Branch policy
@@ -102,6 +107,11 @@ feat/saloon-polish
 
 Ownership boundaries:
 
+```text
+feat/12-onboarding-flow
+feat/18-agent-event-contract
+feat/23-alpaca-paper-trading
+```
 | Branch | Primary ownership |
 | --- | --- |
 | `feat/onboarding-polish` | `apps/web/app/page.tsx`, `apps/web/app/onboarding/`, `apps/web/features/onboarding/` |
@@ -163,6 +173,7 @@ apps/
             bear-critic.ts
             report-writer.ts
         cala/
+        alpaca/              # Paper-only adapter
         alpaca/              # paper-only adapter
       demo/
     fixtures/
@@ -192,6 +203,7 @@ Folder rules:
 - `packages/core` owns cross-lane types and Zod schemas and imports neither React nor Next.js.
 - `packages/risk-engine` stays pure and consumes plain values from `packages/core`.
 - `lib/server/cala` is the only Cala client location.
+- `lib/server/alpaca` is the only Alpaca integration location and exposes normalized Paper data.
 - `lib/server/alpaca` is the only Alpaca integration location and exposes paper-only normalized data and order methods.
 - `lib/server/analysis` owns orchestrator and agent stage boundaries. Agent contexts stay isolated and outputs use Zod schemas.
 - Route handlers stay thin.
@@ -214,5 +226,6 @@ Before review:
 - show reduced-motion and keyboard checks for UI work;
 - show evidence-link and deterministic-risk tests for agent work;
 - show human-approval gate and post-decision Report Writer ordering;
+- prove Alpaca code cannot reach live endpoint;
 - prove Alpaca code cannot reach live endpoint and submits only paper orders;
 - update the wiki when architecture, scope, ownership, or demo behavior changes.

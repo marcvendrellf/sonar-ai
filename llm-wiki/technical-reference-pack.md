@@ -4,6 +4,7 @@ Sources:
 
 - [React technical references](../raw-sources/react-technical-references-2026-08-28.md)
 - [User-selected shadcn components](../raw-sources/user-selected-ui-components-2026-08-28.md)
+- [Alpaca Paper Trading verification](../raw-sources/alpaca-paper-trading-verification-2026-08-29.md)
 - [Alpaca paper-trading verification](../raw-sources/alpaca-paper-trading-verification-2026-08-29.md)
 - [Saloon 3D authoring references](../raw-sources/saloon-3d-authoring-references-2026-08-29.md)
 - [Saloon clay-style visual decision](../raw-sources/saloon-clay-style-decision-2026-08-29.md)
@@ -14,7 +15,7 @@ Detailed composition: [interface plan](interface-plan.md)
 
 Use one application, Motion for DOM transitions, and one WebGL scene per active screen. The Saloon places its meeting table and agent orbs in one shared scene. The repository is a pnpm workspace monorepo (see the [naming and monorepo decision](../raw-sources/naming-monorepo-decision-2026-08-29.md)). Isolate the selected WebGL shader background to onboarding and waiting states:
 
-- **Next.js, React, and TypeScript** for the application and server-side Cala adapter.
+- **Next.js, React, and TypeScript** for the application and server-side Cala/Alpaca adapters.
 - **Tailwind CSS and shadcn/ui with the Base UI preset** for the application shell, onboarding, Saloon, dashboard, and accessible controls.
 - **23rd Shader Gradient** for onboarding atmosphere and selected waiting states.
 - **7ovr Activity and Chat blocks** for agent presence and the Saloon execution trace.
@@ -26,6 +27,7 @@ Use one application, Motion for DOM transitions, and one WebGL scene per active 
 - **React Flow and ELK.js** for a deterministic relationship graph.
 - **Zustand** for demo state and portfolio state.
 - **Zod** at every server boundary and fixture load.
+- **TanStack Query** for Cala and Alpaca requests, retries, caching, and fixture fallbacks.
 - **TanStack Query** for Cala and Alpaca Paper requests, retries, caching, and fixture fallbacks.
 - **Recharts** only for one small portfolio or exposure chart.
 - **Lucide React** for interface icons.
@@ -90,11 +92,12 @@ Implementation split:
 - `Bear/Critic` receives proposal, evidence, research summaries, context, and risk report. It flags uncertainty and failure scenarios but cannot veto.
 - `Communications/Report Writer` runs only after human decision. It formats decision record and internal report. It cannot mutate allocation.
 
+Cala relationship tracing is a sourced tool/data capability used by research stages, not a separate agent. Market Context discovers candidates; users provide no company list. Alpaca remains Paper-only and server-side. Approved orders pass through Alpaca Paper; Trader maintains deterministic receipt projection and offline fallback.
 Cala relationship tracing is a sourced tool/data capability used by research stages, not a separate agent. Alpaca Paper is the execution adapter after approval. Trader remains deterministic paper-ledger receipt code, not an autonomous agent.
 
 For MVP, use plain TypeScript orchestration rather than LangGraph, AutoGen, a queue, distributed services, or autonomous background loops. Persist one `InvestmentCommitteeState` per run. Permit fixture replay and one bounded retry at external/model stages. Keep stage boundaries replaceable for future workers without changing UI contracts.
 
-The orchestrator may run Fundamental Analyst and Market Context Analyst in parallel after asset selection. Risk waits for proposed actions; Bear/Critic waits for risk output; Report Writer waits for human decision.
+Market Context discovers candidates before Fundamental Analyst review. Risk waits for proposed actions; Bear/Critic waits for risk output; Report Writer waits for human decision.
 
 The browser receives stage events and final records, never prompts, credentials, hidden chain-of-thought, or uncited prose. Agent messages are rendered summaries derived from typed outputs.
 
@@ -129,6 +132,11 @@ get_portfolio_snapshot()
 get_price_history(instrument)
 get_company_fundamentals(instrument)
 search_company_information(query)
+query_financial_knowledge(query)
+find_cala_entities(name, entity_types, limit)
+inspect_cala_entity(entity_id)
+get_cala_entity_profile(entity_id, selected_fields)
+traverse_cala_relationships(root_entity_id, depth, relation_filter, limits)
 calculate_portfolio_metrics(portfolio)
 calculate_asset_exposure(portfolio, instrument)
 run_stress_test(portfolio, scenario)
@@ -137,6 +145,7 @@ get_existing_thesis(instrument)
 save_recommendation(recommendation)
 ```
 
+Fundamental Analyst receives Cala entity/fundamental/query/search tools. Market Context receives Cala entity/query/search/traversal tools. Cala introspection exposes newly available properties, relationship types, and numerical observations without widening model authority; metric definitions are filtered/pageable in batches of at most 100 and retrieval uses introspected metric IDs grouped by Cala entity type. Traversal is breadth-first and capped at depth 3, 50 nodes, and 20 results per relationship. Unsourced relationships are omitted. Search/query are discovery-only; profile, fundamentals, and traversal produce underlying-source evidence. Runner merges evidence and normalized traversal graph artifacts into committee state before evidence gates. Function calls are sequential, default to eight per stage, share one total stage output-token budget, and reject tool payloads above 60,000 characters. Price data uses Alpaca Market Data or fixture. `save_recommendation` writes internal state only. Alpaca order submission, when enabled, requires evidence, risk, and human-approval gates. No agent changes brokerage accounts or calls another agent directly.
 `search_company_information` and relationship tracing use Cala or sanitized fixtures. Market and portfolio data use Alpaca Paper or fixture. `save_recommendation` writes internal state only. Alpaca order submission requires explicit human approval and deterministic risk pass; no tool can reach a live endpoint.
 
 ## Core packages
@@ -198,13 +207,20 @@ Server
       BearCritic
       PortfolioManager
       ReportWriter
-    CalaClient
-    ResponseNormalizer
+    CalaRestClient
+    CalaFixtureProvider
+    BoundedRelationshipTraversal
+    ToolEvidenceLedger
     EvidenceValidator
     RiskEngine
     FixtureFallback
   /api/market-data
     AlpacaPaperClient
+    MarketDataNormalizer
+    MarketDataFixtureFallback
+```
+
+The browser never receives Cala or Alpaca credentials. The Alpaca adapter is fixed to the Paper endpoint; live endpoint and live credentials are forbidden. The model never receives uncited graph prose as fact. The risk engine remains a pure deterministic module.
     AlpacaNormalizer
     MarketDataFixtureFallback
 ```
@@ -307,57 +323,51 @@ Source: [single-table 3D Saloon decision](../raw-sources/saloon-single-table-3d-
 
 The first Saloon uses one React Three Fiber canvas with one meeting table and six agent orbs. Keep every orb in the same scene so the application pays for one renderer and one animation loop.
 
-The warm-scene rebuild uses one authored clay-style shell. Replace the procedural room, white table, and pedestal seats with one optimized local `saloon-shell.glb`. Keep the current custom agent orbs, hit areas, state motion, camera owner, and DOM overlays in React code. The shell owns only simple cutaway architecture, a rounded table, and seat plinths. It should read as a compact video-game diorama rather than a textured real interior.
+The accepted warm-scene rebuild uses one authored clay-style static set. The optimized local `saloon-shell.glb` contains only an open creamy floor, a deep rounded dark-cream table with a broad floor-reaching center base, and seat plinths; there are no walls or room props. Keep the custom agent orbs, hit areas, selected-only float, camera owner, and DOM details in React code.
 
 Suggested ownership:
 
 ```text
 apps/web/
   features/saloon/
-    saloon-scene.tsx          # Canvas, light rig, camera, shell and orb composition
-    saloon-shell.tsx          # useGLTF loader and material bindings
-    agent-orb.tsx             # existing interactive custom orb
+    saloon-scene.tsx          # Canvas, camera, warm shadow key, open-floor extension
+    saloon-shell.tsx          # useGLTF/EXR loaders, UV validation, clay materials
+    agent-orb.tsx             # naturally lit orb with eased selection and hover motion
   public/
     models/saloon/
       saloon-shell.glb
       provenance.md
     textures/saloon/
-      ...local 1K textures
+      saloon-lightmap.exr
     environments/saloon/
-      ...local HDR, EXR, or gainmap
+      warm_restaurant_night_1k.hdr
 ```
 
 The exact public asset path may follow the existing Next.js asset convention, but all runtime files must remain inside the repository and load without network access. Record source URL, retrieval date, author when provided, license, and local filename in the provenance note.
 
 Use `useGLTF` for the shell and preload it after the Saloon route becomes likely to open. If the selected source asset needs cleanup, optimize it before committing. Prefer one merged static shell, a few shared materials, no photoreal texture set, and no unnecessary animation tracks. Target a device-pixel-ratio cap of 1.5. After approval, remove invisible geometry and compress the model without changing the accepted camera compositions.
 
-Lighting rules for the rebuilt shell:
+Accepted lighting pipeline:
 
-- remove the current high-intensity point lights and reduce or remove environment reflections on room materials;
-- use one very broad warm key in the 2,700 to 3,200 K range;
-- use a weak hemisphere or neutral fill so unlit faces remain legible without erasing form;
-- prefer Drei `AccumulativeShadows` with a static `RandomizedLight` cluster for the broad baked-style shadow, or use a low-opacity, high-blur `ContactShadows` fallback;
-- keep shadow edges wide, opacity low, and contrast gentle across the room;
-- no transmission, clearcoat, mirror material, chrome room furniture, or emissive architecture;
-- cyan emission remains local to agent state and the active evidence path.
+- `pnpm --filter web build:saloon-shell` first writes geometry under ignored `.saloon-build/`, then runs Blender 5.2.1 LTS in factory-clean background mode;
+- the Blender script preserves `Floor`, `Sand`, `Table`, and `Plinth`, creates consecutive `UVMap` and `Lightmap` layers, packs the second layer globally without overlap, and exports them as `TEXCOORD_0` and `TEXCOORD_1`;
+- Cycles uses 512 samples, four diffuse bounces, one 3,400 K overhead area light at `(-2.8, 10.0, 1.0)`, a 6 m size, 800 W energy, and low warm World illumination at strength 0.22;
+- Diffuse Direct and Indirect are enabled while Color is disabled, so the 2,048 px RGB half-float EXR stores illumination rather than baking the clay albedo twice;
+- `SaloonShell` loads the EXR with `flipY = false`, `channel = 1`, and `LinearSRGBColorSpace`, rejects a mesh without `uv` and `uv1`, and assigns the cached lightmap to the table and plinth materials at intensity 0.35. The open floor responds only to runtime light, avoiding a baked-light boundary;
+- one warm overhead runtime directional key casts VSM-filtered shadows from every orb and static mesh. A restrained warm hemisphere supplies bounce; there is no progressive convergence;
+- the retained local HDR is not loaded, orb materials have no emissive floor or environment contribution, and the fake radial shadow cards are removed;
+- only the selected orb floats. Selected motion and pointer scale use frame-rate-independent damping; unselected orbs do not bob, lift, or spin;
+- the final GLB is 356,104 bytes and the final EXR is 9,272,735 bytes. Both load from the application origin;
+- the table carries no WebGL evidence graph, and the default right panel contains only the roster and each agent's work rather than a timeline or evidence dashboard;
+- the overview framing prioritizes the table and six agents on an open floor;
+- orb labels, state rings, the top scene header, timeline controls, and the bottom canvas instruction are removed. Fixture playback remains automatic, and identity and status remain available in the DOM roster and selected-agent panel.
 
-Starting light and shadow envelope for visual tuning:
-
-```text
-room environment contribution: 0 to 0.25
-hemisphere or ambient fill: low, enough to retain the clay silhouette
-randomized warm key: 6 to 10 samples across a broad radius
-accumulated shadow frames: 40 to 80 for the static shell
-contact-shadow fallback opacity: 0.18 to 0.28
-contact-shadow fallback blur: broad, approximately 4 to 6
-```
-
-Treat these as tuning ranges rather than product requirements. Judge the final values against the supplied reference and the presentation laptop.
+The browser result was compared in hardware-accelerated Chrome at 1,440 x 900 across the idle table, active table, and all six interview views. The presentation-laptop DPR 1.5 performance check remains open until it runs on that machine.
 
 Material rules:
 
-- warm sand shell: `roughness` 0.9 to 1 and `metalness` 0;
-- dark brown table and seats: `roughness` 0.82 to 0.95 and `metalness` 0;
+- unsaturated creamy floor: `roughness` 0.95 to 1 and `metalness` 0;
+- dark cream/taupe table and seats: `roughness` 0.82 to 0.95 and `metalness` 0;
 - agent orbs: `roughness` 0.55 to 0.72, `metalness` 0, and low environment intensity;
 - use flat colors, subtle ambient occlusion, or low-frequency procedural variation only;
 - do not use visible wood grain, fabric weave, stone veining, or photoreal normal maps;
@@ -459,13 +469,14 @@ Use `Instrument Sans`, `Geist`, or another available neutral grotesk. Pick one f
 
 The repository is a monorepo. Use feature folders inside `apps/web`, keep shadcn-managed primitives in `components/ui`, and keep external integrations under `lib/server`.
 
-The full proposed tree and ownership rules live in the [team workflow](team-workflow.md).
+The full proposed tree and ownership rules live in the [team workflow](team-workflow.md). The agent backend's live structure, conventions, and per-folder responsibilities are documented in code at [`apps/web/lib/server/README.md`](../apps/web/lib/server/README.md) — the authoritative map for the agents and data lane.
 
 Workspace rules:
 
 - `packages/core` and `packages/risk-engine` never import React or Next.js.
 - `packages/core` owns cross-lane Zod schemas and stable IDs for events, evidence, graph records, theses, market snapshots, orders, risk results, and receipts.
 - Cala stays in `apps/web/lib/server/cala`.
+- Alpaca stays in `apps/web/lib/server/alpaca` and exposes normalized Paper account/position data; order submission remains behind approval and risk gates.
 - Alpaca stays in `apps/web/lib/server/alpaca` and exposes paper-only normalized data and approved-order methods.
 - UI code imports shared types from `packages/core` and never infers agent or risk state by parsing prose.
 - The risk engine consumes plain data from `packages/core` and returns plain results.
@@ -481,9 +492,10 @@ Workspace rules:
 6. Render one fixed relationship graph from a fixture and animate the active path.
 7. Implement deterministic portfolio metrics, Risk Officer hard blocks, and human approval gate.
 8. Connect the Saloon trace, recommendation comparison, approval control, and decision receipt to typed records.
+9. Add server-side Cala and Alpaca Paper adapters behind fixture fallbacks.
 9. Add server-side Cala and Alpaca Paper adapter behind fixture fallbacks.
 10. Add Shader Gradient, the active-agent chart, and final polish only after the full three-minute sequence works.
 
 ## Cut list if time runs short
 
-Cut autonomous loops, workflow-framework integration, postprocessing, secondary room props, the full sphere state set, the live orb, the active-agent chart, then interactive graph dragging. Keep the rounded dark table, cutaway clay shell, one broad warm light, six selectable committee seats, a static price chart if needed, and the non-WebGL Saloon fallback. Never cut source inspection, deterministic risk rejection, fixture fallback, Bear/Critic challenge, human approval, or the decision receipt.
+Cut autonomous loops, workflow-framework integration, postprocessing, secondary room props, the full sphere state set, the live orb, the active-agent chart, then interactive graph dragging. Keep the rounded dark-cream table, open creamy floor, one broad warm shadow-casting light, six selectable committee seats, a static price chart if needed, and the non-WebGL Saloon fallback. Never cut source inspection, deterministic risk rejection, fixture fallback, Bear/Critic challenge, human approval, or the decision receipt.

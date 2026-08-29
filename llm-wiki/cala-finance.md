@@ -1,6 +1,6 @@
 # Cala for finance
 
-Source: [Cala finance capture](../raw-sources/cala-finance-2026-08-28.md)
+Sources: [Cala finance capture](../raw-sources/cala-finance-2026-08-28.md), [official API/MCP reference capture](../raw-sources/cala-api-reference-2026-08-29.md)
 
 ## What Cala appears useful for
 
@@ -38,9 +38,11 @@ Cala should provide the evidence graph, not a single decorative metric. The user
 
 ## Integration stance
 
-Start with MCP if it exposes the required fields quickly. Switch to the API when the UI needs stable typed responses or deterministic caching. Save sanitized response fixtures for the demo fallback.
+Use Cala REST server-side and wrap it in strict Sonar tools. Official Cala MCP exposes equivalent capabilities, but Cala documents its schemas as dynamic and incompatible with strict tool mode. REST preserves dynamic data access while Sonar controls inputs, limits, validation, provenance, and fixture parity.
 
-For MVP, Cala is a research capability used by Fundamental Analyst and Market Context Analyst through typed tools. It is not a standalone conversational agent and does not decide allocation. Normalize its source-linked relationships into the shared `InvestmentCommitteeState`; never pass uncited Cala prose into Portfolio Manager.
+Implemented capabilities are entity search, paged/filterable introspection, selective profile retrieval by metric ID, structured knowledge query, sourced knowledge search, and bounded incoming/outgoing graph traversal. “All data points” means agents can inspect Cala's current field catalog across bounded calls; Sonar does not hard-code or falsely claim a complete metric list.
+
+For MVP, Cala is a research capability used by Fundamental Analyst and Market Context Analyst through typed tools. It is not a standalone conversational agent and does not decide allocation. Search/query outputs guide discovery but cannot support claims by themselves. Normalize profile/traversal sources, evidence, nodes, and edges into shared `InvestmentCommitteeState`; never pass uncited Cala prose into Portfolio Manager.
 
 ## Unverified points
 
@@ -50,7 +52,7 @@ Cala's public page does not confirm:
 - how entity disambiguation works;
 - how complete beneficial-owner and PEP links are;
 - freshness by source;
-- exact response schemas;
+- exact event-account response variants;
 - whether one query can join several finance data groups;
 - whether hackathon credits differ from the public starter limits.
 

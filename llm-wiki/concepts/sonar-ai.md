@@ -27,6 +27,7 @@ The memorable reveal is not the trade. It is watching one headline expand into a
 
 - A hedge fund supplies the mandate, positions, and risk budget.
 - Cala supplies source-linked news, companies, ownership, filings, ratings, and relationships where available.
+- An Alpaca Paper adapter supplies account, position, and approved paper-order data through a fixed server-side endpoint.
 - An Alpaca paper adapter supplies market, portfolio, and order data through its fixed paper endpoint.
 - A Portfolio Manager agent owns capital allocation and proposal revision.
 - Fundamental Analyst and Market Context Analyst own separate research domains.
@@ -40,6 +41,7 @@ The memorable reveal is not the trade. It is watching one headline expand into a
 
 The hackathon version uses paper money only. It submits approved orders only to Alpaca's paper environment. It does not accept customer funds, promise returns, or give personalized investment advice.
 
+Agents propose; human approves. No agent can override written mandate. Every paper order must pass deterministic checks and cite evidence path behind thesis. Alpaca live trading, deposits, withdrawals, and brokerage-account control stay out of scope.
 Agents propose; human approves. No agent can override written mandate. Every paper order must pass deterministic checks and cite evidence path behind thesis. Alpaca live endpoints and live credentials are forbidden.
 
 ## The memorable reveal
@@ -126,6 +128,8 @@ Build only:
 - one written mandate with four deterministic limits;
 - one prepared portfolio-review scenario and material event;
 - one live Cala query if the required relationship data exists;
+- one Alpaca Paper portfolio query;
+- cached Cala graph and Alpaca Paper fixtures as fallbacks;
 - one Alpaca paper portfolio query;
 - cached Cala graph and Alpaca market-data fixtures as fallbacks;
 - five decision agents: Portfolio Manager, Fundamental Analyst, Market Context Analyst, Risk Officer, and Bear/Critic;
@@ -179,6 +183,7 @@ These are demonstration parameters, not investment recommendations.
 ## Guardrails
 
 - Use paper trading only.
+- Keep Alpaca on Paper endpoint and require human approval before every order.
 - Keep Alpaca fixed to paper trading and require human approval before every order.
 - Label historical, synthetic, and live information clearly.
 - Describe relationships as evidence, not proof of causation.

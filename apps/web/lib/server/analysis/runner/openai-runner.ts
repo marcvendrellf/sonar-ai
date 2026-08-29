@@ -1,0 +1,93 @@
+import type OpenAI from "openai";
+import { getServerEnv, type ServerEnv } from "../../env";
+import { createOpenAIClient } from "../../llm/openai-client";
+import { requestStructuredOutput } from "../../llm/structured-output";
+import { createToolRegistryFromEnv } from "../../tools/registry";
+import type { ToolContext, ToolRegistry } from "../../tools/types";
+import type { AgentDef, AgentRunner, AgentRunResult } from "./types";
+
+export interface OpenAIAgentRunnerOptions {
+  client: OpenAI;
+  model: string;
+  maxOutputTokens: number;
+  maxRetries: number;
+  maxToolCalls?: number;
+  maxToolOutputChars?: number;
+  toolRegistry?: ToolRegistry;
+  toolContext?: ToolContext;
+}
+
+/**
+ * Structured-output runner for the code-owned committee orchestrator.
+ *
+ * It performs one model request per attempt and never chooses stages, tools,
+ * or control flow. All orchestration and gates remain deterministic code.
+ */
+export class OpenAIAgentRunner implements AgentRunner {
+  constructor(private readonly options: OpenAIAgentRunnerOptions) {
+    if (!Number.isInteger(options.maxRetries) || options.maxRetries < 0) {
+      throw new Error("OpenAIAgentRunner maxRetries must be a non-negative integer.");
+    }
+  }
+
+  async run<TContext, TOutput>(
+    def: AgentDef<TContext, TOutput>,
+    context: TContext,
+  ): Promise<AgentRunResult<TOutput>> {
+    const input = def.buildInput(context);
+    const maxAttempts = this.options.maxRetries + 1;
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        return await requestStructuredOutput(this.options.client, {
+          model: this.options.model,
+          instructions: def.instructions,
+          input,
+          schema: def.outputSchema,
+          schemaName: `sonar_${def.stage}`,
+          maxOutputTokens: this.options.maxOutputTokens,
+          toolNames: def.toolNames,
+          toolRegistry: this.options.toolRegistry,
+          toolContext: this.options.toolContext,
+          maxToolCalls: this.options.maxToolCalls,
+          maxToolOutputChars: this.options.maxToolOutputChars,
+        });
+      } catch (error) {
+        lastError = error;
+        if (attempt === maxAttempts) {
+          // The thrown message stays generic on purpose: it flows into the
+          // client-facing state, so it must not leak the prompt input or the
+          // provider error. Diagnostics go to the server console (operator-only)
+          // and the underlying error is attached as `cause`.
+          console.error(
+            `[OpenAIAgentRunner] stage "${def.stage}" failed after ${maxAttempts} attempt(s):`,
+            error,
+          );
+          throw new Error(
+            `OpenAIAgentRunner: stage "${def.stage}" failed after ${maxAttempts} attempt(s).`,
+            { cause: lastError },
+          );
+        }
+      }
+    }
+
+    throw new Error(`OpenAIAgentRunner: unreachable stage "${def.stage}" state.`);
+  }
+}
+
+/** Construct the live runner from validated server environment. */
+export function createOpenAIAgentRunner(
+  env: ServerEnv = getServerEnv(),
+): OpenAIAgentRunner {
+  return new OpenAIAgentRunner({
+    client: createOpenAIClient(env),
+    model: env.SONAR_AGENT_MODEL,
+    maxOutputTokens: env.SONAR_AGENT_MAX_TOKENS,
+    maxRetries: env.SONAR_AGENT_MAX_RETRIES,
+    maxToolCalls: env.SONAR_AGENT_MAX_TOOL_CALLS,
+    maxToolOutputChars: env.SONAR_AGENT_MAX_TOOL_OUTPUT_CHARS,
+    toolRegistry: createToolRegistryFromEnv(env),
+    toolContext: { offline: env.SONAR_OFFLINE },
+  });
+}

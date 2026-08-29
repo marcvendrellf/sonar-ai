@@ -1,4 +1,5 @@
 {
+  "observedAt": "2026-08-29T10:00:00Z",
   "account": {
     "id": "paper-account-fixture",
     "status": "ACTIVE",
@@ -11,5 +12,25 @@
     "account_blocked": false,
     "trade_suspended_by_user": false
   },
-  "positions": []
+  "positions": [],
+  "assets": [
+    { "id": "asset-nvda", "class": "us_equity", "exchange": "NASDAQ", "symbol": "NVDA", "name": "NVIDIA Corporation", "status": "active", "tradable": true, "marginable": true, "shortable": true, "easy_to_borrow": true, "fractionable": true },
+    { "id": "asset-asml", "class": "us_equity", "exchange": "NASDAQ", "symbol": "ASML", "name": "ASML Holding N.V.", "status": "active", "tradable": true, "marginable": true, "shortable": false, "easy_to_borrow": false, "fractionable": true },
+    { "id": "asset-siegy", "class": "us_equity", "exchange": "OTC", "symbol": "SIEGY", "name": "Siemens Energy AG", "status": "active", "tradable": true, "marginable": false, "shortable": false, "easy_to_borrow": false, "fractionable": true },
+    { "id": "asset-halt", "class": "us_equity", "exchange": "NASDAQ", "symbol": "HALT", "name": "Fixture Halted Security", "status": "active", "tradable": false, "marginable": false, "shortable": false, "easy_to_borrow": false, "fractionable": false }
+  ],
+  "orders": {
+    "accepted": { "id": "fixture-order", "client_order_id": "fixture-client", "symbol": "NVDA", "side": "buy", "type": "market", "status": "accepted", "qty": "1", "notional": "100", "filled_qty": "0", "filled_avg_price": null },
+    "rejected": { "id": "fixture-rejected-order", "client_order_id": "fixture-rejected-client", "symbol": "HALT", "side": "buy", "type": "market", "status": "rejected", "qty": "1", "notional": "100", "filled_qty": "0", "filled_avg_price": null }
+  },
+  "quotes": {
+    "NVDA": { "bidPrice": 178.10, "askPrice": 178.20, "timestamp": "2026-08-29T14:00:00.000Z" },
+    "ASML": { "bidPrice": 945.00, "askPrice": 946.00, "timestamp": "2026-08-29T14:00:00.000Z" },
+    "SIEGY": { "bidPrice": 42.10, "askPrice": 42.20, "timestamp": "2026-08-29T14:00:00.000Z" }
+  },
+  "priceHistory": {
+    "NVDA": [{ "timestamp": "2026-08-27T20:00:00.000Z", "close": 176.40 }, { "timestamp": "2026-08-28T20:00:00.000Z", "close": 178.15 }],
+    "ASML": [{ "timestamp": "2026-08-27T20:00:00.000Z", "close": 938.00 }, { "timestamp": "2026-08-28T20:00:00.000Z", "close": 945.50 }],
+    "SIEGY": [{ "timestamp": "2026-08-27T20:00:00.000Z", "close": 41.70 }, { "timestamp": "2026-08-28T20:00:00.000Z", "close": 42.15 }]
+  }
 }

@@ -59,7 +59,7 @@ Treat Cala product-page statements as vendor claims until an API fixture confirm
 ## Product boundaries
 
 - Paper trading only
-- Alpaca provides paper-account market, portfolio, and order data through its paper API
+- Alpaca provides the verified Paper Trading account, positions, and order interface used by Sonar
 - No real-money order submission, deposits, withdrawals, or brokerage-account control
 - No customer funds
 - No promised returns
@@ -83,12 +83,12 @@ Treat Cala product-page statements as vendor claims until an API fixture confirm
 - Use semantic shadcn tokens and component variants instead of raw status colors.
 - Preserve required shadcn composition and accessibility structure.
 - Keep Cala and Alpaca credentials and calls on the server.
-- Keep Alpaca fixed to its paper endpoint. Sonar submits orders only after human approval and deterministic risk checks.
+- Keep Alpaca fixed to its Paper endpoint. Live endpoint and live credentials are forbidden.
 - Validate server responses and fixtures with Zod.
 - Keep the risk engine pure and independent from React.
 - For hackathon MVP, use one code-owned server-side `AnalysisOrchestrator` with five decision agents: Portfolio Manager, Fundamental Analyst, Market Context Analyst, Risk Officer, and Bear/Critic. Add Communications/Report Writer only after human decision. Do not add autonomous loops, agent-to-agent free-form chat, or a workflow framework before the fixture-driven demo works.
 - Portfolio Manager owns allocation and revision, not research or manual risk math. Fundamental and Market Context agents receive isolated evidence packs. Risk Officer calls deterministic analytics and can hard-block mandate, data, or concentration breaches. Bear/Critic flags uncertainty but cannot veto. Report Writer cannot influence allocation.
-- Cala relationship tracing is a sourced research capability, not a separate agent. Alpaca paper orders require explicit human approval and internal paper-ledger receipt.
+- Cala relationship tracing is a sourced research capability, not a separate agent. Alpaca Paper orders require explicit human approval, deterministic risk checks, and internal receipt/ledger application.
 
 Selected registries:
 

@@ -88,6 +88,50 @@ Adapted the shell to the compact navigation required by the interface plan. Buil
 
 Restored the collapsible sidebar, inset header, sidebar rail, and responsive trigger from `@shadcnblocks/application-shell1` after the first adaptation replaced the block with top navigation. Fixed the shadcn font token so Geist renders through `--font-geist-sans`.
 
+## [2026-08-29] implementation | Shared contracts, risk engine, and agent-backend scaffold
+
+Built `@sonar-ai/core` (the cross-lane Zod contract, stable-ID helpers, evidence-integrity gate, and one golden `InvestmentCommitteeState` fixture) and `@sonar-ai/risk-engine` (the pure deterministic Risk Officer: metrics, stress, compare, and pass/resize/reject rules with reproducible numbers). Both are React/Next-free and fully unit-tested; a purity guard forbids IO imports in the risk engine. Turnover is defined sell-side, so the cash-only baseline deploys without a false breach.
+
+Addressed a contract review: stored the revision-0 proposal so every `riskChecks[].actionId` resolves, added action- and receipt-scoped integrity gates, surfaced all four mandate limits in `RiskMetrics`, and tightened the turnover doc.
+
+Wired both packages plus Zod into `apps/web` (workspace deps + `transpilePackages`) and scaffolded the agent backend under `apps/web/lib/server`: validated server `env.ts`, the `AgentRunner`/`AgentDef` seam with a deterministic `StubAgentRunner`, and the closed tool-name set. Documented the whole structure, conventions, and per-folder responsibilities in [`apps/web/lib/server/README.md`](../apps/web/lib/server/README.md) so both agent-lane owners can claim files without collision. Orchestrator, agents, tools, and adapters remain to be implemented (Phases 3–6).
+
+## [2026-08-29] correction | Alpaca Paper replaces prior broker assumption
+
+The active broker direction is Alpaca Trading API with a Paper Only account. Alpaca account and position reads use a server-only client with a fixed Paper endpoint; paper order submission remains behind evidence, deterministic risk, and explicit human approval gates. Prior broker references remain historical captures only and are not active implementation guidance.
+
+## [2026-08-29] implementation | Deterministic committee orchestrator
+
+Implemented the Phase 3 server-side committee flow under `apps/web/lib/server/analysis`: isolated contexts, typed definitions for Fundamental Analyst, Market Context Analyst, Portfolio Manager, Risk Officer, Bear/Critic, and post-decision Report Writer, plus evidence, deterministic-risk, and human-approval gates. Added deterministic internal paper-ledger application and sequential fixture replay with fixed timestamps. The flow pauses at `awaiting_approval`, rejects mandate hard blocks, and cannot mutate paper state before approval. Extended the stub runner with deterministic per-stage output sequences and tightened evidence integrity to include revision-0 proposal claims. Orchestration tests cover pause, approval, replay, and hard-block behavior.
+
+## [2026-08-29] implementation | OpenAI structured-output runner
+
+Added the official `openai` TypeScript SDK behind the existing `AgentRunner` seam. Live stages use Responses API `responses.parse()` with each agent's Zod schema, disabled response storage, bounded output tokens and timeout, zero SDK-level retries, and one exact code-owned retry budget. The model receives no tools and cannot select stages or gates. `SONAR_OFFLINE=true` continues to force deterministic fixture execution. Offline unit tests cover request shape, schema parsing, retry count, and sanitized failures; no live API request was made.
+
+## [2026-08-29] implementation | Cala research tools and bounded graph traversal
+
+Implemented Cala's fixed server-side REST boundary with Zod validation, sanitized failures, entity resolution, schema introspection, selective profile and numerical-observation retrieval, structured knowledge query, sourced search, and breadth-first relationship traversal capped at depth 3 and 50 nodes. Added deterministic synthetic fixture provider with a supplier-to-company and company-to-policy-event path. Raw Cala MCP remains outside model context because its dynamic schema conflicts with strict function tools.
+
+Extended OpenAI runner with code-owned per-stage tool allowlists, strict argument parsing, output validation, sequential function calls, an eight-call default cap, one total output-token budget, and a 60,000-character tool-result cap. Fundamental Analyst receives company/entity research tools; Market Context receives entity/query/search/traversal tools. Source evidence and normalized traversal graph artifacts merge into committee state before gates. Search/query remain discovery-only, unsourced edges are omitted, unknown fixture entities return no false match, and empty traversals remain valid. Portfolio Manager, Risk Officer, and order path stay isolated from raw research tools. Corrected implementation against official wire examples: numerical retrieval groups introspected metric IDs by type, relationship provenance is read from nested properties, metric discovery is paged, and traversal does not expand beyond requested depth. Workspace typecheck, lint, 84 tests, and production build pass. No live Cala request was made.
+## [2026-08-29] correction | Risk preferences drive agent discovery
+
+The MVP input is now risk preferences only. Market Context Analyst runs first, uses Cala research and relationship traversal to shortlist symbols from the system-supplied Alpaca tradable universe, Fundamental Analyst evaluates that shortlist, and Portfolio Manager allocates. Removed user-selected company IDs from orchestration and recording contracts. Approved live-mode actions now route through injected Alpaca Paper order submission; offline mode retains deterministic internal ledger fallback. Decision source: [risk-preferences-only MVP direction](../raw-sources/risk-preferences-only-mvp-2026-08-29.md).
+
+Added sanitized Alpaca Paper fixtures for USD account/positions, tradable asset discovery, accepted orders, and non-tradable rejection. Added provider tests and client asset-list method. Capture: [Alpaca Paper fixture capture](../raw-sources/alpaca-paper-fixtures-2026-08-29.md).
+
+Added Alpaca latest-quote and daily-history schemas/client methods, fixture provider support, closed-registry read tools, and agent allowlists. Research agents can now verify tradability, spread, price history, drawdown, and execution context without order access.
+
+Added MVP analysis API routes: `POST /api/analysis/run` accepts mandate only, `GET /api/analysis/run/:runId` retrieves state, and `POST /api/analysis/run/:runId` applies approval/rejection. Run state initially used an in-memory store; subsequent entry records its file-backed replacement. Company-selection fields are rejected.
+
+Connected dashboard workflow controls to run/fetch/approval routes with fixture fallback. Added live safety validation requiring explicit USD mandate before a run can reach Alpaca Paper execution.
+
+Replaced in-memory-only run storage with schema-validated, atomic file persistence at `data/analysis-runs.json` (override with `SONAR_RUN_STORE_PATH`). The local paper-run store is gitignored and contains no credentials.
+
+Dashboard account metrics and positions now hydrate from `/api/alpaca/portfolio`, while the fixture path remains the fallback. Narrative/static NAV panels remain intentionally demo presentation data pending historical portfolio endpoint support.
+
+Added `/api/analysis/history`; NAV chart now consumes persisted run NAV points when available and retains deterministic fixture series before the first run.
+
+Upgraded research prompts with shared professional investment-committee protocol, private deliberate reasoning, explicit evidence/fact/inference separation, falsification, scenarios, catalysts, valuation, liquidity, correlation, and confidence checks. PM and Bear/Critic now receive fuller research summaries instead of only quality/valuation snippets. Hidden chain-of-thought is not persisted; outputs remain structured and auditable.
 ## [2026-08-29] decision | Saloon changed to one 3D meeting table
 
 Replaced the planned three-column Saloon with a minimal 3D room built around one physical meeting table. Six agent orbs use the existing faceless sphere language and share one React Three Fiber canvas.
@@ -174,6 +218,42 @@ Removed an unused registry demo, its unused alert primitive, the temporary regis
 The checkpoint also integrates the newer €1,000 cash-only, Alpaca Paper, and investment-committee direction already on `main`. The current onboarding budget range and Scout/Cartographer UI fixtures predate that decision and remain explicit polish-branch migration work rather than reviewed contracts.
 
 The next UI pass splits from this baseline into `feat/onboarding-polish`, `feat/dashboard-polish`, and `feat/saloon-polish`. Each branch has one writer; changes to global CSS, layout, application shell, dependencies, shared contracts, fixtures, or wiki pages require coordination.
+
+## [2026-08-29] implementation | Saloon lighting moved to a Cycles lightmap
+
+Replaced the Saloon's runtime key lights and 60-frame accumulated floor shadow with a reproducible Blender 5.2.1 LTS and Cycles asset pipeline. The Node geometry step now writes an ignored intermediate. The Blender step keeps the four named meshes, creates `UVMap` and `Lightmap`, verifies a global non-overlapping atlas and world-space bounds, bakes Diffuse Direct and Indirect without Color at 512 samples and four diffuse bounces, and exports one GLB plus one 2,048 px RGB half-float EXR.
+
+Three.js loads the EXR from the application origin, uses texture channel 1 and linear color space, and rejects any shell mesh without `uv` and `uv1`. Static shell materials no longer receive runtime lights, environment reflections, or shadow-map work. The six dynamic orbs retain their shared geometry and now reuse one procedural radial seat-contact texture that stays fixed while their visual groups bob.
+
+The final GLB is 438,904 bytes and the EXR is 8,802,593 bytes. Hardware-accelerated Chrome comparison at 1,440 x 900 covered the idle table, an active evidence path, and all six interview compositions. Keyboard roster selection and `Escape` still update and clear the `?agent=` URL state. Presentation-laptop DPR 1.5 performance remains open.
+
+## [2026-08-29] design | Saloon reframed around the agents
+
+Applied the user's darker reference as the accepted follow-up to the first Cycles bake. The room now uses a charcoal palette, the table and seat bases remain chocolate brown, and the six orbs use blue, tan, cream, sage, and gray tones. The overview camera moved closer so the table and agents dominate while most of the room shell is cropped.
+
+Removed the cyan WebGL evidence graph from the tabletop. Relationship progress, sources, and checks remain in the existing DOM evidence panel. Recalibrated the baked light to one soft 4,500 K overhead area source at `(0.0, 7.2, 0.0)`, 5.5 m size, 500 W energy, with neutral World strength 0.45. The regenerated GLB is 438,904 bytes and the EXR is 7,833,222 bytes.
+
+## [2026-08-29] correction | Saloon furniture made gray and scene light unified
+
+The user rejected the chocolate furniture and the first dark follow-up as too dim. The complete shell, table, seats, and plinths now use neutral dark grays. The baked light moved to 5,000 K with 650 W overhead energy and neutral World strength 0.85.
+
+Idle orbs no longer use a minimum emissive contribution. One shadowless runtime overhead directional light and hemisphere fill now illuminate the room and orbs together, which makes their blue, tan, cream, sage, and gray base colors read as lit materials. State-driven emission remains only for active and selected states. Runtime shadow maps remain disabled. The final GLB is 438,900 bytes and the EXR is 7,859,531 bytes.
+
+## [2026-08-29] refinement | Saloon chrome and orb motion reduced
+
+Removed the top scene header, run status, timeline controls, and bottom canvas instruction so the 3D table and agents remain primary. Fixture playback still starts automatically, and status remains available in the DOM roster and selected-agent panel.
+
+Only the selected orb now floats smoothly. Unselected orbs no longer bob, lift, or spin; all state rings are removed; and the redundant `Complete` text is hidden from the 3D orb label. The shared radial seat-contact shadow remains fixed beneath each orb.
+
+Deepened the table slab and widened its center base so the furniture visibly reaches the floor. The regenerated GLB is 444,964 bytes and the EXR is 7,734,438 bytes.
+
+## [2026-08-29] correction | Saloon opened to sunset light and real shadows
+
+Removed the cutaway room, walls, niches, HDR reflections, fake radial orb-shadow cards, and every label beneath the orbs. The static scene now contains only a broad unsaturated creamy floor, a deep dark-cream table, and matching plinths. The default right panel is limited to the agent roster and each agent's work; no timeline, evidence dashboard, receipt Q&A, or instruction remains.
+
+Rebuilt the Cycles asset with a 3,400 K overhead area source at `(-2.8, 10.0, 1.0)`, 6 m size, 800 W, and low warm World strength 0.22. At runtime, one matching warm overhead directional key casts VSM-filtered shadows from the orbs and furniture. A restrained warm hemisphere supplies bounce. The floor deliberately skips the lightmap to avoid the visible bright boundary behind Scout, while the table and plinth retain the EXR at intensity 0.35.
+
+Only the selected orb floats, with slower frame-rate-independent damping. Pointer hover scale is also damped rather than snapping. The regenerated GLB is 356,104 bytes and the EXR is 9,272,735 bytes.
 
 ## [2026-08-29] implementation | Onboarding choices and glow refined
 

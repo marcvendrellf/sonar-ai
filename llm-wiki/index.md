@@ -19,6 +19,9 @@ This wiki is the durable handoff for the selected {Tech: Europe} x Cala Summer L
 
 - [Overview](overview.md): final project decision, scope, implementation state, and next actions.
 - [Sonar AI](concepts/sonar-ai.md): selected concept (formerly codenamed Agent Fund) and three-minute demo.
+- [Interface plan](interface-plan.md): screen composition and selected registries.
+- [Technical reference pack](technical-reference-pack.md): monorepo layout, Next.js, shadcn, animation, graph, Cala, Alpaca Paper, and MVP investment-committee architecture.
+- [Team workflow](team-workflow.md): Marc's frontend lane, Josep and Axel's agent and data lane, delivery epics, branch proposal, and cross-lane contracts.
 - [Interface plan](interface-plan.md): onboarding, the warm clay-style 3D Saloon with selectable agent orbs, soft lighting, bounded material events, dashboard composition, and selected registries.
 - [Technical reference pack](technical-reference-pack.md): monorepo layout, Next.js, shadcn, 3D authoring and local asset rules, animation, graph, Cala, Alpaca Paper, and MVP investment-committee architecture.
 - [Team workflow](team-workflow.md): Marc's frontend lane, Josep and Axel's agent and data lane, delivery epics, the three-way UI polish branch split, and cross-lane contracts.

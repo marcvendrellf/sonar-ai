@@ -1,61 +1,98 @@
-import { z } from "zod"
+import { z } from "zod";
 
-const numericString = z.coerce.number().finite()
+const NumericStringSchema = z.coerce.number().finite();
 
-export const AlpacaEnvironmentSchema = z.literal("paper")
-export type AlpacaEnvironment = z.infer<typeof AlpacaEnvironmentSchema>
+/** Sonar supports Paper only. Live is intentionally not a valid value. */
+export const AlpacaEnvironmentSchema = z.literal("paper");
+export type AlpacaEnvironment = z.infer<typeof AlpacaEnvironmentSchema>;
 
 export const AlpacaAccountResponseSchema = z
   .object({
     id: z.string().min(1),
     status: z.string().min(1),
     currency: z.string().length(3),
-    cash: numericString,
-    equity: numericString,
-    portfolio_value: numericString,
-    buying_power: numericString,
+    cash: NumericStringSchema,
+    equity: NumericStringSchema,
+    portfolio_value: NumericStringSchema,
+    buying_power: NumericStringSchema,
     trading_blocked: z.boolean(),
     account_blocked: z.boolean(),
     trade_suspended_by_user: z.boolean(),
   })
-  .passthrough()
-
-export type AlpacaAccountResponse = z.infer<typeof AlpacaAccountResponseSchema>
+  .passthrough();
+export type AlpacaAccountResponse = z.infer<typeof AlpacaAccountResponseSchema>;
 
 export const AlpacaPositionResponseSchema = z
   .object({
     asset_id: z.string().min(1),
     symbol: z.string().min(1),
-    qty: numericString,
-    avg_entry_price: numericString,
-    market_value: numericString,
-    cost_basis: numericString,
-    unrealized_pl: numericString,
-    unrealized_plpc: numericString,
-    current_price: numericString,
+    qty: NumericStringSchema,
+    avg_entry_price: NumericStringSchema,
+    market_value: NumericStringSchema,
+    cost_basis: NumericStringSchema,
+    unrealized_pl: NumericStringSchema,
+    unrealized_plpc: NumericStringSchema,
+    current_price: NumericStringSchema,
   })
-  .passthrough()
+  .passthrough();
+export type AlpacaPositionResponse = z.infer<typeof AlpacaPositionResponseSchema>;
 
-export const AlpacaPositionsResponseSchema = z.array(AlpacaPositionResponseSchema)
-export type AlpacaPositionResponse = z.infer<typeof AlpacaPositionResponseSchema>
+export const AlpacaPositionsResponseSchema = z.array(AlpacaPositionResponseSchema);
 
-export const AlpacaPaperOrderRequestSchema = z.object({
-  symbol: z.string().min(1).max(20),
-  qty: z.number().positive().finite().optional(),
-  notional: z.number().positive().finite().optional(),
-  side: z.enum(["buy", "sell"]),
-  type: z.enum(["market", "limit", "stop", "stop_limit", "trailing_stop"]),
-  time_in_force: z.enum(["day", "gtc", "opg", "cls", "ioc", "fok"]),
-  limit_price: z.number().positive().finite().optional(),
-  stop_price: z.number().positive().finite().optional(),
-  client_order_id: z.string().min(1).max(128).optional(),
-}).superRefine((order, context) => {
-  if ((order.qty === undefined) === (order.notional === undefined)) {
-    context.addIssue({ code: "custom", message: "Provide exactly one of qty or notional" })
-  }
-})
+export const AlpacaAssetResponseSchema = z
+  .object({
+    id: z.string().min(1),
+    class: z.string().min(1),
+    exchange: z.string().min(1),
+    symbol: z.string().min(1),
+    name: z.string().min(1),
+    status: z.string().min(1),
+    tradable: z.boolean(),
+    marginable: z.boolean().optional(),
+    shortable: z.boolean().optional(),
+    easy_to_borrow: z.boolean().optional(),
+    fractionable: z.boolean().optional(),
+  })
+  .passthrough();
+export const AlpacaAssetsResponseSchema = z.array(AlpacaAssetResponseSchema);
+export type AlpacaAssetResponse = z.infer<typeof AlpacaAssetResponseSchema>;
 
-export type AlpacaPaperOrderRequest = z.infer<typeof AlpacaPaperOrderRequestSchema>
+export const AlpacaQuoteSchema = z.object({
+  symbol: z.string().min(1),
+  bidPrice: z.number().nonnegative(),
+  askPrice: z.number().nonnegative(),
+  timestamp: z.string().datetime({ offset: true }),
+});
+export type AlpacaQuote = z.infer<typeof AlpacaQuoteSchema>;
+
+export const AlpacaBarSchema = z.object({
+  timestamp: z.string().datetime({ offset: true }),
+  close: z.number().nonnegative(),
+});
+export type AlpacaBar = z.infer<typeof AlpacaBarSchema>;
+
+export const AlpacaPaperOrderRequestSchema = z
+  .object({
+    symbol: z.string().min(1),
+    qty: z.number().positive().optional(),
+    notional: z.number().positive().optional(),
+    side: z.enum(["buy", "sell"]),
+    type: z.enum(["market", "limit", "stop", "stop_limit", "trailing_stop"]),
+    time_in_force: z.enum(["day", "gtc", "opg", "cls", "ioc", "fok"]),
+    limit_price: z.number().positive().optional(),
+    stop_price: z.number().positive().optional(),
+    client_order_id: z.string().min(1).optional(),
+  })
+  .superRefine((value, context) => {
+    if ((value.qty === undefined) === (value.notional === undefined)) {
+      context.addIssue({
+        code: "custom",
+        message: "Provide exactly one of qty or notional",
+        path: ["qty"],
+      });
+    }
+  });
+export type AlpacaPaperOrderRequest = z.infer<typeof AlpacaPaperOrderRequestSchema>;
 
 export const AlpacaOrderResponseSchema = z
   .object({
@@ -65,26 +102,26 @@ export const AlpacaOrderResponseSchema = z
     side: z.enum(["buy", "sell"]),
     type: z.string().min(1),
     status: z.string().min(1),
-    qty: numericString.nullable().optional(),
-    notional: numericString.nullable().optional(),
-    filled_qty: numericString,
-    filled_avg_price: numericString.nullable(),
+    qty: NumericStringSchema.optional(),
+    notional: NumericStringSchema.optional(),
+    filled_qty: NumericStringSchema,
+    filled_avg_price: NumericStringSchema.nullable().optional(),
   })
-  .passthrough()
-
-export type AlpacaOrderResponse = z.infer<typeof AlpacaOrderResponseSchema>
+  .passthrough();
+export type AlpacaOrderResponse = z.infer<typeof AlpacaOrderResponseSchema>;
 
 export const AlpacaPositionSchema = z.object({
-  assetId: z.string(),
-  symbol: z.string(),
-  qty: z.number().finite(),
-  avgEntryPriceUsd: z.number().finite(),
+  assetId: z.string().min(1),
+  symbol: z.string().min(1),
+  quantity: z.number().finite(),
+  averageEntryPriceUsd: z.number().finite(),
   marketValueUsd: z.number().finite(),
   costBasisUsd: z.number().finite(),
   unrealizedPnlUsd: z.number().finite(),
-  unrealizedPnlPercent: z.number().finite(),
+  unrealizedPnlPct: z.number().finite(),
   currentPriceUsd: z.number().finite(),
-})
+});
+export type AlpacaPosition = z.infer<typeof AlpacaPositionSchema>;
 
 export const AlpacaPaperPortfolioSnapshotSchema = z.object({
   provider: z.literal("alpaca"),
@@ -101,43 +138,47 @@ export const AlpacaPaperPortfolioSnapshotSchema = z.object({
   accountBlocked: z.boolean(),
   tradeSuspendedByUser: z.boolean(),
   positions: z.array(AlpacaPositionSchema),
-})
-
-export type AlpacaPaperPortfolioSnapshot = z.infer<typeof AlpacaPaperPortfolioSnapshotSchema>
+});
+export type AlpacaPaperPortfolioSnapshot = z.infer<
+  typeof AlpacaPaperPortfolioSnapshotSchema
+>;
 
 export function normalizeAlpacaPaperPortfolio(
   accountInput: unknown,
   positionsInput: unknown,
-  options: { source: "live" | "fixture"; observedAt?: Date },
+  options: { source: "live" | "fixture"; observedAt?: string },
 ): AlpacaPaperPortfolioSnapshot {
-  const account = AlpacaAccountResponseSchema.parse(accountInput)
-  const positions = AlpacaPositionsResponseSchema.parse(positionsInput)
-  const normalized = {
-    provider: "alpaca" as const,
-    environment: "paper" as const,
+  const account = AlpacaAccountResponseSchema.parse(accountInput);
+  const positions = AlpacaPositionsResponseSchema.parse(positionsInput);
+  if (account.currency !== "USD") {
+    throw new Error(`Unsupported Alpaca account currency: ${account.currency}`);
+  }
+
+  const observedAt = options.observedAt ?? new Date().toISOString();
+  return AlpacaPaperPortfolioSnapshotSchema.parse({
+    provider: "alpaca",
+    environment: "paper",
     source: options.source,
-    observedAt: (options.observedAt ?? new Date()).toISOString(),
-    accountCurrency: "USD" as const,
+    observedAt,
+    accountCurrency: "USD",
     cashUsd: account.cash,
     equityUsd: account.equity,
     portfolioValueUsd: account.portfolio_value,
     buyingPowerUsd: account.buying_power,
-    unrealizedPnlUsd: positions.reduce((total, position) => total + position.unrealized_pl, 0),
+    unrealizedPnlUsd: positions.reduce((sum, position) => sum + position.unrealized_pl, 0),
     tradingBlocked: account.trading_blocked,
     accountBlocked: account.account_blocked,
     tradeSuspendedByUser: account.trade_suspended_by_user,
     positions: positions.map((position) => ({
       assetId: position.asset_id,
       symbol: position.symbol,
-      qty: position.qty,
-      avgEntryPriceUsd: position.avg_entry_price,
+      quantity: position.qty,
+      averageEntryPriceUsd: position.avg_entry_price,
       marketValueUsd: position.market_value,
       costBasisUsd: position.cost_basis,
       unrealizedPnlUsd: position.unrealized_pl,
-      unrealizedPnlPercent: position.unrealized_plpc,
+      unrealizedPnlPct: position.unrealized_plpc,
       currentPriceUsd: position.current_price,
     })),
-  }
-
-  return AlpacaPaperPortfolioSnapshotSchema.parse(normalized)
+  });
 }
