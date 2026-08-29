@@ -4,7 +4,15 @@ import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
 import type { FormEvent, ReactNode } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
-import { ArrowRight, Bitcoin, ChartNoAxesCombined, Check, Layers3 } from "lucide-react"
+import {
+  ArrowRight,
+  Bitcoin,
+  ChartNoAxesCombined,
+  Check,
+  Layers3,
+  LoaderCircle,
+  RefreshCw,
+} from "lucide-react"
 
 import { BorderGlow } from "@/components/border-glow"
 import { Button } from "@/components/ui/button"
@@ -13,78 +21,56 @@ import { LiveOrb } from "@/components/ui/live-orb"
 import { ShaderGradient } from "@/components/ui/shader-gradient"
 import { cn } from "@/lib/utils"
 
-type RiskProfileId = "tight" | "core" | "wide"
 type AssetClassId = "stocks" | "etfs" | "crypto"
+type RiskLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7
 
 type IntroStage =
   | { kind: "arriving" }
   | { kind: "asking-name" }
   | { kind: "acknowledging"; displayName: string }
-  | { kind: "asking-baseline"; displayName: string }
+  | { kind: "asking-alpaca"; displayName: string }
   | { kind: "asking-risk"; displayName: string; budget: number }
   | {
       kind: "asking-assets"
       displayName: string
       budget: number
-      riskProfile: RiskProfileId
+      riskLevel: RiskLevel
+    }
+  | {
+      kind: "researching"
+      displayName: string
+      budget: number
+      riskLevel: RiskLevel
+      assetClasses: readonly AssetClassId[]
     }
   | {
       kind: "complete"
       displayName: string
       budget: number
-      riskProfile: RiskProfileId
+      riskLevel: RiskLevel
       assetClasses: readonly AssetClassId[]
     }
 
 const DISPLAY_NAME_KEY = "sonar-ai.display-name"
-const PAPER_BUDGET_KEY = "sonar-ai.paper-budget"
-const RISK_PROFILE_KEY = "sonar-ai.risk-profile"
+const ALPACA_CASH_KEY = "sonar-ai.alpaca-available-cash"
+const RISK_LEVEL_KEY = "sonar-ai.risk-level"
 const ASSET_CLASSES_KEY = "sonar-ai.asset-classes"
 const GREETING_CHARACTERS = ["H", "i", ","] as const
 const SONAR_LIGHT_GRADIENT = ["#D9E8EF", "#8FBED2", "#3F87A8"]
 const SONAR_GLOW_COLORS = ["#8FBED2", "#39BDD1", "#D9E8EF"]
-const PAPER_BASELINE = 1_000
-
-const RISK_PROFILES = [
-  {
-    id: "tight",
-    label: "Tight mandate",
-    recommended: false,
-    rules: [
-      { value: "20%", label: "Max position" },
-      { value: "35%", label: "Max sector" },
-      { value: "20%", label: "Min cash" },
-      { value: "10%", label: "Max turnover" },
-    ],
-  },
-  {
-    id: "core",
-    label: "Core mandate",
-    recommended: true,
-    rules: [
-      { value: "30%", label: "Max position" },
-      { value: "45%", label: "Max sector" },
-      { value: "10%", label: "Min cash" },
-      { value: "20%", label: "Max turnover" },
-    ],
-  },
-  {
-    id: "wide",
-    label: "Wide sandbox",
-    recommended: false,
-    rules: [
-      { value: "40%", label: "Max position" },
-      { value: "60%", label: "Max sector" },
-      { value: "5%", label: "Min cash" },
-      { value: "30%", label: "Max turnover" },
-    ],
-  },
-] as const satisfies ReadonlyArray<{
-  id: RiskProfileId
-  label: string
-  recommended: boolean
-  rules: ReadonlyArray<{ value: string; label: string }>
-}>
+const ALPACA_AVAILABLE_CASH = 100_000
+const DEFAULT_RISK_LEVEL: RiskLevel = 4
+const RISK_LEVELS = [1, 2, 3, 4, 5, 6, 7] as const satisfies readonly RiskLevel[]
+const RESEARCH_DURATION_MS = 30_000
+const THINKING_MESSAGE_DURATION_MS = 5_000
+const THINKING_MESSAGES = [
+  "Reviewing current market conditions",
+  "Looking for portfolio candidates",
+  "Tracing relationships behind recent events",
+  "Comparing possible allocations",
+  "Stress-testing the portfolio against your mandate",
+  "Drafting a recommendation for review",
+] as const
 
 const ASSET_CLASSES = [
   { id: "stocks", label: "U.S. stocks", icon: ChartNoAxesCombined },
@@ -96,9 +82,9 @@ const ASSET_CLASSES = [
   icon: typeof ChartNoAxesCombined
 }>
 
-const capitalFormatter = new Intl.NumberFormat("en-IE", {
+const cashFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
-  currency: "EUR",
+  currency: "USD",
   maximumFractionDigits: 0,
 })
 
@@ -110,8 +96,8 @@ function storeValue(key: string, value: string) {
   }
 }
 
-function formatCapital(value: number) {
-  return capitalFormatter.format(value)
+function formatCash(value: number) {
+  return cashFormatter.format(value)
 }
 
 function AnimatedQuestion({
@@ -230,23 +216,32 @@ function AnimatedGreeting({ reducedMotion }: { reducedMotion: boolean }) {
   )
 }
 
-function BaselineQuestion({
-  displayName,
+function AlpacaConnectionQuestion({
   reducedMotion,
   onContinue,
 }: {
-  displayName: string
   reducedMotion: boolean
   onContinue: () => void
 }) {
+  const [synced, setSynced] = useState(false)
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setSynced(true)
+      storeValue(ALPACA_CASH_KEY, String(ALPACA_AVAILABLE_CASH))
+    }, reducedMotion ? 0 : 2_500)
+
+    return () => window.clearTimeout(timeout)
+  }, [reducedMotion])
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    onContinue()
+    if (synced) onContinue()
   }
 
   return (
     <motion.form
-      key="baseline"
+      key="alpaca"
       initial={reducedMotion ? false : { opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       exit={reducedMotion ? undefined : { opacity: 0, y: -12, filter: "blur(6px)" }}
@@ -254,52 +249,67 @@ function BaselineQuestion({
       onSubmit={handleSubmit}
       className="w-full max-w-2xl"
     >
-      <p className="text-xs font-medium tracking-[0.2em] text-[#12496E]/65 uppercase">
-        Paper baseline
-      </p>
       <AnimatedQuestion
         className="mt-3 text-balance font-heading text-[clamp(2rem,6vw,3.25rem)] leading-[1.02] tracking-[-0.045em]"
         reducedMotion={reducedMotion}
-        text={`Your fund starts with ${formatCapital(PAPER_BASELINE)}, ${displayName}.`}
+        text="Connect your Alpaca portfolio."
       />
-      <p className="mt-3 text-sm text-[#12496E]/65">
-        100% cash · 0% invested
-      </p>
 
-      <motion.p
-        initial={reducedMotion ? false : { opacity: 0, y: 8, filter: "blur(6px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ delay: reducedMotion ? 0 : 0.35, duration: reducedMotion ? 0 : 0.36 }}
-        className="mt-7 font-heading text-[clamp(2.75rem,10vw,5rem)] leading-none tracking-[-0.055em] tabular-nums"
-      >
-        {formatCapital(PAPER_BASELINE)}
-      </motion.p>
+      <div className="mt-8 flex flex-col items-center gap-4">
+        {!synced ? (
+          <GlowButtonFrame>
+            <Button
+              type="button"
+              size="lg"
+              disabled
+              aria-busy="true"
+              className="h-11 rounded-full border-0 bg-transparent px-5 text-white shadow-none hover:bg-[#0A2338]/35 disabled:opacity-100"
+            >
+              <RefreshCw className="size-4 animate-spin" aria-hidden="true" />
+              Syncing with Alpaca market
+            </Button>
+          </GlowButtonFrame>
+        ) : null}
 
-      <div className="mt-8 inline-flex">
-        <GlowButtonFrame>
-          <Button
-            type="submit"
-            size="lg"
-            className="h-11 rounded-full border-0 bg-transparent px-5 text-white shadow-none hover:bg-[#0A2338]/35"
+        {synced ? (
+          <motion.div
+            initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+            aria-live="polite"
           >
-            Choose the mandate
-            <ArrowRight data-icon="inline-end" aria-hidden="true" />
-          </Button>
-        </GlowButtonFrame>
+            <p className="font-heading text-[clamp(2.75rem,10vw,5rem)] leading-none tracking-[-0.055em] tabular-nums">
+              {formatCash(ALPACA_AVAILABLE_CASH)}
+            </p>
+            <p className="mt-2 text-sm text-[#12496E]/65">available in Alpaca portfolio</p>
+            <div className="mt-6 inline-flex">
+              <GlowButtonFrame>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="h-11 rounded-full border-0 bg-transparent px-5 text-white shadow-none hover:bg-[#0A2338]/35"
+                >
+                  Choose the mandate
+                  <ArrowRight data-icon="inline-end" aria-hidden="true" />
+                </Button>
+              </GlowButtonFrame>
+            </div>
+          </motion.div>
+        ) : null}
       </div>
     </motion.form>
   )
 }
 
 function RiskQuestion({
-  selected,
   reducedMotion,
+  selected,
   onSelect,
   onContinue,
 }: {
-  selected: RiskProfileId
   reducedMotion: boolean
-  onSelect: (profile: RiskProfileId) => void
+  selected: RiskLevel
+  onSelect: (level: RiskLevel) => void
   onContinue: () => void
 }) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -309,7 +319,7 @@ function RiskQuestion({
 
   return (
     <motion.form
-      key="risk"
+      key="risk-level"
       initial={reducedMotion ? false : { opacity: 0, y: 14, filter: "blur(7px)" }}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       exit={reducedMotion ? undefined : { opacity: 0, y: -12, filter: "blur(6px)" }}
@@ -317,82 +327,41 @@ function RiskQuestion({
       onSubmit={handleSubmit}
       className="w-full max-w-3xl"
     >
-      <p className="text-xs font-medium tracking-[0.2em] text-[#12496E]/65 uppercase">
-        Risk profile
-      </p>
       <AnimatedQuestion
         className="mt-3 text-balance font-heading text-[clamp(2rem,6vw,3.25rem)] leading-[1.02] tracking-[-0.045em]"
         reducedMotion={reducedMotion}
-        text="How much room should the agents have?"
+        text="How much risk should the portfolio take?"
       />
-      <p className="mt-3 text-sm text-[#12496E]/65">
-        The code enforces every limit.
-      </p>
 
-      <div className="mt-7 grid gap-3 text-left sm:grid-cols-3" role="radiogroup" aria-label="Risk profile">
-        {RISK_PROFILES.map((profile, index) => {
-          const active = selected === profile.id
+      <div className="mt-8 grid grid-cols-7 gap-2" role="radiogroup" aria-label="Risk level from 1 to 7">
+        {RISK_LEVELS.map((level, index) => {
+          const active = selected === level
+
           return (
-            <motion.div
-              key={profile.id}
+            <motion.button
+              key={level}
+              type="button"
+              role="radio"
+              aria-checked={active}
               initial={reducedMotion ? false : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: reducedMotion ? 0 : index * 0.07, duration: reducedMotion ? 0 : 0.28 }}
-              className="h-full"
+              transition={{ delay: reducedMotion ? 0 : index * 0.04, duration: reducedMotion ? 0 : 0.24 }}
+              onClick={() => onSelect(level)}
+              className={cn(
+                "grid aspect-square place-items-center rounded-2xl border font-heading text-2xl transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#12496E]/25",
+                active
+                  ? "border-[#12496E] bg-[#12496E] text-white"
+                  : "border-[#12496E]/12 bg-white/60 text-[#12496E]/70 hover:bg-white"
+              )}
             >
-              <BorderGlow
-                backgroundColor={active ? "#EFF8FA" : "#F4F9FA"}
-                borderRadius={20}
-                className="h-full"
-                colors={SONAR_GLOW_COLORS}
-                edgeSensitivity={20}
-                fillOpacity={0.22}
-                glowColor="193 63 55"
-                glowIntensity={0.65}
-                glowRadius={24}
-              >
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  onClick={() => onSelect(profile.id)}
-                  className={cn(
-                    "relative h-full w-full rounded-[19px] p-4 text-left transition-colors duration-200 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#12496E]/25",
-                    active ? "bg-white/30" : "bg-transparent hover:bg-white/20"
-                  )}
-                >
-                  <span className="flex min-h-8 items-start justify-between gap-3">
-                    <span>
-                      <span className="block font-heading text-xl tracking-[-0.025em]">{profile.label}</span>
-                      {profile.recommended ? (
-                        <span className="mt-1 block text-[10px] font-semibold tracking-[0.12em] text-[#12496E]/55 uppercase">
-                          Recommended
-                        </span>
-                      ) : null}
-                    </span>
-                    <span
-                      className={cn(
-                        "grid size-5 shrink-0 place-items-center rounded-full border transition-colors",
-                        active ? "border-[#12496E] bg-[#12496E] text-white" : "border-[#12496E]/25 text-transparent"
-                      )}
-                      aria-hidden="true"
-                    >
-                      <Check className="size-3" />
-                    </span>
-                  </span>
-                  <span className="mt-5 grid grid-cols-2 gap-x-3 gap-y-4">
-                    {profile.rules.map((rule) => (
-                      <span key={rule.label}>
-                        <span className="block font-heading text-2xl leading-none tracking-[-0.04em]">{rule.value}</span>
-                        <span className="mt-1 block text-[10px] font-medium text-[#12496E]/55">{rule.label}</span>
-                      </span>
-                    ))}
-                  </span>
-                </button>
-              </BorderGlow>
-            </motion.div>
+              {level}
+            </motion.button>
           )
         })}
+      </div>
+      <div className="mt-3 flex justify-between text-xs text-[#12496E]/60">
+        <span>Lower risk</span>
+        <span>Higher risk</span>
       </div>
 
       <div className="mt-8 inline-flex">
@@ -437,17 +406,11 @@ function AssetQuestion({
       onSubmit={handleSubmit}
       className="w-full max-w-2xl"
     >
-      <p className="text-xs font-medium tracking-[0.2em] text-[#12496E]/65 uppercase">
-        Research universe
-      </p>
       <AnimatedQuestion
         className="mt-3 text-balance font-heading text-[clamp(2rem,6vw,3.25rem)] leading-[1.02] tracking-[-0.045em]"
         reducedMotion={reducedMotion}
         text="What can the agents research?"
       />
-      <p className="mt-3 text-sm text-[#12496E]/65">
-        All markets are selected. Keep at least one.
-      </p>
 
       <div className="mt-7 grid gap-3 sm:grid-cols-3" aria-label="Asset classes">
         {ASSET_CLASSES.map((assetClass, index) => {
@@ -519,12 +482,86 @@ function AssetQuestion({
   )
 }
 
+function ResearchSequence({
+  reducedMotion,
+  onComplete,
+}: {
+  reducedMotion: boolean
+  onComplete: () => void
+}) {
+  const [messageIndex, setMessageIndex] = useState(0)
+
+  useEffect(() => {
+    if (reducedMotion) {
+      onComplete()
+      return
+    }
+
+    const startedAt = Date.now()
+    const interval = window.setInterval(() => {
+      const elapsed = Date.now() - startedAt
+      const nextMessageIndex = Math.min(
+        Math.floor(elapsed / THINKING_MESSAGE_DURATION_MS),
+        THINKING_MESSAGES.length - 1,
+      )
+      setMessageIndex(nextMessageIndex)
+
+      if (elapsed >= RESEARCH_DURATION_MS) {
+        window.clearInterval(interval)
+        onComplete()
+      }
+    }, 100)
+
+    return () => window.clearInterval(interval)
+  }, [onComplete, reducedMotion])
+
+  return (
+    <motion.div
+      key="researching"
+      initial={reducedMotion ? false : { opacity: 0, y: 14, filter: "blur(7px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      exit={reducedMotion ? undefined : { opacity: 0, y: -12, filter: "blur(6px)" }}
+      transition={{ duration: reducedMotion ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}
+      className="relative -top-6 flex w-full max-w-2xl flex-col items-center justify-center"
+    >
+      <motion.div
+        className="text-[#12496E]/60"
+        role="status"
+        aria-label="Agents are working"
+        animate={reducedMotion ? undefined : { rotate: 360 }}
+        transition={
+          reducedMotion
+            ? undefined
+            : { duration: 1.1, repeat: Infinity, ease: "linear" }
+        }
+      >
+        <LoaderCircle className="size-6" aria-hidden="true" />
+      </motion.div>
+      <div className="mt-5 flex min-h-6 items-center justify-center text-center">
+        <AnimatePresence initial={false} mode="wait">
+          <motion.p
+            key={THINKING_MESSAGES[messageIndex]}
+            aria-live="polite"
+            initial={reducedMotion ? false : { opacity: 0, y: 8, filter: "blur(6px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={reducedMotion ? undefined : { opacity: 0, y: -8, filter: "blur(6px)" }}
+            transition={{ duration: reducedMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className="font-sans text-base font-medium tracking-[-0.01em] text-[#12496E]/65"
+          >
+            {THINKING_MESSAGES[messageIndex]}
+          </motion.p>
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  )
+}
+
 export function OnboardingIntro() {
   const reducedMotion = useReducedMotion() ?? false
   const inputRef = useRef<HTMLInputElement>(null)
   const [stage, setStage] = useState<IntroStage>({ kind: "arriving" })
   const [name, setName] = useState("")
-  const [riskProfile, setRiskProfile] = useState<RiskProfileId>("core")
+  const [riskLevel, setRiskLevel] = useState<RiskLevel>(DEFAULT_RISK_LEVEL)
   const [assetClasses, setAssetClasses] = useState<AssetClassId[]>([
     "stocks",
     "etfs",
@@ -544,7 +581,7 @@ export function OnboardingIntro() {
     const delay = reducedMotion ? 450 : 1_800
     const displayName = stage.displayName
     const timeout = window.setTimeout(() => {
-      setStage({ kind: "asking-baseline", displayName })
+      setStage({ kind: "asking-alpaca", displayName })
     }, delay)
 
     return () => window.clearTimeout(timeout)
@@ -573,26 +610,22 @@ export function OnboardingIntro() {
     setStage({ kind: "acknowledging", displayName: normalizedName })
   }
 
-  function continueFromBaseline() {
-    if (stage.kind !== "asking-baseline") return
+  function continueFromAlpaca() {
+    if (stage.kind !== "asking-alpaca") return
 
-    storeValue(PAPER_BUDGET_KEY, String(PAPER_BASELINE))
-    setStage({
-      kind: "asking-risk",
-      displayName: stage.displayName,
-      budget: PAPER_BASELINE,
-    })
+    storeValue(ALPACA_CASH_KEY, String(ALPACA_AVAILABLE_CASH))
+    setStage({ kind: "asking-risk", displayName: stage.displayName, budget: ALPACA_AVAILABLE_CASH })
   }
 
   function continueFromRisk() {
     if (stage.kind !== "asking-risk") return
 
-    storeValue(RISK_PROFILE_KEY, riskProfile)
+    storeValue(RISK_LEVEL_KEY, String(riskLevel))
     setStage({
       kind: "asking-assets",
       displayName: stage.displayName,
       budget: stage.budget,
-      riskProfile,
+      riskLevel,
     })
   }
 
@@ -615,20 +648,32 @@ export function OnboardingIntro() {
 
     storeValue(ASSET_CLASSES_KEY, JSON.stringify(assetClasses))
     setStage({
-      kind: "complete",
+      kind: "researching",
       displayName: stage.displayName,
       budget: stage.budget,
-      riskProfile: stage.riskProfile,
+      riskLevel: stage.riskLevel,
       assetClasses,
     })
   }
 
+  function finishResearch() {
+    if (stage.kind !== "researching") return
+
+    setStage({
+      kind: "complete",
+      displayName: stage.displayName,
+      budget: stage.budget,
+      riskLevel: stage.riskLevel,
+      assetClasses: stage.assetClasses,
+    })
+  }
+
   const compactOrb =
-    stage.kind === "asking-baseline" ||
+    stage.kind === "asking-alpaca" ||
     stage.kind === "asking-risk" ||
     stage.kind === "asking-assets" ||
+    stage.kind === "researching" ||
     stage.kind === "complete"
-  const selectedProfile = RISK_PROFILES.find((profile) => profile.id === riskProfile)
 
   return (
     <main className="relative isolate min-h-svh overflow-x-hidden bg-[#D9E8EF] text-[#0A2338]">
@@ -786,21 +831,20 @@ export function OnboardingIntro() {
                 </motion.div>
               ) : null}
 
-              {stage.kind === "asking-baseline" ? (
-                <BaselineQuestion
-                  key="baseline-question"
-                  displayName={stage.displayName}
+              {stage.kind === "asking-alpaca" ? (
+                <AlpacaConnectionQuestion
+                  key="alpaca-question"
                   reducedMotion={reducedMotion}
-                  onContinue={continueFromBaseline}
+                  onContinue={continueFromAlpaca}
                 />
               ) : null}
 
               {stage.kind === "asking-risk" ? (
                 <RiskQuestion
-                  key="risk-question"
-                  selected={riskProfile}
+                  key="risk-level-question"
                   reducedMotion={reducedMotion}
-                  onSelect={setRiskProfile}
+                  selected={riskLevel}
+                  onSelect={setRiskLevel}
                   onContinue={continueFromRisk}
                 />
               ) : null}
@@ -815,7 +859,7 @@ export function OnboardingIntro() {
                 />
               ) : null}
 
-              {stage.kind === "complete" && selectedProfile ? (
+              {stage.kind === "complete" ? (
                 <motion.div
                   key="complete"
                   initial={reducedMotion ? false : { opacity: 0, y: 14, filter: "blur(7px)" }}
@@ -832,7 +876,7 @@ export function OnboardingIntro() {
                     text="Your paper mandate is ready."
                   />
                   <p className="mt-3 text-sm text-[#12496E]/65">
-                    {formatCapital(stage.budget)} · {selectedProfile.label} · {stage.assetClasses.length} markets
+                    {formatCash(stage.budget)} · risk {stage.riskLevel}/7 · {stage.assetClasses.length} markets
                   </p>
                   <div className="mt-7 inline-flex">
                     <GlowButtonFrame>
@@ -848,6 +892,13 @@ export function OnboardingIntro() {
                     </GlowButtonFrame>
                   </div>
                 </motion.div>
+              ) : null}
+
+              {stage.kind === "researching" ? (
+                <ResearchSequence
+                  reducedMotion={reducedMotion}
+                  onComplete={finishResearch}
+                />
               ) : null}
             </AnimatePresence>
           </div>
