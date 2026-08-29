@@ -25,12 +25,18 @@ describe("AlpacaPaperClient", () => {
     const asset = { id: "asset", class: "us_equity", exchange: "NASDAQ", symbol: "NVDA", name: "NVIDIA", status: "active", tradable: true };
     const fetchImpl = vi.fn()
       .mockResolvedValueOnce(response([asset]))
-      .mockResolvedValueOnce(response({ NVDA: { bp: 100, ap: 101, t: "2026-08-29T14:00:00.000Z" } }))
+      // Real Alpaca market-data shape: quotes are wrapped in a `quotes` object.
+      .mockResolvedValueOnce(response({ quotes: { NVDA: { bp: 100, ap: 101, t: "2026-08-29T14:00:00.000Z" } } }))
       .mockResolvedValueOnce(response({ bars: [{ t: "2026-08-28T20:00:00.000Z", c: 100.5 }] }));
     const client = new AlpacaPaperClient({ ...config, fetchImpl });
     await expect(client.listTradableAssets()).resolves.toHaveLength(1);
     await expect(client.getLatestQuotes(["NVDA"])).resolves.toEqual([{ symbol: "NVDA", bidPrice: 100, askPrice: 101, timestamp: "2026-08-29T14:00:00.000Z" }]);
     await expect(client.getPriceHistory("NVDA", "2026-08-01T00:00:00.000Z")).resolves.toEqual([{ timestamp: "2026-08-28T20:00:00.000Z", close: 100.5 }]);
+    // Assets come from paper-api; market data (quotes, bars) from data host.
+    const urls = fetchImpl.mock.calls.map(([url]) => String(url));
+    expect(urls[0]).toContain("paper-api.alpaca.markets/v2/assets");
+    expect(urls[1]).toContain("data.alpaca.markets/v2/stocks/quotes/latest");
+    expect(urls[2]).toContain("data.alpaca.markets/v2/stocks/NVDA/bars");
   });
 
   it("submits only validated Paper orders with serialized numeric fields", async () => {

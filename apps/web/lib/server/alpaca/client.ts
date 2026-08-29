@@ -20,6 +20,9 @@ import {
 import type { AlpacaPaperConfig } from "./config";
 
 const PAPER_API_BASE_URL = "https://paper-api.alpaca.markets/v2";
+// Market data (quotes, bars) is served from a DIFFERENT host than the paper
+// trading/account API — hitting paper-api for it returns 404 "Not Found".
+const DATA_API_BASE_URL = "https://data.alpaca.markets/v2";
 
 export interface AlpacaPaperClientOptions extends AlpacaPaperConfig {
   fetchImpl?: typeof fetch;
@@ -48,14 +51,14 @@ export class AlpacaPaperClient {
 
   async getLatestQuotes(symbols: readonly string[]): Promise<AlpacaQuote[]> {
     if (symbols.length === 0) return [];
-    const payload = await this.request(`/stocks/quotes/latest?symbols=${encodeURIComponent(symbols.join(","))}`, z.record(z.string(), z.object({ bp: z.number().nonnegative(), ap: z.number().nonnegative(), t: z.string().datetime({ offset: true }) })));
+    const payload = await this.request(`/stocks/quotes/latest?symbols=${encodeURIComponent(symbols.join(","))}`, z.object({ quotes: z.record(z.string(), z.object({ bp: z.number().nonnegative(), ap: z.number().nonnegative(), t: z.string().datetime({ offset: true }) })) }).transform((r) => r.quotes), {}, DATA_API_BASE_URL);
     return Object.entries(payload).map(([symbol, quote]) => AlpacaQuoteSchema.parse({ symbol, bidPrice: quote.bp, askPrice: quote.ap, timestamp: quote.t }));
   }
 
   async getPriceHistory(symbol: string, start: string, end?: string, limit = 100): Promise<AlpacaBar[]> {
     const params = new URLSearchParams({ timeframe: "1Day", start, limit: String(limit), adjustment: "all" });
     if (end) params.set("end", end);
-    const payload = await this.request(`/stocks/${encodeURIComponent(symbol)}/bars?${params.toString()}`, z.object({ bars: z.array(z.object({ t: z.string().datetime({ offset: true }), c: z.number().nonnegative() })) }));
+    const payload = await this.request(`/stocks/${encodeURIComponent(symbol)}/bars?${params.toString()}`, z.object({ bars: z.array(z.object({ t: z.string().datetime({ offset: true }), c: z.number().nonnegative() })).nullable().transform((b) => b ?? []) }), {}, DATA_API_BASE_URL);
     return payload.bars.map((bar) => AlpacaBarSchema.parse({ timestamp: bar.t, close: bar.c }));
   }
 
@@ -82,12 +85,13 @@ export class AlpacaPaperClient {
     path: string,
     schema: { parse: (value: unknown) => T },
     init: RequestInit = {},
+    baseUrl: string = PAPER_API_BASE_URL,
   ): Promise<T> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
 
     try {
-      const response = await this.fetchImpl(`${PAPER_API_BASE_URL}${path}`, {
+      const response = await this.fetchImpl(`${baseUrl}${path}`, {
         ...init,
         signal: controller.signal,
         headers: {
@@ -98,11 +102,14 @@ export class AlpacaPaperClient {
           ...init.headers,
         },
       });
-      const payload: unknown = await response.json();
+      // Check status BEFORE parsing: an error body may be plain text ("Not
+      // Found"), which would otherwise crash JSON parsing and hide the status.
       if (!response.ok) {
-        throw new Error(`Alpaca Paper API request failed with HTTP ${response.status}`);
+        const detail = await response.text().catch(() => "");
+        if (detail) console.error(`[AlpacaClient] ${path} -> ${response.status}: ${detail.slice(0, 300)}`);
+        throw new Error(`Alpaca API request failed with HTTP ${response.status}`);
       }
-      return schema.parse(payload);
+      return schema.parse(await response.json());
     } finally {
       clearTimeout(timeout);
     }

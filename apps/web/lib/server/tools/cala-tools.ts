@@ -220,7 +220,7 @@ export function createCalaTools(provider: CalaProvider): ToolRegistry {
     find_cala_entities: defineTool({
       name: "find_cala_entities",
       description:
-        "Resolve Cala entity IDs by name. Use before introspection, profile retrieval, or graph traversal. entityTypes may be empty; limit is 1-25.",
+        "Resolve Cala entity IDs by name. Use before introspection, profile retrieval, or graph traversal. entityTypes may be empty (searches all); when set, each value MUST be a Cala entity type, e.g. 'Company', 'Person', 'Organization', 'Industry', 'Product', 'Event', 'FinancialMetric', 'Exchange', 'Commodity', 'Country'. limit is 1-25.",
       inputSchema: FindEntitiesInputSchema,
       outputSchema: envelope(z.array(CalaEntitySummarySchema)),
       execute: async (input) =>

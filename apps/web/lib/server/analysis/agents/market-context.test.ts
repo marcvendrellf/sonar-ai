@@ -13,11 +13,6 @@ import {
   type MarketContextReportDraft,
 } from "./market-context";
 
-const INSTRUMENTS: Instrument[] = [
-  { id: "inst_nvidia", symbol: "NVDA", name: "Nvidia", sector: "Semiconductors", assetClass: "equity", currency: "EUR" },
-  { id: "inst_siemens", symbol: "SIEGY", name: "Siemens Energy", sector: "Energy", assetClass: "equity", currency: "EUR" },
-];
-
 const EVENTS: MaterialEvent[] = [
   { id: "evt_capex", headline: "GlobalCloud €40B AI datacenter buildout", summary: "Capex names GPUs but not grid power.", occurredAt: "2026-08-28T09:00:00Z", label: "synthetic", evidenceIds: ["ev_capex"] },
 ];
@@ -27,8 +22,13 @@ const EVIDENCE: Evidence[] = [
   { id: "ev_power_demand", kind: "cala", title: "Datacenters lift grid power demand", sourceName: "Cala", observedAt: "2026-08-10T00:00:00Z", label: "synthetic" },
 ];
 
+const WATCHLIST: Instrument[] = [
+  { id: "inst_nvda", symbol: "NVDA", name: "NVIDIA", sector: "Semiconductors", assetClass: "equity", currency: "USD" },
+  { id: "inst_vst", symbol: "VST", name: "Vistra", sector: "Utilities", assetClass: "equity", currency: "USD" },
+];
+
 const CONTEXT: MarketContextContext = {
-  instruments: INSTRUMENTS,
+  instruments: WATCHLIST,
   materialEvents: EVENTS,
   evidence: EVIDENCE,
   holdings: [],
@@ -56,9 +56,12 @@ describe("marketContextAnalyst", () => {
     expect(MarketContextReportDraftSchema.safeParse(DRAFT).success).toBe(true);
   });
 
-  it("builds a prompt exposing assets, events, and every evidence ID", () => {
+  it("exposes the watchlist to select from, plus events and every evidence ID", () => {
     const prompt = marketContextAnalyst.def.buildInput(CONTEXT);
+    // The agent selects candidates from the provided watchlist.
     expect(prompt).toContain("NVDA");
+    expect(prompt).toContain("VST");
+    expect(prompt).toContain("SELECT");
     expect(prompt).toContain("evt_capex");
     for (const e of EVIDENCE) expect(prompt).toContain(e.id);
   });

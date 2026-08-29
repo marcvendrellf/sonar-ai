@@ -109,7 +109,22 @@ export async function requestStructuredOutput<TOutput>(
     if (typeof input === "string") {
       input = [{ role: "user", content: input }];
     }
-    input.push(...(responseItems as ResponseInputItem[]));
+    // Echo the model's own items back as the next turn's input. `responses.parse`
+    // decorates function_call items with a `parsed_arguments` field that is NOT a
+    // valid input parameter, so re-emit only the fields the API accepts or it
+    // rejects the follow-up request.
+    for (const item of responseItems) {
+      if (item.type === "function_call") {
+        input.push({
+          type: "function_call",
+          call_id: item.call_id,
+          name: item.name,
+          arguments: item.arguments,
+        });
+      } else {
+        input.push(item as ResponseInputItem);
+      }
+    }
 
     for (const call of calls) {
       if (!toolNames.includes(call.name as ToolName)) {
@@ -119,14 +134,17 @@ export async function requestStructuredOutput<TOutput>(
       const args = tool.inputSchema.parse(JSON.parse(call.arguments));
       const rawOutput = await tool.execute(args, request.toolContext ?? { offline: true });
       const parsedOutput = tool.outputSchema.parse(rawOutput);
+      // Evidence/graph are harvested from the FULL parsed output first, so
+      // truncating the model-facing text below never drops a citation.
       collectEvidence(parsedOutput, evidence);
       collectGraph(parsedOutput, graphNodes, graphEdges);
-      const serializedOutput = JSON.stringify(parsedOutput);
-      if (serializedOutput.length > maxToolOutputChars) {
-        throw new Error(
-          `Tool "${call.name}" output exceeded ${maxToolOutputChars} characters.`,
-        );
-      }
+      const full = JSON.stringify(parsedOutput);
+      // A rich Cala entity profile can be very large. Truncate rather than fail
+      // the stage — the model still gets most of the data plus a clear marker.
+      const serializedOutput =
+        full.length > maxToolOutputChars
+          ? `${full.slice(0, maxToolOutputChars)}…[truncated ${full.length - maxToolOutputChars} chars]`
+          : full;
       input.push({
         type: "function_call_output",
         call_id: call.call_id,

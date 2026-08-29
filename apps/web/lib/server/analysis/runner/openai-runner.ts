@@ -36,6 +36,7 @@ export class OpenAIAgentRunner implements AgentRunner {
   ): Promise<AgentRunResult<TOutput>> {
     const input = def.buildInput(context);
     const maxAttempts = this.options.maxRetries + 1;
+    let lastError: unknown;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       try {
@@ -52,10 +53,20 @@ export class OpenAIAgentRunner implements AgentRunner {
           maxToolCalls: this.options.maxToolCalls,
           maxToolOutputChars: this.options.maxToolOutputChars,
         });
-      } catch {
+      } catch (error) {
+        lastError = error;
         if (attempt === maxAttempts) {
+          // The thrown message stays generic on purpose: it flows into the
+          // client-facing state, so it must not leak the prompt input or the
+          // provider error. Diagnostics go to the server console (operator-only)
+          // and the underlying error is attached as `cause`.
+          console.error(
+            `[OpenAIAgentRunner] stage "${def.stage}" failed after ${maxAttempts} attempt(s):`,
+            error,
+          );
           throw new Error(
             `OpenAIAgentRunner: stage "${def.stage}" failed after ${maxAttempts} attempt(s).`,
+            { cause: lastError },
           );
         }
       }

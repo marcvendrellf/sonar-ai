@@ -58,14 +58,16 @@ export function buildFundamentalContext(
 
 export function buildMarketContext(
   state: InvestmentCommitteeState,
-  selectedInstruments: readonly Instrument[],
 ): MarketContextContext {
   const evidenceIds = new Set<string>();
   for (const event of state.materialEvents) event.evidenceIds.forEach((id) => evidenceIds.add(id));
   for (const edge of state.graph.edges) edge.evidenceIds.forEach((id) => evidenceIds.add(id));
 
+  // The analyst SELECTS its candidates from the fund's investable watchlist
+  // (a broad, diversified universe) — a real judgment call, not open-universe
+  // discovery. It also sees holdings, events, and the macro/sector evidence pack.
   return {
-    instruments: [...selectedInstruments],
+    instruments: [...state.candidateUniverse],
     mandate: state.mandate,
     materialEvents: [...state.materialEvents],
     evidence: evidenceByIds(state, evidenceIds),

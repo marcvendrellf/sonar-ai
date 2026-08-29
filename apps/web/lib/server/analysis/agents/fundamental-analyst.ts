@@ -158,6 +158,9 @@ export const fundamentalAnalyst: Agent<
     stage: "fundamental_analyst",
     instructions: INSTRUCTIONS,
     outputSchema: FundamentalReportDraftSchema,
+    // Excludes the slow Cala knowledge/search + knowledge/query endpoints
+    // (they time out unpredictably). Fundamentals come from get_company_
+    // fundamentals + entity profiles, which are fast.
     toolNames: [
       "get_latest_quotes",
       "get_price_history",
@@ -165,8 +168,6 @@ export const fundamentalAnalyst: Agent<
       "inspect_cala_entity",
       "get_cala_entity_profile",
       "get_company_fundamentals",
-      "query_financial_knowledge",
-      "search_company_information",
     ],
     buildInput,
   },

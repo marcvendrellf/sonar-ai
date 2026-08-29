@@ -4,8 +4,10 @@ import {
   UserDecisionSchema,
   type ActivityEvent,
   type AgentStage,
+  type CandidateOpportunity,
   type Evidence,
   type FundamentalReport,
+  type Instrument,
   type InvestmentCommitteeState,
   type RiskReport,
   type StageRecord,
@@ -108,28 +110,42 @@ export class AnalysisOrchestrator {
       transition(state, "observing", "Committee run started.");
       transition(state, "tracing", "Research stages received isolated evidence packs.");
 
-      // Discovery runs first. Agents choose companies; user supplies risk preferences only.
+      // Discovery runs first. The analyst discovers companies ON ITS OWN via
+      // its Alpaca (list_tradable_assets) and Cala tools; the user supplies only
+      // risk preferences and never a candidate list.
       const marketContext = await executeStage(
         "market_context",
         () => runFinalizedAgent(
           marketContextAnalyst,
-          buildMarketContext(state, state.candidateUniverse),
+          buildMarketContext(state),
           researchRunner,
         ),
         (output) => output.id,
       );
       state.marketContext = marketContext;
 
+      // Turn the discovered candidates into the tradable universe. A symbol the
+      // fund already knows reuses its instrument record (stable ids); a genuinely
+      // new discovery is minted from the analyst's own research (symbol, name,
+      // and the sector it determined — Alpaca's asset feed has no sector).
       const bySymbol = new Map(state.candidateUniverse.map((instrument) => [instrument.symbol.toUpperCase(), instrument]));
-      const selectedInstruments = marketContext.candidateOpportunities.map((candidate) => {
-        const instrument = bySymbol.get(candidate.symbol.toUpperCase());
-        if (!instrument) throw new Error(`Cala candidate "${candidate.symbol}" is not in Alpaca tradable universe.`);
-        return instrument;
-      });
-      if (selectedInstruments.length === 0) throw new Error("Cala returned no tradable investment candidates.");
-      if (new Set(selectedInstruments.map((instrument) => instrument.id)).size !== selectedInstruments.length) {
-        throw new Error("Cala returned duplicate investment candidates.");
+      const selectedInstruments: Instrument[] = [];
+      const selectedById = new Set<string>();
+      for (const candidate of marketContext.candidateOpportunities) {
+        const instrument = bySymbol.get(candidate.symbol.toUpperCase()) ?? mintInstrument(candidate, state.portfolioSnapshot.baseCurrency);
+        if (selectedById.has(instrument.id)) continue; // de-duplicate discoveries
+        selectedById.add(instrument.id);
+        selectedInstruments.push(instrument);
       }
+      if (selectedInstruments.length === 0) throw new Error("Market Context discovered no investment candidates.");
+
+      // Add newly minted discoveries to the universe; keep every existing entry
+      // so deterministic risk inputs stay identical on a known-symbol replay.
+      const universeById = new Map(state.candidateUniverse.map((instrument) => [instrument.id, instrument]));
+      for (const instrument of selectedInstruments) {
+        if (!universeById.has(instrument.id)) universeById.set(instrument.id, instrument);
+      }
+      state.candidateUniverse = [...universeById.values()];
 
       // Serial by design. Stable stage order makes replay independent of promise
       // scheduling while keeping both contexts isolated.
@@ -393,6 +409,23 @@ async function runFinalizedAgent<TContext, TDraft, TOutput>(
 ): Promise<TOutput> {
   const draft = await runAgent(agent.def, context, runner);
   return agent.finalize(draft, context);
+}
+
+/**
+ * Build an instrument record for a self-discovered candidate the fund did not
+ * already know. Id is derived deterministically from the symbol so the same
+ * discovery is stable across a run's stages.
+ */
+function mintInstrument(candidate: CandidateOpportunity, currency: Instrument["currency"]): Instrument {
+  const slug = candidate.symbol.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  return {
+    id: `inst_${slug || "unknown"}`,
+    symbol: candidate.symbol,
+    name: candidate.name,
+    sector: candidate.sector,
+    assetClass: "equity",
+    currency,
+  };
 }
 
 function pendingStages(runId: string): StageRecord[] {

@@ -22,7 +22,11 @@ import { ClaimDraftSchema, HEDGE_FUND_PROTOCOL, untrustedBlock, type Agent } fro
 
 /** What the Market Context Analyst is allowed to see. Populated by the orchestrator. */
 export interface MarketContextContext {
-  /** Tradable universe supplied by Alpaca or an offline fixture. */
+  /**
+   * The fund's investable watchlist — a broad, diversified list of tradable
+   * instruments. The analyst SELECTS its candidates from these; it is not a
+   * pre-picked answer, and it should not include a name just because it appears.
+   */
   instruments: Instrument[];
   mandate: Mandate;
   /** The material events driving this run. */
@@ -55,21 +59,32 @@ effects that travel between companies (a supplier's problem is its customer's
 problem).
 
 METHOD — reason before you write:
+0. SELECT candidates from the provided tradable watchlist — a broad, diversified
+   list is given to you below. Which names belong in the thesis is YOUR judgment:
+   do NOT include a name just because it is on the list, and do not include all
+   of them — pick the strongest and leave the rest out. For each name you
+   consider, resolve it in Cala (find_cala_entities), read its profile, and
+   traverse its relationships (suppliers, customers, dependencies) to establish
+   GENUINE exposure to the events/drivers — favor non-obvious second-order
+   beneficiaries over the obvious mega-cap. Confirm price/liquidity with Alpaca
+   get_latest_quotes. Back every pick with Cala evidence, not a familiar name.
 1. Identify the regime: what phase of the cycle the relevant sectors are in and
    what the dominant macro force is right now.
 2. Separate what is already PRICED IN and widely understood from what is not.
    Context everyone already knows moves nothing.
-3. Trace second-order effects across the assets in scope — who is exposed to the
-   driver, and through whom.
+3. Trace second-order effects across the companies you found — who is exposed to
+   the driver, and through whom.
 4. Distinguish narrative (the story the market is telling) from fundamentals (the
    cash-flow reality). Name where they diverge.
 
 OUTPUT:
-- candidateOpportunities: shortlist symbols present in Assets in scope. Use Cala
-  evidence to explain why each deserves Fundamental Analyst review. Do not
-  output weights or trades. Score each candidate 0-100 for quality, valuation,
-  catalyst, and downside risk (higher downside score means more risk). Include
-  bull/base/bear cases, time horizon, and falsifiable invalidation conditions.
+- candidateOpportunities: the companies YOU discovered and judged worth a
+  Fundamental Analyst review. For each, give symbol (a real Alpaca-tradable
+  ticker), name, and sector (as you determined it from research), plus a
+  Cala-backed rationale. Do not output weights or trades. Score each candidate
+  0-100 for quality, valuation, catalyst, and downside risk (higher downside
+  score means more risk). Include bull/base/bear cases, time horizon, and
+  falsifiable invalidation conditions.
 - summary: the one or two forces that actually matter for these assets now — a
   thesis, not a news digest. Lead with the non-obvious.
 - drivers: the concrete external drivers (demand, policy, supply, cycle), each
@@ -84,13 +99,14 @@ cross-candidate correlation, and the observable indicator that would invalidate
 the context thesis. Candidate selection requires a clear Cala-backed rationale,
 not merely a familiar ticker.
 
-RESEARCH TOOLS — use Cala search/query for missing external context. Use entity
-introspection and bounded relationship traversal to verify second-order paths.
-Profile/traversal results include source evidence; relationships remain evidence-linked
-hypotheses, never unqualified proof of causation. Search/query guide discovery;
-verify material claims through source-linked profile or traversal evidence.
-Use Alpaca asset and quote tools to confirm symbols are tradable and to compare
-spread/liquidity context. Price data is an observation, not a prediction.
+RESEARCH TOOLS — resolve entities with find_cala_entities, then use entity
+introspection, entity profiles, and bounded relationship traversal to discover
+and verify second-order paths. Profile/traversal results include source
+evidence; relationships remain evidence-linked hypotheses, never unqualified
+proof of causation. Verify material claims through source-linked profile or
+traversal evidence. Use Alpaca get_latest_quotes / get_price_history to confirm
+each candidate symbol is tradable and to compare price, spread, and liquidity
+context. Price data is an observation, not a prediction.
 
 CLAIMS — each MUST cite one or more evidenceIds drawn from the supplied pack or
 returned tool evidence. Never invent an ID or a fact. Set stance to "bull",
@@ -113,10 +129,10 @@ investment advice.
 Return only the required JSON.`;
 
 function buildInput(ctx: MarketContextContext): string {
-  const assets =
+  const watchlist =
     ctx.instruments
-      .map((i) => `- ${i.symbol} (${i.name}) — sector ${i.sector}`)
-      .join("\n") || "(no assets in scope)";
+      .map((i) => `- ${i.symbol} (${i.name}) — ${i.sector}`)
+      .join("\n") || "(watchlist empty)";
 
   const events =
     ctx.materialEvents
@@ -138,12 +154,12 @@ function buildInput(ctx: MarketContextContext): string {
       .join("\n") || "(no evidence provided)";
 
   return [
-    `Tradable universe (choose candidates only from these symbols):\n${assets}`,
+    `Tradable watchlist — SELECT your candidates only from these symbols. You need not include all; pick the strongest for the thesis and justify each with Cala research/evidence:\n${watchlist}`,
     `Risk preferences / mandate: max position ${ctx.mandate.limits.maxGrossExposurePerPosition}, max sector ${ctx.mandate.limits.maxSectorExposure}, min cash ${ctx.mandate.limits.minCashRatio}, max turnover ${ctx.mandate.limits.maxTurnoverPerEvent}`,
     `Current holdings:\n${holdings}`,
     `Material events:\n${untrustedBlock("EVENTS", events)}`,
-    `Evidence pack — cite ONLY these evidence IDs:\n${untrustedBlock("EVIDENCE", evidenceBlock)}`,
-    `Produce a market-context assessment as JSON matching the required schema. Every claim.evidenceIds entry MUST come from the supplied pack or an evidence record returned by a tool.`,
+    `Evidence pack — cite ONLY these evidence IDs (or evidence returned by your tools):\n${untrustedBlock("EVIDENCE", evidenceBlock)}`,
+    `Produce a market-context assessment as JSON matching the required schema. For each candidateOpportunity give symbol, name, and sector. Every claim.evidenceIds entry MUST come from the supplied pack or an evidence record returned by a tool.`,
   ].join("\n\n");
 }
 
@@ -172,16 +188,16 @@ export const marketContextAnalyst: Agent<
     stage: "market_context",
     instructions: INSTRUCTIONS,
     outputSchema: MarketContextReportDraftSchema,
+    // Discovery uses Cala's FAST graph endpoints (entity resolution +
+    // relationship traversal). The slow knowledge/search + knowledge/query
+    // endpoints are intentionally excluded — they time out unpredictably.
     toolNames: [
-      "list_tradable_assets",
       "get_latest_quotes",
       "get_price_history",
       "find_cala_entities",
       "inspect_cala_entity",
       "get_cala_entity_profile",
       "traverse_cala_relationships",
-      "query_financial_knowledge",
-      "search_company_information",
     ],
     buildInput,
   },

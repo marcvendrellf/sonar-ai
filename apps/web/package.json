@@ -9,7 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "record:run": "tsx scripts/record-run.ts"
+    "record:run": "tsx --conditions=react-server scripts/record-run.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

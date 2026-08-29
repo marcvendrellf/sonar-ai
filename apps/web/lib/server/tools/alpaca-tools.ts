@@ -15,7 +15,9 @@ export interface ReadonlyAlpacaProvider {
 }
 
 const QuotesInputSchema = z.object({ symbols: z.array(z.string().min(1)).min(1).max(50) });
-const HistoryInputSchema = z.object({ symbol: z.string().min(1), start: z.string().datetime({ offset: true }), end: z.string().datetime({ offset: true }).optional(), limit: z.number().int().min(1).max(1000) });
+// `end` is nullable (not optional): OpenAI strict function-calling requires
+// every field to be present, so an "omitted" end is expressed as null.
+const HistoryInputSchema = z.object({ symbol: z.string().min(1), start: z.string().datetime({ offset: true }), end: z.string().datetime({ offset: true }).nullable(), limit: z.number().int().min(1).max(1000) });
 
 export function createAlpacaTools(provider: ReadonlyAlpacaProvider): ToolRegistry {
   return {
@@ -45,7 +47,7 @@ export function createAlpacaTools(provider: ReadonlyAlpacaProvider): ToolRegistr
       description: "Read daily Alpaca price history for one symbol. Use for trend, volatility, drawdown, and regime context; never forecast from it alone.",
       inputSchema: HistoryInputSchema,
       outputSchema: z.array(AlpacaBarSchema),
-      execute: async ({ symbol, start, end, limit }) => provider.getPriceHistory(symbol, start, end, limit),
+      execute: async ({ symbol, start, end, limit }) => provider.getPriceHistory(symbol, start, end ?? undefined, limit),
     }),
   };
 }

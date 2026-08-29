@@ -73,6 +73,12 @@ export type FundamentalReport = z.infer<typeof FundamentalReportSchema>;
 export const CandidateOpportunitySchema = z.object({
   symbol: z.string().min(1),
   name: z.string().min(1),
+  /**
+   * The company's sector, as the analyst determined it from research. Used to
+   * build the instrument record for a self-discovered candidate (Alpaca's asset
+   * feed carries no sector) so the deterministic sector-exposure limit applies.
+   */
+  sector: z.string().min(1).optional().default("Unknown"),
   rationale: z.string().min(1),
   evidenceIds: z.array(IdSchema).min(1),
   qualityScore: z.number().min(0).max(100).optional().default(0),
