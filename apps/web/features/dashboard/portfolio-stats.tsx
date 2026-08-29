@@ -9,26 +9,34 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { AnimatedStatValue } from "@/features/dashboard/animated-stat-value"
-import { committeeDemo } from "@/fixtures/committee-demo"
+import {
+  committeeDemo,
+  defaultDemoPreferences,
+  scaleDemoNotional,
+} from "@/fixtures/committee-demo"
 
 const euroFormatter = new Intl.NumberFormat("en-IE", {
   style: "currency",
-  currency: "EUR",
+  currency: defaultDemoPreferences.currency,
   maximumFractionDigits: 0,
 })
 
 const after = committeeDemo.portfolioAfter ?? committeeDemo.portfolioSnapshot
-const invested = after.nav.amount - after.cash.amount
-const grossExposure = after.nav.amount > 0 ? invested / after.nav.amount : 0
-const cashRatio = after.nav.amount > 0 ? after.cash.amount / after.nav.amount : 0
+const nav = scaleDemoNotional(after.nav.amount)
+const cash = scaleDemoNotional(after.cash.amount)
+const invested = nav - cash
+const grossExposure = nav > 0 ? invested / nav : 0
+const cashRatio = nav > 0 ? cash / nav : 0
 
 const portfolioStats = [
   {
     id: "nav",
     metric: "Paper NAV",
-    current: euroFormatter.format(after.nav.amount),
+    current: euroFormatter.format(nav),
     difference: "Synthetic fixture",
-    initialValue: euroFormatter.format(committeeDemo.portfolioSnapshot.nav.amount),
+    initialValue: euroFormatter.format(
+      scaleDemoNotional(committeeDemo.portfolioSnapshot.nav.amount)
+    ),
   },
   {
     id: "invested",
@@ -40,9 +48,11 @@ const portfolioStats = [
   {
     id: "cash",
     metric: "Available cash",
-    current: euroFormatter.format(after.cash.amount),
+    current: euroFormatter.format(cash),
     difference: `${Math.round(cashRatio * 100)}% retained`,
-    initialValue: euroFormatter.format(committeeDemo.portfolioSnapshot.cash.amount),
+    initialValue: euroFormatter.format(
+      scaleDemoNotional(committeeDemo.portfolioSnapshot.cash.amount)
+    ),
   },
 ]
 

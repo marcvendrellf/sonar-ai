@@ -28,21 +28,26 @@ import {
 } from "@/components/ui/table"
 import { MandateUtilization } from "@/features/dashboard/mandate-utilization"
 import { PortfolioStats } from "@/features/dashboard/portfolio-stats"
-import { committeeDemo, getDemoInstrument } from "@/fixtures/committee-demo"
+import {
+  committeeDemo,
+  defaultDemoPreferences,
+  getDemoInstrument,
+  scaleDemoNotional,
+} from "@/fixtures/committee-demo"
 
 const euroFormatter = new Intl.NumberFormat("en-IE", {
   style: "currency",
-  currency: "EUR",
+  currency: defaultDemoPreferences.currency,
   maximumFractionDigits: 0,
 })
 
 const allocationSeries = [
-  { time: "14:00", cash: 1_000, invested: 0 },
-  { time: "14:01", cash: 1_000, invested: 0 },
-  { time: "14:02", cash: 1_000, invested: 0 },
-  { time: "14:04", cash: 1_000, invested: 0 },
-  { time: "14:05", cash: 500, invested: 500 },
-  { time: "14:06", cash: 500, invested: 500 },
+  { time: "14:00", cash: 100_000, invested: 0 },
+  { time: "14:01", cash: 100_000, invested: 0 },
+  { time: "14:02", cash: 100_000, invested: 0 },
+  { time: "14:04", cash: 100_000, invested: 0 },
+  { time: "14:05", cash: 50_000, invested: 50_000 },
+  { time: "14:06", cash: 50_000, invested: 50_000 },
 ]
 
 const allocationChartConfig = {
@@ -68,7 +73,9 @@ const positions = after.positions.flatMap((position) => {
       name: instrument.name,
       sector: instrument.sector,
       weight: `${Math.round(position.weight * 100)}%`,
-      value: euroFormatter.format(position.marketValue.amount),
+      value: euroFormatter.format(
+        scaleDemoNotional(position.marketValue.amount)
+      ),
       averagePrice: euroFormatter.format(position.avgPrice.amount),
     },
   ]
@@ -84,9 +91,11 @@ const orders = committeeDemo.appliedOrders.flatMap((order) => {
       time: order.appliedAt.slice(11, 16),
       asset: instrument.symbol,
       side: order.side,
-      quantity: order.quantity,
+      quantity: scaleDemoNotional(order.quantity),
       paperPrice: euroFormatter.format(order.price.amount),
-      notional: euroFormatter.format(order.notional.amount),
+      notional: euroFormatter.format(
+        scaleDemoNotional(order.notional.amount)
+      ),
       receipt: committeeDemo.receipt?.id ?? "rcpt_main",
     },
   ]
@@ -109,7 +118,7 @@ function AllocationChart() {
     <Card className="@container/card">
       <CardHeader>
         <CardTitle>Paper allocation through the committee run</CardTitle>
-        <CardDescription>€1,000 onboarding baseline · synthetic fixture</CardDescription>
+        <CardDescription>$100,000 onboarding baseline · synthetic fixture</CardDescription>
         <CardAction>
           <Badge variant="outline">Human approved</Badge>
         </CardAction>
@@ -264,7 +273,9 @@ export function Dashboard() {
                   <TableCell className="text-muted-foreground">Reserve</TableCell>
                   <TableCell className="text-right tabular-nums">50%</TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {euroFormatter.format(after.cash.amount)}
+                    {euroFormatter.format(
+                      scaleDemoNotional(after.cash.amount)
+                    )}
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">—</TableCell>
                 </TableRow>

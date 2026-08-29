@@ -238,7 +238,7 @@ export const receipt = {
   thesis:
     committeeDemo.report?.narrative ??
     "The committee traced the event to first- and second-order exposures.",
-  acceptedOrder: "Buy €300 NVDA and €200 SIEGY in the paper ledger.",
+  acceptedOrder: "Buy $30,000 NVDA and $20,000 SIEGY in the paper ledger.",
   rejectedAlternative: "NVDA at 35% was resized to the 30% maximum-position limit.",
   conviction: "62% after risk resize and Bear / Critic review.",
 } as const
@@ -316,7 +316,7 @@ export const trace: readonly TraceEntry[] = [
     clock: "14:04:20",
     agent: "portfolio-manager",
     kind: "claim",
-    text: "Proposed 35% Nvidia and 20% Siemens Energy, retaining 45% cash from the €1,000 paper baseline.",
+    text: "Proposed 35% Nvidia and 20% Siemens Energy, retaining 45% cash from the $100,000 paper baseline.",
     system: "rec_proposal",
     states: { "risk-officer": "checking-risk", "report-writer": "blocked" },
     task: "Waiting for deterministic risk checks",
@@ -343,7 +343,7 @@ export const trace: readonly TraceEntry[] = [
     clock: "14:04:50",
     agent: "risk-officer",
     kind: "risk",
-    text: "Resized Nvidia from 35% to the Core mandate's 30% maximum-position limit (€300).",
+    text: "Resized Nvidia from 35% to the Core mandate's 30% maximum-position limit ($30,000).",
     system: "POSITION_LIMIT_BREACH",
     states: { "risk-officer": "complete", "bear-critic": "debating" },
     task: "Risk report complete; one action resized",
@@ -351,7 +351,7 @@ export const trace: readonly TraceEntry[] = [
       id: "rsk_nvda",
       label: "Nvidia allocation",
       result: "resize",
-      detail: "35% requested · 30% maximum · resized to €300.",
+      detail: "35% requested · 30% maximum · resized to $30,000.",
     },
   },
   {
@@ -405,7 +405,7 @@ export const trace: readonly TraceEntry[] = [
     at: 52_000,
     clock: "14:05:25",
     kind: "trade",
-    text: "Paper ledger applied two approved orders: €300 NVDA and €200 SIEGY. No real-money order was placed.",
+    text: "Paper ledger applied two approved orders: $30,000 NVDA and $20,000 SIEGY. No real-money order was placed.",
     system: "paper only",
   },
   {
@@ -455,7 +455,7 @@ export const receiptAnswers: readonly ReceiptAnswer[] = [
   {
     id: "resize",
     keywords: ["resize", "resized", "reduce", "reduced", "smaller", "cut", "30%", "35%"],
-    text: "The Risk Officer found that Nvidia at 35% breached the Core mandate's 30% maximum-position limit, so deterministic code resized it to €300. The Portfolio Manager accepted the limit in revision 1.",
+    text: "The Risk Officer found that Nvidia at 35% breached the Core mandate's 30% maximum-position limit, so deterministic code resized it to $30,000. The Portfolio Manager accepted the limit in revision 1.",
     cites: "rsk_nvda",
   },
   {
@@ -479,7 +479,7 @@ export const receiptAnswers: readonly ReceiptAnswer[] = [
   {
     id: "approval",
     keywords: ["approve", "approved", "human", "order", "trade", "paper"],
-    text: "A human approved the resized allocation at 14:05:20. Only then did the paper ledger apply €300 NVDA and €200 SIEGY. Report Writer ran after that decision.",
+    text: "A human approved the resized allocation at 14:05:20. Only then did the paper ledger apply $30,000 NVDA and $20,000 SIEGY. Report Writer ran after that decision.",
     cites: "rcpt_main",
   },
 ]

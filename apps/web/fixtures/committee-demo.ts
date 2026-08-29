@@ -7,10 +7,17 @@ import { goldenState } from "../../../packages/core/src/__fixtures__/golden-stat
 export const committeeDemo = goldenState
 
 export const defaultDemoPreferences = {
-  paperBudget: 1_000,
+  paperBudget: 100_000,
+  currency: "USD",
   riskProfile: "core",
   assetClasses: ["stocks", "etfs", "crypto"],
 } as const
+
+const DEMO_NOTIONAL_SCALE = 100
+
+export function scaleDemoNotional(amount: number) {
+  return amount * DEMO_NOTIONAL_SCALE
+}
 
 export function getDemoInstrument(instrumentId: string) {
   return committeeDemo.candidateUniverse.find(

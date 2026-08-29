@@ -44,7 +44,7 @@ export default function LoginPage() {
               <div className="grid grid-cols-2 gap-x-14 gap-y-8">
                 <div>
                   <p className="text-white/55">Paper NAV</p>
-                  <p className="mt-1 text-base tracking-normal">€1,000</p>
+                  <p className="mt-1 text-base tracking-normal">$100,000</p>
                 </div>
                 <div className="text-right">
                   <p className="text-white/55">Gross exposure</p>
@@ -52,7 +52,7 @@ export default function LoginPage() {
                 </div>
                 <div>
                   <p className="text-white/55">Available cash</p>
-                  <p className="mt-1 text-base tracking-normal">€500</p>
+                  <p className="mt-1 text-base tracking-normal">$50,000</p>
                 </div>
                 <div className="text-right">
                   <p className="text-white/55">Risk status</p>

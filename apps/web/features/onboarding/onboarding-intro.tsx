@@ -56,8 +56,8 @@ const ALPACA_CASH_KEY = "sonar-ai.alpaca-available-cash"
 const RISK_LEVEL_KEY = "sonar-ai.risk-level"
 const ASSET_CLASSES_KEY = "sonar-ai.asset-classes"
 const GREETING_CHARACTERS = ["H", "i", ","] as const
-const SONAR_LIGHT_GRADIENT = ["#D9E8EF", "#8FBED2", "#3F87A8"]
-const SONAR_GLOW_COLORS = ["#8FBED2", "#39BDD1", "#D9E8EF"]
+const SONAR_DARK_GRADIENT = ["#020817", "#06182F", "#0A3146"]
+const SONAR_GLOW_COLORS = ["#087F9D", "#39BDD1", "#8FBED2"]
 const ALPACA_AVAILABLE_CASH = 100_000
 const DEFAULT_RISK_LEVEL: RiskLevel = 4
 const RISK_LEVELS = [1, 2, 3, 4, 5, 6, 7] as const satisfies readonly RiskLevel[]
@@ -281,7 +281,7 @@ function AlpacaConnectionQuestion({
             <p className="font-heading text-[clamp(2.75rem,10vw,5rem)] leading-none tracking-[-0.055em] tabular-nums">
               {formatCash(ALPACA_AVAILABLE_CASH)}
             </p>
-            <p className="mt-2 text-sm text-[#12496E]/65">available in Alpaca portfolio</p>
+            <p className="mt-2 text-sm text-white/65">available in Alpaca portfolio</p>
             <div className="mt-6 inline-flex">
               <GlowButtonFrame>
                 <Button
@@ -348,10 +348,10 @@ function RiskQuestion({
               transition={{ delay: reducedMotion ? 0 : index * 0.04, duration: reducedMotion ? 0 : 0.24 }}
               onClick={() => onSelect(level)}
               className={cn(
-                "grid aspect-square place-items-center rounded-2xl border font-heading text-2xl transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#12496E]/25",
+                "grid aspect-square place-items-center rounded-2xl border font-heading text-2xl transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#39BDD1]/30",
                 active
-                  ? "border-[#12496E] bg-[#12496E] text-white"
-                  : "border-[#12496E]/12 bg-white/60 text-[#12496E]/70 hover:bg-white"
+                  ? "border-[#39BDD1] bg-[#12496E] text-white"
+                  : "border-white/15 bg-white/5 text-white/70 hover:bg-white/10"
               )}
             >
               {level}
@@ -359,7 +359,7 @@ function RiskQuestion({
           )
         })}
       </div>
-      <div className="mt-3 flex justify-between text-xs text-[#12496E]/60">
+      <div className="mt-3 flex justify-between text-xs text-white/60">
         <span>Lower risk</span>
         <span>Higher risk</span>
       </div>
@@ -425,7 +425,7 @@ function AssetQuestion({
               transition={{ delay: reducedMotion ? 0 : index * 0.07, duration: reducedMotion ? 0 : 0.28 }}
             >
               <BorderGlow
-                backgroundColor={active ? "#EFF8FA" : "#F4F9FA"}
+                backgroundColor={active ? "#0B2836" : "#071C28"}
                 borderRadius={18}
                 colors={SONAR_GLOW_COLORS}
                 edgeSensitivity={20}
@@ -439,11 +439,11 @@ function AssetQuestion({
                   role="checkbox"
                   aria-checked={active}
                   onClick={() => onToggle(assetClass.id)}
-                  className="flex w-full items-center gap-3 rounded-[17px] bg-transparent p-4 text-left transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#12496E]/25"
+                  className="flex w-full items-center gap-3 rounded-[17px] bg-transparent p-4 text-left text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#39BDD1]/30"
                 >
                   <span className={cn(
                     "grid size-9 place-items-center rounded-full",
-                    active ? "bg-[#12496E] text-white" : "bg-[#D9E8EF] text-[#12496E]/55"
+                    active ? "bg-[#39BDD1] text-[#06182F]" : "bg-white/10 text-white/55"
                   )}>
                     <Icon className="size-4" aria-hidden="true" />
                   </span>
@@ -453,7 +453,7 @@ function AssetQuestion({
                   <span
                     className={cn(
                       "grid size-5 place-items-center rounded-full border transition-colors",
-                      active ? "border-[#12496E] bg-[#12496E] text-white" : "border-[#12496E]/25 text-transparent"
+                      active ? "border-[#39BDD1] bg-[#39BDD1] text-[#06182F]" : "border-white/25 text-transparent"
                     )}
                     aria-hidden="true"
                   >
@@ -525,7 +525,7 @@ function ResearchSequence({
       className="relative -top-6 flex w-full max-w-2xl flex-col items-center justify-center"
     >
       <motion.div
-        className="text-[#12496E]/60"
+        className="text-white/60"
         role="status"
         aria-label="Agents are working"
         animate={reducedMotion ? undefined : { rotate: 360 }}
@@ -546,7 +546,7 @@ function ResearchSequence({
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             exit={reducedMotion ? undefined : { opacity: 0, y: -8, filter: "blur(6px)" }}
             transition={{ duration: reducedMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="font-sans text-base font-medium tracking-[-0.01em] text-[#12496E]/65"
+            className="font-sans text-base font-medium tracking-[-0.01em] text-white/65"
           >
             {THINKING_MESSAGES[messageIndex]}
           </motion.p>
@@ -676,14 +676,14 @@ export function OnboardingIntro() {
     stage.kind === "complete"
 
   return (
-    <main className="relative isolate min-h-svh overflow-x-hidden bg-[#D9E8EF] text-[#0A2338]">
+    <main className="dark relative isolate min-h-svh overflow-x-hidden bg-[#020817] text-white">
       <ShaderGradient
-        colors={SONAR_LIGHT_GRADIENT}
+        colors={SONAR_DARK_GRADIENT}
         speed={0.045}
         blur={0.9}
         intensity={0.72}
         interactive={stage.kind !== "arriving"}
-        theme="light"
+        theme="dark"
       />
 
       <section
@@ -783,7 +783,7 @@ export function OnboardingIntro() {
                           fontSize: "clamp(1.75rem, 6vw, 2.5rem)",
                           lineHeight: 1,
                         }}
-                        className="field-sizing-content h-auto min-w-[4ch] max-w-[14ch] rounded-none border-0 bg-transparent px-0 py-0 text-left font-heading text-[#0A2338] tracking-[-0.045em] shadow-none placeholder:text-[#0A2338]/40 focus-visible:ring-0"
+                        className="field-sizing-content h-auto min-w-[4ch] max-w-[14ch] rounded-none border-0 bg-transparent px-0 py-0 text-left font-heading text-white tracking-[-0.045em] shadow-none placeholder:text-white/40 focus-visible:ring-0"
                       />
                       <span aria-hidden="true">!</span>
                     </motion.span>
@@ -814,7 +814,7 @@ export function OnboardingIntro() {
                 >
                   <BorderGlow
                     animated
-                    backgroundColor="#EFF8FA"
+                    backgroundColor="#0B2836"
                     borderRadius={999}
                     colors={SONAR_GLOW_COLORS}
                     coneSpread={30}
@@ -867,7 +867,7 @@ export function OnboardingIntro() {
                   transition={{ duration: reducedMotion ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}
                   className="w-full"
                 >
-                  <span className="mx-auto grid size-8 place-items-center rounded-full bg-[#12496E] text-white">
+                  <span className="mx-auto grid size-8 place-items-center rounded-full bg-[#39BDD1] text-[#06182F]">
                     <Check className="size-4" aria-hidden="true" />
                   </span>
                   <AnimatedQuestion
@@ -875,7 +875,7 @@ export function OnboardingIntro() {
                     reducedMotion={reducedMotion}
                     text="Your paper mandate is ready."
                   />
-                  <p className="mt-3 text-sm text-[#12496E]/65">
+                  <p className="mt-3 text-sm text-white/65">
                     {formatCash(stage.budget)} · risk {stage.riskLevel}/7 · {stage.assetClasses.length} markets
                   </p>
                   <div className="mt-7 inline-flex">
