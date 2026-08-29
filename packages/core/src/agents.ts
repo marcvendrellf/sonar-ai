@@ -93,8 +93,13 @@ export const RiskMetricsSchema = z.object({
   concentration: RatioSchema,
   /** Exposure by sector name, each a fraction of NAV. */
   sectorExposure: z.record(z.string(), RatioSchema),
-  /** Cash held after the proposed allocation, as a fraction of NAV. */
-  cashRatio: RatioSchema,
+  /**
+   * Cash held after the proposed allocation, as a fraction of NAV. SIGNED, not
+   * a [0, 1] ratio: an over-invested proposal (which the cash-floor check then
+   * hard-blocks) yields a negative value. Capped at 1 — a long-only book cannot
+   * hold more than NAV in cash.
+   */
+  cashRatio: z.number().max(1),
   /** Sell-side turnover for this event, as a fraction of NAV. */
   turnover: RatioSchema,
 });
