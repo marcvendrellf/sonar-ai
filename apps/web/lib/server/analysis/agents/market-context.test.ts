@@ -32,9 +32,16 @@ const CONTEXT: MarketContextContext = {
   materialEvents: EVENTS,
   evidence: EVIDENCE,
   holdings: [],
+  mandate: {
+    id: "mnd_test",
+    baseCurrency: "EUR",
+    initialCash: { amount: 1000, currency: "EUR" },
+    limits: { maxGrossExposurePerPosition: 0.3, maxSectorExposure: 0.45, minCashRatio: 0.1, maxTurnoverPerEvent: 0.2 },
+  },
 };
 
 const DRAFT: MarketContextReportDraft = {
+  candidateOpportunities: [],
   summary: "AI datacenter capex is the dominant driver; grid power is the under-priced dependency.",
   drivers: ["Hyperscaler AI capex", "Grid power constraints"],
   sectorView: "Semiconductors extended; energy/grid earlier in its re-rating.",

@@ -11,6 +11,7 @@ import {
   type StageRecord,
   type UserDecision,
 } from "@sonar-ai/core";
+import type { AlpacaOrderResponse, AlpacaPaperOrderRequest } from "@sonar-ai/core/alpaca";
 import { type InstrumentStats, type StressScenario } from "@sonar-ai/risk-engine";
 import { bearCritic } from "./agents/bear-critic";
 import { fundamentalAnalyst } from "./agents/fundamental-analyst";
@@ -34,13 +35,13 @@ export interface AnalysisOrchestratorOptions {
   runner: AgentRunner;
   instrumentStats?: InstrumentStats;
   stressScenarios?: readonly StressScenario[];
+  /** Live mode injects AlpacaPaperClient; absent means offline ledger mode. */
+  alpacaClient?: { submitPaperOrder(input: AlpacaPaperOrderRequest): Promise<AlpacaOrderResponse> };
 }
 
 export interface AnalysisRunInput {
   /** An idle, validated state containing inputs, evidence, and graph. */
   state: InvestmentCommitteeState;
-  /** Explicit selection keeps candidate selection deterministic and replayable. */
-  selectedInstrumentIds: readonly string[];
   /** Optional decision for callers that can provide approval in the same request. */
   userDecision?: UserDecision;
 }
@@ -81,15 +82,7 @@ export class AnalysisOrchestrator {
       throw new Error(`AnalysisOrchestrator.run requires idle phase, got "${state.phase}".`);
     }
 
-    const selectedInstruments = input.selectedInstrumentIds.map((id) => {
-      const instrument = state.candidateUniverse.find((candidate) => candidate.id === id);
-      if (!instrument) throw new Error(`Selected instrument "${id}" is not in candidate universe.`);
-      return instrument;
-    });
-    if (selectedInstruments.length === 0) throw new Error("At least one instrument must be selected.");
-    if (new Set(input.selectedInstrumentIds).size !== input.selectedInstrumentIds.length) {
-      throw new Error("Selected instruments must be unique.");
-    }
+    if (state.candidateUniverse.length === 0) throw new Error("Tradable candidate universe is empty.");
 
     state.stages = pendingStages(state.run.id);
     let activeStage: AgentStage | undefined;
@@ -115,6 +108,29 @@ export class AnalysisOrchestrator {
       transition(state, "observing", "Committee run started.");
       transition(state, "tracing", "Research stages received isolated evidence packs.");
 
+      // Discovery runs first. Agents choose companies; user supplies risk preferences only.
+      const marketContext = await executeStage(
+        "market_context",
+        () => runFinalizedAgent(
+          marketContextAnalyst,
+          buildMarketContext(state, state.candidateUniverse),
+          researchRunner,
+        ),
+        (output) => output.id,
+      );
+      state.marketContext = marketContext;
+
+      const bySymbol = new Map(state.candidateUniverse.map((instrument) => [instrument.symbol.toUpperCase(), instrument]));
+      const selectedInstruments = marketContext.candidateOpportunities.map((candidate) => {
+        const instrument = bySymbol.get(candidate.symbol.toUpperCase());
+        if (!instrument) throw new Error(`Cala candidate "${candidate.symbol}" is not in Alpaca tradable universe.`);
+        return instrument;
+      });
+      if (selectedInstruments.length === 0) throw new Error("Cala returned no tradable investment candidates.");
+      if (new Set(selectedInstruments.map((instrument) => instrument.id)).size !== selectedInstruments.length) {
+        throw new Error("Cala returned duplicate investment candidates.");
+      }
+
       // Serial by design. Stable stage order makes replay independent of promise
       // scheduling while keeping both contexts isolated.
       const fundamentalReports: FundamentalReport[] = [];
@@ -131,17 +147,6 @@ export class AnalysisOrchestrator {
         fundamentalReports.push(report);
       }
       state.fundamentalReports = fundamentalReports;
-
-      const marketContext = await executeStage(
-        "market_context",
-        () => runFinalizedAgent(
-          marketContextAnalyst,
-          buildMarketContext(state, selectedInstruments),
-          researchRunner,
-        ),
-        (output) => output.id,
-      );
-      state.marketContext = marketContext;
 
       const researchGate = checkEvidenceGate(state);
       if (!researchGate.ok) {
@@ -271,7 +276,7 @@ export class AnalysisOrchestrator {
     state.userDecision = decision;
     const appliedAt = isoAfter(decision.decidedAt, 2);
     const execution = decision.decision === "approved"
-      ? this.applyApprovedActions(state, appliedAt)
+      ? await this.applyApprovedActions(state, appliedAt)
       : { orders: [], portfolio: state.portfolioSnapshot };
 
     // Writer runs after decision and before ledger state is committed. It can
@@ -324,18 +329,46 @@ export class AnalysisOrchestrator {
     return validateState(state);
   }
 
-  private applyApprovedActions(state: InvestmentCommitteeState, appliedAt: string) {
+  private async applyApprovedActions(state: InvestmentCommitteeState, appliedAt: string) {
     if (!state.finalRecommendation || !state.marketSnapshot) {
       throw new Error("Approved action requires final recommendation and market snapshot.");
     }
     if (state.riskReport?.hardBlocks.length) {
       throw new Error("Approved action cannot bypass deterministic risk hard block.");
     }
+    if (!this.options.alpacaClient) return applyPaperActions({
+      portfolio: state.portfolioSnapshot,
+      actions: state.finalRecommendation.actions,
+      marketSnapshot: state.marketSnapshot,
+      appliedAt,
+    });
+
+    if (state.portfolioSnapshot.baseCurrency !== "USD") {
+      throw new Error("Alpaca Paper execution requires USD portfolio currency.");
+    }
+    const orderIds = new Map<string, string>();
+    for (const action of state.finalRecommendation.actions) {
+      const instrument = state.candidateUniverse.find((candidate) => candidate.id === action.instrumentId);
+      if (!instrument) throw new Error(`Approved action references unknown instrument "${action.instrumentId}".`);
+      const response = await this.options.alpacaClient.submitPaperOrder({
+        symbol: instrument.symbol,
+        notional: Math.abs(action.amount.amount),
+        side: action.side,
+        type: "market",
+        time_in_force: "day",
+        client_order_id: action.id,
+      });
+      if (response.symbol.toUpperCase() !== instrument.symbol.toUpperCase() || response.side !== action.side) {
+        throw new Error(`Alpaca response mismatch for action "${action.id}".`);
+      }
+      orderIds.set(action.id, response.id);
+    }
     return applyPaperActions({
       portfolio: state.portfolioSnapshot,
       actions: state.finalRecommendation.actions,
       marketSnapshot: state.marketSnapshot,
       appliedAt,
+      orderIds,
     });
   }
 }

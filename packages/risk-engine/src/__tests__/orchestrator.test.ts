@@ -58,10 +58,7 @@ const decision = {
 
 describe("AnalysisOrchestrator", () => {
   it("stops at the human gate without applying actions", async () => {
-    const state = await orchestrator().run({
-      state: initialState(),
-      selectedInstrumentIds: ["inst_nvidia", "inst_siemens"],
-    });
+    const state = await orchestrator().run({ state: initialState() });
 
     expect(state.phase).toBe("awaiting_approval");
     expect(state.appliedOrders).toEqual([]);
@@ -73,10 +70,7 @@ describe("AnalysisOrchestrator", () => {
   });
 
   it("requires approval before applying deterministic paper orders and writing report", async () => {
-    const pending = await orchestrator().run({
-      state: initialState(),
-      selectedInstrumentIds: ["inst_nvidia", "inst_siemens"],
-    });
+    const pending = await orchestrator().run({ state: initialState() });
     const complete = await orchestrator().approve(pending, decision);
 
     expect(complete.phase).toBe("complete");
@@ -94,11 +88,8 @@ describe("AnalysisOrchestrator", () => {
   });
 
   it("replays identically with the same fixture and decision", async () => {
-    const input = {
-      selectedInstrumentIds: ["inst_nvidia", "inst_siemens"],
-    } as const;
-    const first = await orchestrator().run({ state: initialState(), ...input, userDecision: decision });
-    const second = await orchestrator().run({ state: initialState(), ...input, userDecision: decision });
+    const first = await orchestrator().run({ state: initialState(), userDecision: decision });
+    const second = await orchestrator().run({ state: initialState(), userDecision: decision });
 
     expect(second).toEqual(first);
   });
@@ -149,7 +140,6 @@ describe("AnalysisOrchestrator", () => {
       },
     }).run({
       state: initialState(),
-      selectedInstrumentIds: ["inst_nvidia", "inst_siemens"],
     });
 
     expect(state.phase).toBe("awaiting_approval");
@@ -165,13 +155,18 @@ describe("AnalysisOrchestrator", () => {
       { ...proposal.actions[1]!, id: "acn_asml_block", instrumentId: "inst_asml", targetWeight: 0.2, amount: { amount: 200, currency: "EUR" } },
     ];
 
+    const marketContext = structuredClone(goldenState.marketContext!);
+    marketContext.candidateOpportunities = [
+      { symbol: "NVDA", name: "Nvidia", rationale: "test", evidenceIds: ["ev_nvda_fund"] },
+      { symbol: "ASML", name: "ASML Holding", rationale: "test", evidenceIds: ["ev_asml_supplier"] },
+    ];
     const blocked = await new AnalysisOrchestrator({
       runner: new StubAgentRunner({
         fundamental_analyst: goldenState.fundamentalReports,
-        market_context: goldenState.marketContext!,
+        market_context: marketContext,
         portfolio_manager: proposal,
       }),
-    }).run({ state, selectedInstrumentIds: ["inst_nvidia", "inst_asml"] });
+    }).run({ state });
 
     expect(blocked.phase).toBe("blocked");
     expect(blocked.riskReport?.hardBlocks).toContain("RISK_MANDATE_BREACH");

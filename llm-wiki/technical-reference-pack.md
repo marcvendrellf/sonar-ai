@@ -84,11 +84,11 @@ Implementation split:
 - `Bear/Critic` receives proposal, evidence, research summaries, context, and risk report. It flags uncertainty and failure scenarios but cannot veto.
 - `Communications/Report Writer` runs only after human decision. It formats decision record and internal report. It cannot mutate allocation.
 
-Cala relationship tracing is a sourced tool/data capability used by research stages, not a separate agent. Alpaca remains Paper-only and server-side. Trader is deterministic paper-ledger code, not an agent.
+Cala relationship tracing is a sourced tool/data capability used by research stages, not a separate agent. Market Context discovers candidates; users provide no company list. Alpaca remains Paper-only and server-side. Approved orders pass through Alpaca Paper; Trader maintains deterministic receipt projection and offline fallback.
 
 For MVP, use plain TypeScript orchestration rather than LangGraph, AutoGen, a queue, distributed services, or autonomous background loops. Persist one `InvestmentCommitteeState` per run. Permit fixture replay and one bounded retry at external/model stages. Keep stage boundaries replaceable for future workers without changing UI contracts.
 
-The orchestrator may run Fundamental Analyst and Market Context Analyst in parallel after asset selection. Risk waits for proposed actions; Bear/Critic waits for risk output; Report Writer waits for human decision.
+Market Context discovers candidates before Fundamental Analyst review. Risk waits for proposed actions; Bear/Critic waits for risk output; Report Writer waits for human decision.
 
 The browser receives stage events and final records, never prompts, credentials, hidden chain-of-thought, or uncited prose. Agent messages are rendered summaries derived from typed outputs.
 

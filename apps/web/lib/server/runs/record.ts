@@ -16,7 +16,6 @@ import {
 export interface RecordRunInput {
   /** An idle, validated committee state (inputs + evidence + graph). */
   state: InvestmentCommitteeState;
-  selectedInstrumentIds: readonly string[];
   /** Provide to record the full run through approval; omit to stop at the gate. */
   userDecision?: UserDecision;
   /** The runner to record — an OpenAIAgentRunner for a real run. */
@@ -46,7 +45,6 @@ export async function recordCommitteeRun(
 
   const state = await orchestrator.run({
     state: input.state,
-    selectedInstrumentIds: input.selectedInstrumentIds,
     ...(input.userDecision ? { userDecision: input.userDecision } : {}),
   });
 
@@ -56,7 +54,6 @@ export async function recordCommitteeRun(
     recordedAt: now,
     model: input.model,
     scenarioId: state.run.scenarioId,
-    selectedInstrumentIds: [...input.selectedInstrumentIds],
     userDecision: state.userDecision,
     ...(input.instrumentStats ? { instrumentStats: input.instrumentStats } : {}),
     ...(input.stressScenarios ? { stressScenarios: [...input.stressScenarios] } : {}),
@@ -81,7 +78,6 @@ export async function replayRecording(
   });
   return orchestrator.run({
     state: resetToIdle(recording.state),
-    selectedInstrumentIds: recording.selectedInstrumentIds,
     ...(recording.userDecision ? { userDecision: recording.userDecision } : {}),
   });
 }

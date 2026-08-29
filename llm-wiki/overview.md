@@ -10,17 +10,17 @@ The event message is broad: `Build whatever you want, you might just leave with 
 
 ## Product loop
 
-1. Code-owned orchestrator loads €1,000 cash-only portfolio snapshot, mandate, five-asset candidate universe, existing theses, and prepared event or material-change set.
-2. Fundamental Analyst evaluates selected assets; Market Context Analyst evaluates relevant news, sector, macro, competitors, regulation, and events. Cala relationship tracing is a sourced research capability used by these stages.
+1. Code-owned orchestrator loads €1,000 cash-only portfolio snapshot, risk preferences, Alpaca-available universe, existing theses, and prepared event or material-change set.
+2. Market Context Analyst researches through Cala and discovers tradable candidates from available symbols; Fundamental Analyst evaluates that shortlist. Users do not submit company names.
 3. Portfolio Manager weighs structured research and proposes allocation changes.
 4. Risk Officer runs deterministic portfolio analytics and hard-blocks invalid proposals.
 5. Bear/Critic attacks surviving recommendation and identifies failure scenarios.
 6. Portfolio Manager revises recommendation using critique and risk report.
-7. Human reviews and approves or rejects paper action; Trader applies approved changes only to internal paper portfolio.
+7. Human reviews and approves or rejects paper action; approved actions submit to Alpaca Paper through server code, then update internal ledger receipt. Offline mode uses internal ledger fixture.
 8. Communications/Report Writer turns final decision into internal report after decision, never before.
 9. Dashboard stores decision receipt with evidence, risk comparison, approval, and generated report.
 
-MVP uses one typed orchestrator, five decision agents, one post-decision writer, isolated contexts, bounded model calls, deterministic analytics, and fixture replay. No agent swarm, agent-to-agent filler chat, autonomous loops, workflow framework, or automatic execution.
+MVP uses one typed orchestrator, five decision agents, one post-decision writer, isolated contexts, bounded model calls, deterministic analytics, and fixture replay. No agent swarm, agent-to-agent filler chat, autonomous loops, or workflow framework. Execution occurs only after human approval, through Alpaca Paper.
 
 The memorable reveal is one portfolio decision expanding into sourced relationships, surviving risk comparison and adversarial critique, then receiving explicit human approval for a paper rebalance.
 
@@ -79,7 +79,7 @@ The repository is a pnpm workspace monorepo at `github.com/marcvendrellf/sonar-a
 
 shadcn is initialized with the Base UI `base-nova` preset. The application-shell block, selected third-party registry components, and required shadcn primitives are installed. The first fixture-driven dashboard uses the `application-shell1` collapsible sidebar and includes paper-fund metrics, a NAV chart, sourced relationship path, positions table, adapted agent activity feed, agent-work chart, risk outcome, and inspectable decision receipt. `pnpm typecheck`, `pnpm lint`, and `pnpm build` pass.
 
-The dashboard data remains presentational fixture data, not a reviewed live Cala/Alpaca fixture. The MVP runtime has a server-side typed orchestrator with isolated stage contexts, deterministic evidence/risk/human gates, a deterministic internal paper ledger, five decision-agent definitions, and a post-decision Report Writer seam. Fixture execution is serial and replayable. Live execution uses the official OpenAI TypeScript SDK, Responses API, Zod structured outputs, and a bounded function-call loop behind the same `AgentRunner` seam. SDK retries are disabled; code owns retry count, timeout, token cap, stage order, tool allowlists, and gates.
+The dashboard data remains presentational fixture data, not a reviewed live Cala/Alpaca fixture. The MVP runtime has a server-side typed orchestrator with isolated stage contexts, Cala-driven candidate discovery, deterministic evidence/risk/human gates, an internal paper ledger, five decision-agent definitions, and a post-decision Report Writer seam. Fixture execution is serial and replayable. Approved live-mode actions submit market notional orders to Alpaca Paper only; offline mode keeps deterministic ledger IDs. Live execution uses the official OpenAI TypeScript SDK, Responses API, Zod structured outputs, and a bounded function-call loop behind the same `AgentRunner` seam. SDK retries are disabled; code owns retry count, timeout, token cap, stage order, tool allowlists, and gates.
 
 Cala REST integration is implemented server-side with entity resolution, schema introspection, selective profile/metric retrieval, structured query, sourced search, and breadth-first relationship traversal bounded to depth 3 and 50 nodes. Fundamental Analyst and Market Context Analyst receive separate research tool subsets. Search/query guide discovery but produce no citable receipt; profile, fundamentals, and traversal normalize underlying-source evidence. Runner merges those evidence records and normalized traversal graph artifacts into committee state before gates run. `SONAR_OFFLINE=true` uses a deterministic synthetic Cala provider with an inspectable supplier/event path. No live Cala credential or event response was used, so coverage and freshness remain unverified. Portfolio Manager still receives research summaries rather than raw Cala access; Risk remains deterministic; no model can route stages or reach order execution.
 
@@ -91,7 +91,7 @@ Cala REST integration is implemented server-side with entity resolution, schema 
 4. Build the fixture-driven Saloon shell and execution trace.
 5. Build onboarding as its own frontend epic.
 6. Run one credentialed Cala experiment; save sanitized query, entity, introspection, retrieval, and useful graph-path responses.
-7. Add Alpaca-supported U.S. candidate instruments and save sanitized account, position, and order fixtures.
+7. Add Alpaca-supported U.S. tradable universe plus sanitized account, position, and order fixtures; resolve USD currency before live Paper execution.
 8. Connect the orchestrator to a thin API route only after the offline path remains intact.
 
 ## Success condition

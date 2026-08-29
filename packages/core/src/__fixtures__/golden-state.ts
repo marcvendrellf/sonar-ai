@@ -141,6 +141,10 @@ export const goldenState: InvestmentCommitteeState = {
 
   marketContext: {
     id: "mrp_main",
+    candidateOpportunities: [
+      { symbol: "NVDA", name: "Nvidia", rationale: "AI infrastructure demand has strongest evidence support.", evidenceIds: ["ev_capex", "ev_nvda_fund"] },
+      { symbol: "SIEGY", name: "Siemens Energy", rationale: "Grid power is the under-priced second-order dependency.", evidenceIds: ["ev_power_demand", "ev_siemens_fund"] },
+    ],
     summary: "AI datacenter capex is the dominant driver; grid power is the under-priced second-order dependency.",
     drivers: ["Hyperscaler AI capex", "Grid power constraints"],
     sectorView: "Semiconductors extended; energy/grid names earlier in their re-rating.",

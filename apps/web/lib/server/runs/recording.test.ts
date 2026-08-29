@@ -3,7 +3,6 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { goldenState } from "../../../../../packages/core/src/__fixtures__/golden-state";
 import { StubAgentRunner } from "../analysis/runner/stub-runner";
 import {
@@ -40,7 +39,6 @@ function counterClock() {
 async function record(): Promise<Awaited<ReturnType<typeof recordCommitteeRun>>> {
   return recordCommitteeRun({
     state: resetToIdle(goldenState as InvestmentCommitteeState),
-    selectedInstrumentIds: ["inst_nvidia", "inst_siemens"],
     userDecision: DECISION,
     runner: goldenStubRunner(),
     model: "stub",
@@ -59,12 +57,12 @@ describe("run recording + replay", () => {
     expect(recording.state.phase).toBe("complete");
 
     const stages = recording.turns.map((t) => t.stage);
-    // Two fundamentals (per instrument), one market, PM proposal + revision,
+    // One market discovery pass, two fundamentals (per candidate), PM proposal + revision,
     // bear, writer. Risk Officer is deterministic — no model turn.
     expect(stages).toEqual([
-      "fundamental_analyst",
-      "fundamental_analyst",
       "market_context",
+      "fundamental_analyst",
+      "fundamental_analyst",
       "portfolio_manager",
       "bear_critic",
       "portfolio_manager",

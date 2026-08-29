@@ -11,6 +11,7 @@ export interface ApplyPaperActionsInput {
   actions: readonly ProposedAction[];
   marketSnapshot: MarketSnapshot;
   appliedAt: string;
+  orderIds?: ReadonlyMap<string, string>;
 }
 
 /**
@@ -60,7 +61,7 @@ export function applyPaperActions(input: ApplyPaperActionsInput): {
     }
 
     orders.push({
-      id: `ord_${action.id}`,
+      id: input.orderIds?.get(action.id) ?? `ord_${action.id}`,
       actionId: action.id,
       instrumentId: action.instrumentId,
       side: action.side,

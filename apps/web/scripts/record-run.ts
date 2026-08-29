@@ -34,7 +34,6 @@ async function main(): Promise<void> {
 
   const recording = await recordCommitteeRun({
     state: resetToIdle(goldenState as InvestmentCommitteeState),
-    selectedInstrumentIds: ["inst_nvidia", "inst_siemens"],
     userDecision: {
       decision: "approved",
       decidedAt: new Date().toISOString(),

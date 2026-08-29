@@ -1,5 +1,6 @@
 import {
   MarketContextReportSchema,
+  type Mandate,
   type Evidence,
   type Instrument,
   type MarketContextReport,
@@ -21,14 +22,14 @@ import { ClaimDraftSchema, type Agent } from "./types";
 
 /** What the Market Context Analyst is allowed to see. Populated by the orchestrator. */
 export interface MarketContextContext {
-  /** The assets in scope (the candidate universe / selected set). */
+  /** Tradable universe supplied by Alpaca or an offline fixture. */
   instruments: Instrument[];
+  mandate: Mandate;
   /** The material events driving this run. */
   materialEvents: MaterialEvent[];
   /**
    * The isolated, pre-fetched sector / macro / news evidence pack. The ONLY
-   * window this agent has — it never sees the fundamental reports, the risk
-   * report, or the mandate.
+   * window this agent has — it never sees fundamental reports or risk report.
    */
   evidence: Evidence[];
   /** Current portfolio holdings, for framing (empty on the all-cash baseline). */
@@ -62,6 +63,9 @@ METHOD — reason before you write:
    cash-flow reality). Name where they diverge.
 
 OUTPUT:
+- candidateOpportunities: shortlist symbols present in Assets in scope. Use Cala
+  evidence to explain why each deserves Fundamental Analyst review. Do not
+  output weights or trades.
 - summary: the one or two forces that actually matter for these assets now — a
   thesis, not a news digest. Lead with the non-obvious.
 - drivers: the concrete external drivers (demand, policy, supply, cycle), each
@@ -122,7 +126,8 @@ function buildInput(ctx: MarketContextContext): string {
       .join("\n") || "(no evidence provided)";
 
   return [
-    `Assets in scope:\n${assets}`,
+    `Tradable universe (choose candidates only from these symbols):\n${assets}`,
+    `Risk preferences / mandate: max position ${ctx.mandate.limits.maxGrossExposurePerPosition}, max sector ${ctx.mandate.limits.maxSectorExposure}, min cash ${ctx.mandate.limits.minCashRatio}, max turnover ${ctx.mandate.limits.maxTurnoverPerEvent}`,
     `Current holdings:\n${holdings}`,
     `Material events:\n${events}`,
     `Evidence pack — cite ONLY these evidence IDs:\n${evidenceBlock}`,
@@ -134,6 +139,7 @@ function buildInput(ctx: MarketContextContext): string {
 function finalize(draft: MarketContextReportDraft): MarketContextReport {
   return MarketContextReportSchema.parse({
     id: "mrp_main",
+    candidateOpportunities: draft.candidateOpportunities,
     summary: draft.summary,
     drivers: draft.drivers,
     sectorView: draft.sectorView,

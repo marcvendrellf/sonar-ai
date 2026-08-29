@@ -66,6 +66,7 @@ export function buildMarketContext(
 
   return {
     instruments: [...selectedInstruments],
+    mandate: state.mandate,
     materialEvents: [...state.materialEvents],
     evidence: evidenceByIds(state, evidenceIds),
     holdings: [...state.portfolioSnapshot.positions],

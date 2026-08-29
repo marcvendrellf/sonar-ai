@@ -15,8 +15,8 @@ import {
 
 /** The committee stages, in the order the orchestrator runs them. */
 export const AGENT_STAGES = [
-  "fundamental_analyst",
   "market_context",
+  "fundamental_analyst",
   "portfolio_manager",
   "risk_officer",
   "bear_critic",
@@ -69,9 +69,19 @@ export const FundamentalReportSchema = z.object({
 });
 export type FundamentalReport = z.infer<typeof FundamentalReportSchema>;
 
+/** A Cala-backed opportunity mapped to a tradable symbol from Alpaca's universe. */
+export const CandidateOpportunitySchema = z.object({
+  symbol: z.string().min(1),
+  name: z.string().min(1),
+  rationale: z.string().min(1),
+  evidenceIds: z.array(IdSchema).min(1),
+});
+export type CandidateOpportunity = z.infer<typeof CandidateOpportunitySchema>;
+
 /** Market Context Analyst output, from an isolated context pack. */
 export const MarketContextReportSchema = z.object({
   id: IdSchema,
+  candidateOpportunities: z.array(CandidateOpportunitySchema).optional().default([]),
   summary: z.string().min(1),
   drivers: z.array(z.string()).default([]),
   sectorView: z.string().min(1),

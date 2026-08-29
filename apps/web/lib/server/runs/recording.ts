@@ -57,7 +57,6 @@ export const RunRecordingSchema = z.object({
   /** The model that produced it, or "stub" for a fixture-driven recording. */
   model: z.string().min(1),
   scenarioId: z.string().min(1),
-  selectedInstrumentIds: z.array(z.string()),
   userDecision: UserDecisionSchema.nullable(),
   /** Demo analytics config, stored so replay is fully self-contained. */
   instrumentStats: InstrumentStatsSchema.optional(),

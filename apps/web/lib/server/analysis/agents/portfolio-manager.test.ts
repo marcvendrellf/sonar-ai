@@ -51,7 +51,7 @@ const FUNDAMENTALS: FundamentalReport[] = [
 ];
 
 const MARKET: MarketContextReport = {
-  id: "mrp_main", summary: "AI capex drives demand", drivers: [], sectorView: "extended", macroView: "stable", claims: [],
+  id: "mrp_main", candidateOpportunities: [], summary: "AI capex drives demand", drivers: [], sectorView: "extended", macroView: "stable", claims: [],
 };
 
 const PROPOSAL_CONTEXT: PortfolioManagerContext = {
