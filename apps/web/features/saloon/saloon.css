@@ -32,20 +32,7 @@
   --check-reject: #8a4030;
 }
 
-/*
- * Labels and captions sit over the warm dark room, so they carry their own
- * contrast instead of inheriting the page's ink-on-paper foreground.
- */
-.saloon-orb-name {
-  color: #f7efe4;
-  text-shadow: 0 1px 4px rgba(14, 9, 5, 0.85);
-}
-
-.saloon-canvas-hint {
-  color: rgba(247, 239, 228, 0.74);
-  text-shadow: 0 1px 4px rgba(14, 9, 5, 0.8);
-}
-
+/* Asset failures remain readable over the 3D floor. */
 .saloon-canvas-note {
   color: #f7efe4;
   background-color: rgba(14, 9, 5, 0.72);

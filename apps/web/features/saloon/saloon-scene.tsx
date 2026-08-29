@@ -1,13 +1,18 @@
 "use client"
 
 import * as React from "react"
-import { AccumulativeShadows, Environment, RandomizedLight } from "@react-three/drei"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import { MathUtils, SphereGeometry, Vector3, type PerspectiveCamera } from "three"
+import {
+  ACESFilmicToneMapping,
+  MathUtils,
+  SphereGeometry,
+  Vector3,
+  type PerspectiveCamera,
+} from "three"
 
 import { AgentOrb, ORB_RADIUS } from "./agent-orb"
-import { AssetBoundary, SaloonShell, ShellPlaceholder, TABLE_SURFACE_Y } from "./saloon-shell"
-import { agents, type AgentId, type AgentState } from "./run-fixture"
+import { AssetBoundary, SaloonShell, ShellPlaceholder } from "./saloon-shell"
+import { agents, type AgentId } from "./run-fixture"
 
 const SEAT_RADIUS = 2.55
 
@@ -15,12 +20,11 @@ const SEAT_RADIUS = 2.55
 const ORB_Y = 1.62
 
 /**
- * What the diorama view has to keep in frame: the room's width, and its
- * projected height, which is the depth seen at the camera's elevation plus the
- * back wall. Both matter, because the cutaway rim is the bottom of the subject.
+ * What the table view keeps in frame: the complete six-seat gathering and
+ * enough open floor for the soft cast shadows.
  */
-const FRAMED_HALF_WIDTH = 7.6
-const FRAMED_HALF_HEIGHT = 5.2
+const FRAMED_HALF_WIDTH = 4.6
+const FRAMED_HALF_HEIGHT = 3.7
 
 /**
  * Frame-rate independent exponential damping. One helper, one owner: the camera
@@ -31,14 +35,14 @@ function damp3(current: Vector3, target: Vector3, lambda: number, delta: number)
 }
 
 /**
- * The overview pose. The camera stands outside the cutaway and looks down into
- * it at about 32 degrees, so the room reads as one object on a dark ground.
+ * The overview pose looks down on the table at 35 degrees so the gathering and
+ * its cast shadows read clearly against the open floor.
  */
 const TABLE_POSE = {
-  target: new Vector3(0, 1, -0.9),
-  direction: new Vector3(0, Math.sin(MathUtils.degToRad(32)), Math.cos(MathUtils.degToRad(32))),
-  distance: 18.5,
-  fov: 26,
+  target: new Vector3(0, 0.85, 0),
+  direction: new Vector3(0, Math.sin(MathUtils.degToRad(35)), Math.cos(MathUtils.degToRad(35))),
+  distance: 15,
+  fov: 27,
 }
 
 /**
@@ -54,25 +58,38 @@ const INTERVIEW_FRAMING = 1.29
  * the sight line clear of the rim: the pose is level enough to read as frontal
  * and high enough that no wall crosses it.
  */
-const INTERVIEW_LIFT = 2.8
+const INTERVIEW_LIFT = 2
 
 export function seatPosition(seat: number): [number, number, number] {
   const angle = (seat / agents.length) * Math.PI * 2 - Math.PI / 2
   return [Math.cos(angle) * SEAT_RADIUS, ORB_Y, Math.sin(angle) * SEAT_RADIUS]
 }
 
-/**
- * One locally stored evening interior, loaded at very low intensity. It gives
- * the orbs something to reflect and contributes almost nothing to the clay.
- * Never swap this for a drei preset, which downloads at runtime and breaks
- * offline mode.
- */
-function SaloonEnvironment() {
+/** One warm overhead key with a broad, softly filtered shadow footprint. */
+function SceneLight() {
   return (
-    <Environment
-      files="/environments/saloon/warm_restaurant_night_1k.hdr"
-      environmentIntensity={0.18}
-    />
+    <>
+      <directionalLight
+        castShadow
+        color="#ffd0a6"
+        intensity={3.35}
+        position={[-2.8, 10, 1]}
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-left={-7}
+        shadow-camera-right={7}
+        shadow-camera-top={7}
+        shadow-camera-bottom={-7}
+        shadow-camera-near={1}
+        shadow-camera-far={24}
+        shadow-bias={-0.00025}
+        shadow-normalBias={0.035}
+        shadow-intensity={0.68}
+        shadow-radius={11}
+        shadow-blurSamples={24}
+      />
+      <hemisphereLight args={["#f4d7bd", "#aa907a", 0.58]} />
+    </>
   )
 }
 
@@ -130,7 +147,7 @@ function CameraRig({
 
   React.useEffect(() => {
     if (!reduceMotion) return
-    // Reduced motion cuts between poses instead of flying through the room.
+    // Reduced motion cuts between poses instead of flying across the scene.
     camera.position.copy(pose.position)
     look.current.copy(pose.target)
     camera.lookAt(look.current)
@@ -155,71 +172,12 @@ function CameraRig({
   return null
 }
 
-/**
- * The relationship path, inlaid in the table top. Besides agent state this is
- * the only cyan in the room: seven nodes and their links, revealed as the run
- * traces the path, so the evidence has a physical readout.
- */
-const PATH_NODES: readonly (readonly [number, number])[] = [
-  [-1.42, 0.52],
-  [-0.94, -0.34],
-  [-0.28, 0.44],
-  [0.16, -0.46],
-  [0.78, 0.26],
-  [1.18, -0.4],
-  [1.5, 0.34],
-]
-
-function EvidencePath({ progress }: { progress: number }) {
-  const revealed = Math.round(MathUtils.clamp(progress, 0, 1) * PATH_NODES.length)
-
-  // Fixed geometry, toggled by visibility: tracing the path allocates nothing.
-  const links = React.useMemo(
-    () =>
-      PATH_NODES.slice(1).map(([x, z], index) => {
-        const [px, pz] = PATH_NODES[index]
-        return {
-          position: [(px + x) / 2, -(pz + z) / 2] as const,
-          length: Math.hypot(x - px, z - pz),
-          angle: -Math.atan2(z - pz, x - px),
-        }
-      }),
-    []
-  )
-
-  return (
-    <group position={[0, TABLE_SURFACE_Y + 0.004, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-      {links.map((link, index) => (
-        <mesh
-          key={`link-${index}`}
-          position={[link.position[0], link.position[1], 0]}
-          rotation={[0, 0, link.angle]}
-          visible={index + 2 <= revealed}
-        >
-          <planeGeometry args={[link.length, 0.016]} />
-          <meshStandardMaterial color="#39bdd1" emissive="#39bdd1" emissiveIntensity={0.5} />
-        </mesh>
-      ))}
-      {PATH_NODES.map(([x, z], index) => (
-        <mesh key={`node-${index}`} position={[x, -z, 0]} visible={index < revealed}>
-          <circleGeometry args={[0.062, 20]} />
-          <meshStandardMaterial color="#39bdd1" emissive="#39bdd1" emissiveIntensity={0.85} />
-        </mesh>
-      ))}
-    </group>
-  )
-}
-
 export function SaloonScene({
-  runtime,
   selected,
-  pathProgress,
   reduceMotion,
   onSelect,
 }: {
-  runtime: Record<AgentId, { state: AgentState }>
   selected: AgentId | null
-  pathProgress: number
   reduceMotion: boolean
   onSelect: (id: AgentId | null) => void
 }) {
@@ -233,82 +191,43 @@ export function SaloonScene({
   return (
     <>
       <Canvas
-        shadows
         // 1.5 is the budget for the presentation laptop.
         dpr={[1, 1.5]}
-        camera={{ position: [0, 10.8, 15.7], fov: TABLE_POSE.fov, near: 0.1, far: 90 }}
+        shadows="variance"
+        camera={{ position: [0, 9.6, 13.7], fov: TABLE_POSE.fov, near: 0.1, far: 90 }}
         onPointerMissed={() => onSelect(null)}
         gl={{ antialias: true }}
+        onCreated={({ gl }) => {
+          gl.toneMapping = ACESFilmicToneMapping
+          gl.toneMappingExposure = 1.05
+        }}
       >
-        {/* The diorama sits on a dark ground, as in the supplied reference. No
-            fog: the room is an object, not a space the camera is inside. */}
-        <color attach="background" args={["#211710"]} />
+        <color attach="background" args={["#dfc5a6"]} />
 
-        {/* Optional warmth. If it fails the key still lights the room, so it
-            gets its own boundary. */}
-        <AssetBoundary fallback={null}>
-          <React.Suspense fallback={null}>
-            <SaloonEnvironment />
-          </React.Suspense>
-        </AssetBoundary>
+        <SceneLight />
 
-        {/* One very broad warm key at roughly 3,000 K, and a weak fill so unlit
-            clay faces stay legible without losing their form. Nothing casts a
-            hard highlight: the shadow below is accumulated, not mapped. */}
-        <spotLight
-          position={[0, 7.0, 0.2]}
-          target-position={[0, 0.9, 0]}
-          angle={0.82}
-          penumbra={1}
-          intensity={265}
-          distance={26}
-          decay={2}
-          color="#ffc48d"
-        />
-        <directionalLight position={[5, 9, 7]} intensity={0.5} color="#ffd7ae" />
-        <hemisphereLight args={["#cbd6e4", "#6f5a44", 0.2]} />
+        {/* Continue the open floor beyond the authored slab so interview cameras
+            never reveal a room edge or a background seam. */}
+        <mesh position={[0, -0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+          <planeGeometry args={[200, 200]} />
+          <meshStandardMaterial color="#d8d2c8" roughness={0.97} metalness={0} />
+        </mesh>
 
         <AssetBoundary fallback={<ShellPlaceholder />} onError={onShellError}>
           <React.Suspense fallback={<ShellPlaceholder />}>
             <SaloonShell />
-            {/* Accumulated once over 60 frames, then static: one broad, blurred,
-                low-contrast shadow across the floor. Mounted with the shell so
-                it never bakes an empty room. */}
-            <AccumulativeShadows
-              temporal
-              frames={60}
-              scale={15}
-              position={[0, 0.02, 0]}
-              alphaTest={0.8}
-              opacity={0.78}
-              color="#3a2a1b"
-            >
-              <RandomizedLight
-                amount={8}
-                radius={5}
-                ambient={0.55}
-                intensity={1.8}
-                position={[1.2, 8.5, 1.5]}
-                size={18}
-                bias={0.001}
-              />
-            </AccumulativeShadows>
           </React.Suspense>
         </AssetBoundary>
 
         <CameraRig selected={selected} reduceMotion={reduceMotion} />
-        <EvidencePath progress={pathProgress} />
 
         {agents.map((agent) => (
           <AgentOrb
             key={agent.id}
             agent={agent}
-            state={runtime[agent.id].state}
             position={seatPosition(agent.seat)}
             geometry={orbGeometry}
             selected={selected === agent.id}
-            dimmed={selected !== null && selected !== agent.id}
-            labelled={selected === null}
             reduceMotion={reduceMotion}
             onSelect={() => onSelect(agent.id)}
           />

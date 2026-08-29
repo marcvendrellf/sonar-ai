@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "build:saloon-shell": "node scripts/build-saloon-shell.mjs"
+    "build:saloon-shell": "node scripts/build-saloon-shell.mjs && blender --background --factory-startup --python scripts/bake-saloon-lightmap.py"
   },
   "dependencies": {
     "@sonar-ai/core": "workspace:*",

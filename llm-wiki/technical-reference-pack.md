@@ -307,57 +307,51 @@ Source: [single-table 3D Saloon decision](../raw-sources/saloon-single-table-3d-
 
 The first Saloon uses one React Three Fiber canvas with one meeting table and six agent orbs. Keep every orb in the same scene so the application pays for one renderer and one animation loop.
 
-The warm-scene rebuild uses one authored clay-style shell. Replace the procedural room, white table, and pedestal seats with one optimized local `saloon-shell.glb`. Keep the current custom agent orbs, hit areas, state motion, camera owner, and DOM overlays in React code. The shell owns only simple cutaway architecture, a rounded table, and seat plinths. It should read as a compact video-game diorama rather than a textured real interior.
+The accepted warm-scene rebuild uses one authored clay-style static set. The optimized local `saloon-shell.glb` contains only an open creamy floor, a deep rounded dark-cream table with a broad floor-reaching center base, and seat plinths; there are no walls or room props. Keep the custom agent orbs, hit areas, selected-only float, camera owner, and DOM details in React code.
 
 Suggested ownership:
 
 ```text
 apps/web/
   features/saloon/
-    saloon-scene.tsx          # Canvas, light rig, camera, shell and orb composition
-    saloon-shell.tsx          # useGLTF loader and material bindings
-    agent-orb.tsx             # existing interactive custom orb
+    saloon-scene.tsx          # Canvas, camera, warm shadow key, open-floor extension
+    saloon-shell.tsx          # useGLTF/EXR loaders, UV validation, clay materials
+    agent-orb.tsx             # naturally lit orb with eased selection and hover motion
   public/
     models/saloon/
       saloon-shell.glb
       provenance.md
     textures/saloon/
-      ...local 1K textures
+      saloon-lightmap.exr
     environments/saloon/
-      ...local HDR, EXR, or gainmap
+      warm_restaurant_night_1k.hdr
 ```
 
 The exact public asset path may follow the existing Next.js asset convention, but all runtime files must remain inside the repository and load without network access. Record source URL, retrieval date, author when provided, license, and local filename in the provenance note.
 
 Use `useGLTF` for the shell and preload it after the Saloon route becomes likely to open. If the selected source asset needs cleanup, optimize it before committing. Prefer one merged static shell, a few shared materials, no photoreal texture set, and no unnecessary animation tracks. Target a device-pixel-ratio cap of 1.5. After approval, remove invisible geometry and compress the model without changing the accepted camera compositions.
 
-Lighting rules for the rebuilt shell:
+Accepted lighting pipeline:
 
-- remove the current high-intensity point lights and reduce or remove environment reflections on room materials;
-- use one very broad warm key in the 2,700 to 3,200 K range;
-- use a weak hemisphere or neutral fill so unlit faces remain legible without erasing form;
-- prefer Drei `AccumulativeShadows` with a static `RandomizedLight` cluster for the broad baked-style shadow, or use a low-opacity, high-blur `ContactShadows` fallback;
-- keep shadow edges wide, opacity low, and contrast gentle across the room;
-- no transmission, clearcoat, mirror material, chrome room furniture, or emissive architecture;
-- cyan emission remains local to agent state and the active evidence path.
+- `pnpm --filter web build:saloon-shell` first writes geometry under ignored `.saloon-build/`, then runs Blender 5.2.1 LTS in factory-clean background mode;
+- the Blender script preserves `Floor`, `Sand`, `Table`, and `Plinth`, creates consecutive `UVMap` and `Lightmap` layers, packs the second layer globally without overlap, and exports them as `TEXCOORD_0` and `TEXCOORD_1`;
+- Cycles uses 512 samples, four diffuse bounces, one 3,400 K overhead area light at `(-2.8, 10.0, 1.0)`, a 6 m size, 800 W energy, and low warm World illumination at strength 0.22;
+- Diffuse Direct and Indirect are enabled while Color is disabled, so the 2,048 px RGB half-float EXR stores illumination rather than baking the clay albedo twice;
+- `SaloonShell` loads the EXR with `flipY = false`, `channel = 1`, and `LinearSRGBColorSpace`, rejects a mesh without `uv` and `uv1`, and assigns the cached lightmap to the table and plinth materials at intensity 0.35. The open floor responds only to runtime light, avoiding a baked-light boundary;
+- one warm overhead runtime directional key casts VSM-filtered shadows from every orb and static mesh. A restrained warm hemisphere supplies bounce; there is no progressive convergence;
+- the retained local HDR is not loaded, orb materials have no emissive floor or environment contribution, and the fake radial shadow cards are removed;
+- only the selected orb floats. Selected motion and pointer scale use frame-rate-independent damping; unselected orbs do not bob, lift, or spin;
+- the final GLB is 356,104 bytes and the final EXR is 9,272,735 bytes. Both load from the application origin;
+- the table carries no WebGL evidence graph, and the default right panel contains only the roster and each agent's work rather than a timeline or evidence dashboard;
+- the overview framing prioritizes the table and six agents on an open floor;
+- orb labels, state rings, the top scene header, timeline controls, and the bottom canvas instruction are removed. Fixture playback remains automatic, and identity and status remain available in the DOM roster and selected-agent panel.
 
-Starting light and shadow envelope for visual tuning:
-
-```text
-room environment contribution: 0 to 0.25
-hemisphere or ambient fill: low, enough to retain the clay silhouette
-randomized warm key: 6 to 10 samples across a broad radius
-accumulated shadow frames: 40 to 80 for the static shell
-contact-shadow fallback opacity: 0.18 to 0.28
-contact-shadow fallback blur: broad, approximately 4 to 6
-```
-
-Treat these as tuning ranges rather than product requirements. Judge the final values against the supplied reference and the presentation laptop.
+The browser result was compared in hardware-accelerated Chrome at 1,440 x 900 across the idle table, active table, and all six interview views. The presentation-laptop DPR 1.5 performance check remains open until it runs on that machine.
 
 Material rules:
 
-- warm sand shell: `roughness` 0.9 to 1 and `metalness` 0;
-- dark brown table and seats: `roughness` 0.82 to 0.95 and `metalness` 0;
+- unsaturated creamy floor: `roughness` 0.95 to 1 and `metalness` 0;
+- dark cream/taupe table and seats: `roughness` 0.82 to 0.95 and `metalness` 0;
 - agent orbs: `roughness` 0.55 to 0.72, `metalness` 0, and low environment intensity;
 - use flat colors, subtle ambient occlusion, or low-frequency procedural variation only;
 - do not use visible wood grain, fabric weave, stone veining, or photoreal normal maps;
@@ -486,4 +480,4 @@ Workspace rules:
 
 ## Cut list if time runs short
 
-Cut autonomous loops, workflow-framework integration, postprocessing, secondary room props, the full sphere state set, the live orb, the active-agent chart, then interactive graph dragging. Keep the rounded dark table, cutaway clay shell, one broad warm light, six selectable committee seats, a static price chart if needed, and the non-WebGL Saloon fallback. Never cut source inspection, deterministic risk rejection, fixture fallback, Bear/Critic challenge, human approval, or the decision receipt.
+Cut autonomous loops, workflow-framework integration, postprocessing, secondary room props, the full sphere state set, the live orb, the active-agent chart, then interactive graph dragging. Keep the rounded dark-cream table, open creamy floor, one broad warm shadow-casting light, six selectable committee seats, a static price chart if needed, and the non-WebGL Saloon fallback. Never cut source inspection, deterministic risk rejection, fixture fallback, Bear/Critic challenge, human approval, or the decision receipt.

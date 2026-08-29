@@ -104,7 +104,7 @@ export const agents: readonly Agent[] = [
     role: "Reads the event",
     idleTask: "Waiting for the event to open",
     seat: 0,
-    color: "#4a7e9a",
+    color: "#69b9d6",
   },
   {
     id: "cartographer",
@@ -113,7 +113,7 @@ export const agents: readonly Agent[] = [
     role: "Traces relationships",
     idleTask: "Waiting for the event brief",
     seat: 1,
-    color: "#087f9d",
+    color: "#c99b62",
   },
   {
     id: "analyst",
@@ -122,7 +122,7 @@ export const agents: readonly Agent[] = [
     role: "Builds the bull case",
     idleTask: "Waiting for a sourced path",
     seat: 2,
-    color: "#397567",
+    color: "#9da99f",
   },
   {
     id: "skeptic",
@@ -131,7 +131,7 @@ export const agents: readonly Agent[] = [
     role: "Attacks the bull case",
     idleTask: "Waiting for a claim to test",
     seat: 3,
-    color: "#8b651f",
+    color: "#a6a39d",
   },
   {
     id: "marshal",
@@ -140,7 +140,7 @@ export const agents: readonly Agent[] = [
     role: "Enforces risk limits",
     idleTask: "Waiting for a proposed order",
     seat: 4,
-    color: "#625d77",
+    color: "#ded1b8",
   },
   {
     id: "trader",
@@ -149,7 +149,7 @@ export const agents: readonly Agent[] = [
     role: "Applies paper orders",
     idleTask: "Waiting for an approved order",
     seat: 5,
-    color: "#39485a",
+    color: "#c3a47b",
   },
 ]
 
